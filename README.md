@@ -1,4 +1,4 @@
-# LeanMillenniumProblems
+# Formalization of the Millennium Prize Problems in Lean4.
 
 This is a repository for the Lean Millennium Problems project. The goal of this project is to formalize the Millennium Problems in the Lean theorem prover which is the first of its kind. The Millennium Problems are seven problems in mathematics that were stated by the Clay Mathematics Institute in 2000. A correct solution to any of these problems results in a one million dollar prize. As of now only the Poincaré Conjecture has been solved. I would hope that one day the there would be an 8th Millennium Problem that is to have the full formalization/solutions of all the Millennium Problems in Lean or even better a full formalization of the whole field of mathematics in Lean.
 
