@@ -1,0 +1,26 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/packages/Cli/.lake/build/lib/lean:././.lake/packages/batteries/.lake/build/lib/lean:././.lake/packages/Qq/.lake/build/lib/lean:././.lake/packages/aesop/.lake/build/lib/lean:././.lake/packages/proofwidgets/.lake/build/lib/lean:././.lake/packages/importGraph/.lake/build/lib/lean:././.lake/packages/LeanSearchClient/.lake/build/lib/lean:././.lake/packages/plausible/.lake/build/lib/lean:././.lake/packages/mathlib/.lake/build/lib/lean:././.lake/build/lib/lean /home/robert/.elan/toolchains/leanprover--lean4---v4.18.0-rc1/bin/lean -Dpp.unicode.fun=true -DautoImplicit=false -DrelaxedAutoImplicit=false ././././Problems/NavierStokes/Torus.lean -R ./././. -o ././.lake/build/lib/lean/Problems/NavierStokes/Torus.olean -i ././.lake/build/lib/lean/Problems/NavierStokes/Torus.ilean -c ././.lake/build/ir/Problems/NavierStokes/Torus.c --json",
+   "level": "trace"},
+  {"message":
+   "././././Problems/NavierStokes/Torus.lean:15:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/NavierStokes/Torus.lean:16:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/NavierStokes/Torus.lean:17:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/NavierStokes/Torus.lean:18:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/NavierStokes/Torus.lean:19:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/NavierStokes/Torus.lean:20:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/NavierStokes/Torus.lean:21:0: declaration uses 'sorry'",
+   "level": "warning"}],
+ "depHash": "6552579129419729682"}

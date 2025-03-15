@@ -1,0 +1,179 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/packages/Cli/.lake/build/lib/lean:././.lake/packages/batteries/.lake/build/lib/lean:././.lake/packages/Qq/.lake/build/lib/lean:././.lake/packages/aesop/.lake/build/lib/lean:././.lake/packages/proofwidgets/.lake/build/lib/lean:././.lake/packages/importGraph/.lake/build/lib/lean:././.lake/packages/LeanSearchClient/.lake/build/lib/lean:././.lake/packages/plausible/.lake/build/lib/lean:././.lake/packages/mathlib/.lake/build/lib/lean:././.lake/build/lib/lean /home/robert/.elan/toolchains/leanprover--lean4---v4.18.0-rc1/bin/lean -Dpp.unicode.fun=true -DautoImplicit=false -DrelaxedAutoImplicit=false ././././Problems/YangMills/Quantum.lean -R ./././. -o ././.lake/build/lib/lean/Problems/YangMills/Quantum.olean -i ././.lake/build/lib/lean/Problems/YangMills/Quantum.ilean -c ././.lake/build/ir/Problems/YangMills/Quantum.c --json",
+   "level": "trace"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:89:14: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:93:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:94:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:95:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:96:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:97:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:98:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:126:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:126:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:126:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:126:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:126:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:138:2: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:144:2: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:153:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:153:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:153:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:153:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:153:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:153:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:153:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:153:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:153:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:155:2: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:159:4: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:165:4: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:184:4: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:189:4: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:194:4: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:199:4: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:205:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:205:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:205:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:205:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:205:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:210:2: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:211:2: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:217:2: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:235:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:235:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:235:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:235:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:235:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:237:2: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:242:2: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:245:2: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:248:2: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:252:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:252:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:252:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:252:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:252:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:252:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:252:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:252:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:252:0: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:264:2: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Quantum.lean:268:4: declaration uses 'sorry'",
+   "level": "warning"}],
+ "depHash": "18273738218631358786"}

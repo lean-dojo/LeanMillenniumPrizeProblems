@@ -1,0 +1,11 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/packages/Cli/.lake/build/lib/lean:././.lake/packages/batteries/.lake/build/lib/lean:././.lake/packages/Qq/.lake/build/lib/lean:././.lake/packages/aesop/.lake/build/lib/lean:././.lake/packages/proofwidgets/.lake/build/lib/lean:././.lake/packages/importGraph/.lake/build/lib/lean:././.lake/packages/LeanSearchClient/.lake/build/lib/lean:././.lake/packages/plausible/.lake/build/lib/lean:././.lake/packages/mathlib/.lake/build/lib/lean:././.lake/build/lib/lean /home/robert/.elan/toolchains/leanprover--lean4---v4.18.0-rc1/bin/lean -Dpp.unicode.fun=true -DautoImplicit=false -DrelaxedAutoImplicit=false ././././Problems/YangMills/Millennium.lean -R ./././. -o ././.lake/build/lib/lean/Problems/YangMills/Millennium.olean -i ././.lake/build/lib/lean/Problems/YangMills/Millennium.ilean -c ././.lake/build/ir/Problems/YangMills/Millennium.c --json",
+   "level": "trace"},
+  {"message":
+   "././././Problems/YangMills/Millennium.lean:69:4: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/YangMills/Millennium.lean:79:8: declaration uses 'sorry'",
+   "level": "warning"}],
+ "depHash": "13371227613164653606"}

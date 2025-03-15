@@ -1,0 +1,14 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/packages/Cli/.lake/build/lib/lean:././.lake/packages/batteries/.lake/build/lib/lean:././.lake/packages/Qq/.lake/build/lib/lean:././.lake/packages/aesop/.lake/build/lib/lean:././.lake/packages/proofwidgets/.lake/build/lib/lean:././.lake/packages/importGraph/.lake/build/lib/lean:././.lake/packages/LeanSearchClient/.lake/build/lib/lean:././.lake/packages/plausible/.lake/build/lib/lean:././.lake/packages/mathlib/.lake/build/lib/lean:././.lake/build/lib/lean /home/robert/.elan/toolchains/leanprover--lean4---v4.18.0-rc1/bin/lean -Dpp.unicode.fun=true -DautoImplicit=false -DrelaxedAutoImplicit=false ././././Problems/NavierStokes/Sobolev.lean -R ./././. -o ././.lake/build/lib/lean/Problems/NavierStokes/Sobolev.olean -i ././.lake/build/lib/lean/Problems/NavierStokes/Sobolev.ilean -c ././.lake/build/ir/Problems/NavierStokes/Sobolev.c --json",
+   "level": "trace"},
+  {"message":
+   "././././Problems/NavierStokes/Sobolev.lean:95:23: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/NavierStokes/Sobolev.lean:99:23: declaration uses 'sorry'",
+   "level": "warning"},
+  {"message":
+   "././././Problems/NavierStokes/Sobolev.lean:103:23: declaration uses 'sorry'",
+   "level": "warning"}],
+ "depHash": "10979903703728284159"}
