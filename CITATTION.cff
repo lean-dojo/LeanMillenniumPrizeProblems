@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: George
+    given-names: Robert Joseph
+  - family-names: Anandkumar
+    given-names: Anima
+title: "Formalization of the Millennium Prize Problems in Lean4"
+version: 1.0.0
+date-released: 2025-03-16
+repository-code: "https://github.com/username/millennium-problems-lean4"
+abstract: >-
+  A formalization of the seven Millennium Prize Problems in the Lean4 theorem prover. 
+  This project aims to precisely represent these famous mathematical problems in a
+  machine-checkable format, including the Hodge Conjecture, Navier-Stokes Equations,
+  P vs NP Problem, Riemann Hypothesis, Yang-Mills Existence and Mass Gap, 
+  Birch and Swinnerton-Dyer Conjecture, and Poincaré Conjecture.
+keywords:
+  - formal verification
+  - theorem proving
+  - Lean4
+  - millennium problems
+  - mathematics
+  - formalization
+license: MIT
