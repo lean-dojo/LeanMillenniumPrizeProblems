@@ -81,15 +81,24 @@ structure MillenniumProblemBoundedDomain where
   -/
   initialVelocity_mean_zero : ∫ x : Torus3, initialVelocity x = 0
 
+  /-- Viscosity coefficient (must be positive) -/
+  nu : ℝ
+
+  /-- Viscosity is positive - a physical requirement -/
+  nu_pos : nu > 0
+
+  /-- External force field acting on the fluid -/
+  f : ForceField 3
+
   /--
     The Navier-Stokes equations with this initial data on the torus.
   -/
   nse : NavierStokesEquations 3 := {
-    nu := 1,                              -- Kinematic viscosity (normalized)
-    f := λ _ => 0,                        -- External force (none)
-    nu_pos := by simp,
-    initialVelocity := initialVelocity,
-    initialDivergenceFree := initialVelocity_div_free
+    nu := nu,                            -- Kinematic viscosity (from parameter)
+    f := f,                              -- External force field
+    nu_pos := nu_pos,                    -- Proof that viscosity is positive
+    initialVelocity := initialVelocity,  -- Initial velocity field
+    initialDivergenceFree := initialVelocity_div_free  -- Proof of incompressibility
   }
 
 /--
@@ -156,13 +165,15 @@ def BreakdownOfSmoothPeriodicSolution (problem : MillenniumProblemBoundedDomain)
 
   Again the problem is to determine whether exactly one of the following statements is true:
 
-  Either:
-  1. Smooth periodic solutions exist for all time, or
-  2. There is a finite time beyond which no smooth periodic solution can exist
+ 1. Either for ALL valid initial conditions (smooth, divergence-free, finite energy),
+     smooth periodic solutions exist for all time (global existence)
+  2. OR there EXISTS at least one valid initial condition for which
+     no smooth periodic solution can exist beyond some finite time (finite-time blowup)
 
-  This periodic formulation is mathematically equivalent to the original problem (again I haven't proved this yet plus just used the Clay's instutite PDF file on the NS to see the equivalence).
+  This periodic formulation is mathematically equivalent to the original problem.
 -/
-def MillenniumProblemBoundedDomainStatement (problem : MillenniumProblemBoundedDomain) : Prop :=
-  ExistenceOfSmoothPeriodicSolution problem ∨ BreakdownOfSmoothPeriodicSolution problem
+def MillenniumProblemBoundedDomainStatement : Prop :=
+  (∀ problem : MillenniumProblemBoundedDomain, ExistenceOfSmoothPeriodicSolution problem) ∨
+  (∃ problem : MillenniumProblemBoundedDomain, BreakdownOfSmoothPeriodicSolution problem)
 
 end MillenniumNS_BoundedDomain

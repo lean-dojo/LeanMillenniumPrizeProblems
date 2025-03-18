@@ -49,6 +49,16 @@ structure MillenniumProblem where
   -/
   initialVelocity_div_free : ∀ x, ∑ i : Fin 3, partialDeriv i (λ y => initialVelocity y i) x = 0
 
+
+  /-- Viscosity coefficient (must be positive) -/
+  nu : ℝ
+
+  /-- Viscosity is positive - a physical requirement -/
+  nu_pos : nu > 0
+
+  /-- External force field acting on the fluid -/
+  f : ForceField 3
+
   /--
     The Navier-Stokes equations with this initial data.
 
@@ -61,10 +71,10 @@ structure MillenniumProblem where
     combining Newton's second law with the assumption of constant density.
   -/
   nse : NavierStokesEquations 3 := {
-    nu := 1,                              -- Kinematic viscosity (normalized)
-    f := λ _ => 0,                        -- External force (none)
-    nu_pos := by simp,                    -- Proof that viscosity is positive
-    initialVelocity := initialVelocity,   -- Initial velocity field
+    nu := nu,                            -- Kinematic viscosity (from parameter)
+    f := f,                              -- External force field
+    nu_pos := nu_pos,                    -- Proof that viscosity is positive
+    initialVelocity := initialVelocity,  -- Initial velocity field
     initialDivergenceFree := initialVelocity_div_free  -- Proof of incompressibility
   }
 
@@ -108,10 +118,13 @@ def BreakdownOfSmoothSolution (problem : MillenniumProblem) : Prop :=
 
   Okay so basically the statement says that exactly one of the two possibilities must occur:
 
-  1. Smooth solutions exist for all time (global existence)
-  2. There is a finite time beyond which no smooth solution can exist (finite-time blowup)
+  1. Either for ALL valid initial conditions (smooth, divergence-free, finite energy),
+     smooth solutions exist for all time (global existence)
+  2. OR there EXISTS at least one valid initial condition for which
+     no smooth solution can exist beyond some finite time (finite-time blowup)
 -/
-def MillenniumProblemStatement (problem : MillenniumProblem) : Prop :=
-  ExistenceOfSmoothSolution problem ∨ BreakdownOfSmoothSolution problem
+def MillenniumProblemStatement : Prop :=
+  (∀ problem : MillenniumProblem, ExistenceOfSmoothSolution problem) ∨
+  (∃ problem : MillenniumProblem, BreakdownOfSmoothSolution problem)
 
 end MillenniumNSRDomain
