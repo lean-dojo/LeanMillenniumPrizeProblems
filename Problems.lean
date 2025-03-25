@@ -14,3 +14,4 @@ import Problems.BirchSwinnertonDyer.Mordellweil
 import Problems.YangMills.Millennium
 import Problems.YangMills.Quantum
 import Problems.PvsNP.PolynomialHierarchy
+import Problems.BirchSwinnertonDyer.BSD_specific

@@ -75,7 +75,9 @@ def HasMassGapViaSpectrum (G : Type) [CompactSimpleGaugeGroup G]
     --Inner.inner (qft.hamiltonian qft.vacuum) qft.vacuum ≥
     --Δ * Inner.inner state state
 
-/-- The Yang-Mills existence and mass gap theorem statement --/
+/-- # The Yang-Mills existence and mass gap theorem statement
+
+Again stated as a theorem as I cant figure out how to make the proposition universal binder levels go away-/
 theorem yang_mills_existence_and_mass_gap (G : Type) [CompactSimpleGaugeGroup G] :
   ∃ (qft : QuantumYangMillsTheory G) (Δ : ℝ), -- There exists a quantum YM theory and positive mass gap
     HasMassGapViaSpectrum G qft Δ ∧ HasMassGapViaTwoPoint G qft Δ := sorry

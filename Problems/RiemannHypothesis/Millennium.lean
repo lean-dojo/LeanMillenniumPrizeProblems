@@ -108,13 +108,26 @@ noncomputable def LiCoefficients (n : ℕ) : ℝ :=
 def RiemannHypothesis : Prop :=
   ∀ (s : ℂ), IsNontrivialZero s → s.re = 1/2
 
-/-- # A stronger form of the Riemann Hypothesis states that all zeros of the Riemann zeta function in the critical strip are simple zeros (i.e., have multiplicity 1).
+/-- All zeros of the Riemann zeta function outside the critical strip are simple zeros.
+    This means if ζ(s) = 0 and s is not in the critical strip (s.re ≤ 0 or s.re ≥ 1),
+    then the derivative at that point is non-zero: ζ'(s) ≠ 0. -/
+theorem zeros_outside_critical_strip_are_simple :
+  ∀ s : ℂ, ¬CriticalStrip s → riemannZeta s = 0 → deriv riemannZeta s ≠ 0 :=
+sorry
+
+/-- All trivial zeros of the Riemann zeta function (those at s = -2n for positive integers n)
+    are simple zeros, meaning that ζ'(-2n) ≠ 0. -/
+theorem trivial_zeros_are_simple (n : ℕ) (hn : n > 0) :
+  deriv riemannZeta (-2 * ↑n) ≠ 0 :=
+sorry
+
+/-- # The Riemann Hypothesis states that all zeros of the Riemann zeta function in the critical strip are simple zeros (i.e., have multiplicity 1).
 
     This means that each zero is a single root, not a multiple root, which would
     influence how certain related functions behave near these zeros. -/
-def SimpleZerosHypothesis : Prop :=
+def ZerosHypothesis : Prop :=
   ∀ s : ℂ, CriticalStrip s → riemannZeta s = 0 →
-    ∃ ε > 0, ∀ z ≠ s, ‖z - s‖ < ε → riemannZeta z ≠ 0
+    deriv riemannZeta s ≠ 0
 
 /-- # The Li criterion: an equivalent formulation of the Riemann Hypothesis in terms of the non-negativity of Li coefficients derived from the logarithmic derivative of the zeta function.
 

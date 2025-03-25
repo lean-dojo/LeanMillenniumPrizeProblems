@@ -1,6 +1,6 @@
 // Lean compiler output
 // Module: Problems.NavierStokes.MillenniumBoundedDomain
-// Imports: Init Problems.NavierStokes.Imports Problems.NavierStokes.Definitions Problems.NavierStokes.Navierstokes Problems.NavierStokes.MillenniumRDomain Problems.NavierStokes.Torus Mathlib.Analysis.InnerProductSpace.PiL2 Init.Prelude
+// Imports: Init Problems.NavierStokes.Imports Problems.NavierStokes.Definitions Problems.NavierStokes.Navierstokes Problems.NavierStokes.MillenniumRDomain Problems.NavierStokes.Torus
 #include <lean/lean.h>
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wunused-parameter"
@@ -56,8 +56,6 @@ lean_object* initialize_Problems_NavierStokes_Definitions(uint8_t builtin, lean_
 lean_object* initialize_Problems_NavierStokes_Navierstokes(uint8_t builtin, lean_object*);
 lean_object* initialize_Problems_NavierStokes_MillenniumRDomain(uint8_t builtin, lean_object*);
 lean_object* initialize_Problems_NavierStokes_Torus(uint8_t builtin, lean_object*);
-lean_object* initialize_Mathlib_Analysis_InnerProductSpace_PiL2(uint8_t builtin, lean_object*);
-lean_object* initialize_Init_Prelude(uint8_t builtin, lean_object*);
 static bool _G_initialized = false;
 LEAN_EXPORT lean_object* initialize_Problems_NavierStokes_MillenniumBoundedDomain(uint8_t builtin, lean_object* w) {
 lean_object * res;
@@ -79,12 +77,6 @@ res = initialize_Problems_NavierStokes_MillenniumRDomain(builtin, lean_io_mk_wor
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 res = initialize_Problems_NavierStokes_Torus(builtin, lean_io_mk_world());
-if (lean_io_result_is_error(res)) return res;
-lean_dec_ref(res);
-res = initialize_Mathlib_Analysis_InnerProductSpace_PiL2(builtin, lean_io_mk_world());
-if (lean_io_result_is_error(res)) return res;
-lean_dec_ref(res);
-res = initialize_Init_Prelude(builtin, lean_io_mk_world());
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 return lean_io_result_mk_ok(lean_box(0));

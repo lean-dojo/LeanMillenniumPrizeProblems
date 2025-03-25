@@ -46,8 +46,7 @@ is yet to be completed.
 The Hodge Conjecture: for a smooth complex projective variety,
 every Hodge class is a rational linear combination of cycle classes.
 
-This is stated as a theorem rather than a proposition because it's a mathematical
-conjecture we aim to prove unlike the PvsNP, NS or Riemann Hypothes which is like a yes/no.
+This is stated as a theorem rather than a proposition cause for now I'm not sure how to turn it into a Proposition without getting an error on the universal levels.
 -/
 theorem HodgeConjecture : ∀ (X: SmoothProjectiveVariety ℂ) (p : ℕ),
   hodgeClass X p = algebraicCohomology X p := sorry
