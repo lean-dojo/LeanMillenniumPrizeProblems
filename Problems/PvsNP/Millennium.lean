@@ -1,3 +1,4 @@
+import Mathlib.Tactic.LiftLets
 import Mathlib.Computability.TuringMachine
 import Mathlib.Computability.Primrec
 import Mathlib.Computability.TMComputable
@@ -119,7 +120,56 @@ def pairEncoding {α β : Type} [Primcodable α] [Primcodable β]
       | some a, some b => some (a, b)
       | _, _ => none,
 
-    decode_encode := sorry --very hard to do not sure how to do it
+    decode_encode := by
+      intro inp
+      beta_reduce
+      lift_lets
+      intro a_list
+      intro b_list
+
+      have h : a_list = ea.encode inp.1 := by
+        unfold a_list
+        simp only [List.filterMap_append, List.filterMap_map, Option.some.injEq]
+        change let a_list' := _ ; _ ++ a_list' = _
+        intro a_list'
+        have h : a_list' = [] := by
+          simp_all only [List.filterMap_eq_nil_iff, Function.comp_apply, implies_true, a_list']
+        rw [h, List.append_nil]
+        change let x := _; List.filterMap _ x = x
+        intro x
+        induction x
+        · rfl
+        · rename_i a as ih
+          exact
+            Eq.symm
+              (List.append_cancel_left
+                (congrArg
+                  (HAppend.hAppend a_list)
+                  (congrArg (List.cons a) (id (Eq.symm ih)))))
+      rw [h]
+
+      replace h : b_list = eb.encode inp.2 := by
+        unfold b_list
+        simp only [List.filterMap_append, List.filterMap_map, Option.some.injEq]
+        change let b_list' := _ ; b_list' ++ _ = _
+        intro b_list'
+        have h : b_list' = [] := by
+          simp_all only [List.filterMap_eq_nil_iff, Function.comp_apply, implies_true, b_list']
+        rw [h, List.nil_append]
+        change let x := _; List.filterMap _ x = x
+        intro x
+        induction x
+        · rfl
+        · rename_i a as ih
+          exact
+            Eq.symm
+              (List.append_cancel_left
+                (congrArg
+                  (HAppend.hAppend b_list)
+                  (congrArg (List.cons a) (id (Eq.symm ih)))))
+      rw [h]
+
+      simp only [ea.decode_encode, eb.decode_encode]
     ΓFin := inferInstance
   }
 /--
