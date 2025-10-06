@@ -1,0 +1,22 @@
+# Lean build artifacts
+.lake/
+lake-packages/
+build/
+
+# Editor and IDE files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.iml
+.DS_Store
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+tmp/
+
+# Cache files
+.cache/
