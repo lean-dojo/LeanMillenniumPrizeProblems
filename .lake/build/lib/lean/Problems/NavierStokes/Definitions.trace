@@ -1,5 +1,0 @@
-{"log":
- [{"message":
-   ".> LEAN_PATH=././.lake/packages/Cli/.lake/build/lib/lean:././.lake/packages/batteries/.lake/build/lib/lean:././.lake/packages/Qq/.lake/build/lib/lean:././.lake/packages/aesop/.lake/build/lib/lean:././.lake/packages/proofwidgets/.lake/build/lib/lean:././.lake/packages/importGraph/.lake/build/lib/lean:././.lake/packages/LeanSearchClient/.lake/build/lib/lean:././.lake/packages/plausible/.lake/build/lib/lean:././.lake/packages/mathlib/.lake/build/lib/lean:././.lake/build/lib/lean /home/robert/.elan/toolchains/leanprover--lean4---v4.18.0-rc1/bin/lean -Dpp.unicode.fun=true -DautoImplicit=false -DrelaxedAutoImplicit=false ././././Problems/NavierStokes/Definitions.lean -R ./././. -o ././.lake/build/lib/lean/Problems/NavierStokes/Definitions.olean -i ././.lake/build/lib/lean/Problems/NavierStokes/Definitions.ilean -c ././.lake/build/ir/Problems/NavierStokes/Definitions.c --json",
-   "level": "trace"}],
- "depHash": "3882764143752856196"}
