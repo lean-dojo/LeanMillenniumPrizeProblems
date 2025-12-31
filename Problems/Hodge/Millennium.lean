@@ -4,6 +4,8 @@ namespace MillenniumHodge
 
 open AlgebraicGeometry Scheme Complex Algebra VarietyDefinition
 
+universe u u₁ u₂ u₃ u₄
+
 /-!
 # The Hodge Conjecture
 
@@ -28,11 +30,6 @@ This connection is profound because Hodge classes are defined using analysis and
 geometry (through the Hodge decomposition), while algebraic cycles are purely algebro-geometric
 objects.
 
-Note: We state this as a theorem, not a proposition or axiom, because we want to represent the
-mathematical statement that we aim to prove, not assume it as true. In formal verification,
-conjectures are stated as theorems with `sorry` as the proof, indicating that the proof
-is yet to be completed.
-
 ## Main definitions from Variety.lean
 
 * `SmoothProjectiveVariety`: A smooth projective variety over a field
@@ -45,10 +42,9 @@ is yet to be completed.
 /--
 The Hodge Conjecture: for a smooth complex projective variety,
 every Hodge class is a rational linear combination of cycle classes.
-
-This is stated as a theorem rather than a proposition cause for now I'm not sure how to turn it into a Proposition without getting an error on the universal levels.
 -/
-theorem HodgeConjecture : ∀ (X: SmoothProjectiveVariety ℂ) (p : ℕ),
-  hodgeClass X p = algebraicCohomology X p := sorry
+def HodgeConjecture : Prop :=
+  ∀ (X : SmoothProjectiveVariety.{0, u} ℂ) (p : ℕ) (data : HodgeData.{u₁, u₂, u₃, u₄, u} X),
+    data.hodgeClass p = data.algebraicCohomology p
 
 end MillenniumHodge

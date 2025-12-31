@@ -19,37 +19,40 @@ def ForceField (n : ℕ) := Euc ℝ (n+1) → Euc ℝ n
 noncomputable def MaterialDerivative (n : ℕ) (u : VelocityField n) :
     (Euc ℝ (n+1) → Euc ℝ n) → (Euc ℝ (n+1) → Euc ℝ n) :=
   λ v x =>
-    -- Time derivative term: ∂v/∂t
-    (λ i => partialDeriv 0 (λ y => v y i) x) +
-    -- Convective term: (u·∇)v
-    (λ i => ∑ j : Fin n, u x j * partialDeriv (j.succ) (λ y => v y i) x)
+    Euc.ofFun (𝕜 := ℝ) (n := n) (fun i : Fin n =>
+      -- Time derivative term: ∂v/∂t
+      partialDeriv (n := n + 1) 0 (fun y => v y i) x +
+      -- Convective term: (u·∇)v
+      ∑ j : Fin n, u x j * partialDeriv (n := n + 1) (j.succ) (fun y => v y i) x)
 
 /-- The divergence-free condition: ∇·u = 0 -/
 noncomputable def DivergenceFree {n : ℕ} (u : VelocityField n) : Prop :=
-  ∀ x, ∑ i : Fin n, partialDeriv (i.succ) (λ y => u y i) x = 0
+  ∀ x, ∑ i : Fin n, partialDeriv (n := n + 1) (i.succ) (fun y => u y i) x = 0
 
 /-- The viscous stress term: ν·Δu -/
 noncomputable def ViscousTerm (n : ℕ) (nu : ℝ) (u : VelocityField n) (x : Euc ℝ (n+1)) : Euc ℝ n :=
-  λ i => nu * (∑ j : Fin n, partialDeriv (j.succ) (λ y => partialDeriv (j.succ) (λ z => u z i) y) x)
+  Euc.ofFun (𝕜 := ℝ) (n := n) (fun i : Fin n =>
+    nu *
+      (∑ j : Fin n,
+        partialDeriv (n := n + 1) (j.succ)
+          (fun y => partialDeriv (n := n + 1) (j.succ) (fun z => u z i) y) x))
 
 /-- Spatial gradient of the pressure: ∇p -/
 noncomputable def PressureGradient {n : ℕ} (p : PressureField n) (x : Euc ℝ (n+1)) : Euc ℝ n :=
-  λ i => partialDeriv (i.succ) p x
+  Euc.ofFun (𝕜 := ℝ) (n := n) (fun i : Fin n => partialDeriv (n := n + 1) (i.succ) p x)
 
 /-- Helper function to convert a pair (time, space) to a point in spacetime -/
-def pairToEuc {n : ℕ} (t : ℝ) (x : Euc ℝ n) : Euc ℝ (n+1) :=
-  fun i =>
-    if h : i = 0
-    then t
-    else x (Fin.pred i h)
+noncomputable def pairToEuc {n : ℕ} (t : ℝ) (x : Euc ℝ n) : Euc ℝ (n+1) :=
+  Euc.ofFun (𝕜 := ℝ) (n := n + 1) (fun i : Fin (n + 1) =>
+    if h : i = 0 then t else x (Fin.pred i h))
 
 /-- Helper function to extract the time component from a spacetime point -/
 def getTime {n : ℕ} (x : Euc ℝ (n+1)) : ℝ := x 0
 
 /-- Helper function to extract the space component from a
 time point -/
-def getSpace {n : ℕ} (x : Euc ℝ (n+1)) : Euc ℝ n :=
-  fun i => x (i.succ)
+noncomputable def getSpace {n : ℕ} (x : Euc ℝ (n+1)) : Euc ℝ n :=
+  Euc.ofFun (𝕜 := ℝ) (n := n) (fun i : Fin n => x (i.succ))
 
 -- ===========================================================================
 /--

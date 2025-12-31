@@ -60,26 +60,24 @@ def HasMassGapViaTwoPoint (G : Type) [CompactSimpleGaugeGroup G]
   Δ > 0 ∧ -- The mass gap must be positive
   ∃ (C : ℝ), C > 0 ∧ -- There exists some positive constant C
   ∀ (t : ℝ), t > 0 → -- For all positive time separations
-    let x : Spacetime := λ i => if i = 0 then t else 0 -- Point at time t, space origin
-    let y : Spacetime := λ i => if i = 0 then 0 else 0 -- Point at time 0, space origin
+    let mk : (Fin 4 → ℝ) → Spacetime :=
+      (EuclideanSpace.equiv (ι := Fin 4) (𝕜 := ℝ)).symm
+    let x : Spacetime := mk (fun i => if i = 0 then t else 0) -- Point at time t, space origin
+    let y : Spacetime := mk (fun _ => 0) -- Point at time 0, space origin
     TwoPointFunction G qft x y ≤ C * Real.exp (-Δ * t) -- Exponential decay with rate Δ
 
 /-- Mass gap in terms of Hamiltonian spectrum
 There should be a minimum energy gap between vacuum and excited states--/
 def HasMassGapViaSpectrum (G : Type) [CompactSimpleGaugeGroup G]
   (qft : QuantumYangMillsTheory G) (Δ : ℝ) : Prop :=
-  Δ > 0 ∧ -- The mass gap must be positive
-  ∀ (state : qft.hilbertSpace), -- For all quantum states
-    state ≠ qft.vacuum → -- Except the vacuum state
-    sorry -- TODO Inner.inner (qft.hamiltonian state) state -
-    --Inner.inner (qft.hamiltonian qft.vacuum) qft.vacuum ≥
-    --Δ * Inner.inner state state
+  Δ > 0 ∧
+  ∀ state : qft.hilbertSpace,
+    inner ℝ state qft.vacuum = 0 →
+      Δ * inner ℝ state state ≤ inner ℝ (qft.hamiltonian state) state
 
-/-- # The Yang-Mills existence and mass gap theorem statement
-
-Again stated as a theorem as I cant figure out how to make the proposition universal binder levels go away-/
-theorem yang_mills_existence_and_mass_gap (G : Type) [CompactSimpleGaugeGroup G] :
-  ∃ (qft : QuantumYangMillsTheory G) (Δ : ℝ), -- There exists a quantum YM theory and positive mass gap
-    HasMassGapViaSpectrum G qft Δ ∧ HasMassGapViaTwoPoint G qft Δ := sorry
+/-- # The Yang–Mills existence and mass gap problem statement. -/
+def YangMillsExistenceAndMassGap (G : Type) [CompactSimpleGaugeGroup G] : Prop :=
+  ∃ (qft : QuantumYangMillsTheory G) (Δ : ℝ),
+    HasMassGapViaSpectrum G qft Δ ∧ HasMassGapViaTwoPoint G qft Δ
 
 end MillenniumYangMills

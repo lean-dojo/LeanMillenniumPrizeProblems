@@ -1,7 +1,9 @@
 import Mathlib.NumberTheory.LSeries.RiemannZeta
-import Mathlib.Data.Complex.Norm
+import Mathlib.Analysis.Complex.Norm
 import Mathlib.Algebra.IsPrimePow
 import Mathlib.Analysis.Calculus.IteratedDeriv.Defs
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.PrimeCounting
 
 set_option diagnostics true
 set_option diagnostics.threshold 3000
@@ -42,10 +44,11 @@ function constraints.
 /-- A complex number is a nontrivial zero of the Riemann zeta function if:
   1. It's a zero of the Riemann zeta function
   2. It's not a negative even integer (which would make it a trivial zero)
+  3. It's not the pole at `s = 1`
 
   The trivial zeros occur at s = -2, -4, -6, ... and are less interesting for the hypothesis. -/
 def IsNontrivialZero (s : ℂ) : Prop :=
-  riemannZeta s = 0 ∧ ¬∃ (n : ℕ), s = -2 * (n + 1)
+  riemannZeta s = 0 ∧ (¬∃ (n : ℕ), s = -2 * (n + 1)) ∧ s ≠ 1
 
 /-- The critical strip is the region of the complex plane where 0 < Re(s) < 1.
     All nontrivial zeros of the Riemann zeta function lie in this strip.
@@ -61,35 +64,23 @@ def CriticalStrip : Set ℂ :=
     If true, this would represent a remarkable pattern in the distribution of zeros,
     with profound implications for number theory. -/
 def CriticalLine : Set ℂ :=
-  {s : ℂ | s.re = 1/2}
+  {s : ℂ | s.re = 1 / 2}
 
-/-- The von Mangoldt function Λ(n), which equals log(p) when n = p^k for prime p and positive integer k,
-    and equals 0 otherwise. It's closely connected to the Riemann zeta function's logarithmic derivative.
+/-!
+Prime-number theory infrastructure: we reuse Mathlib's standard definitions.
+-/
 
-    This function appears in the explicit formula connecting the distribution of primes
-    to the zeros of the Riemann zeta function. -/
-noncomputable def vonMangoldt (n : ℕ) : ℝ :=
-  if h : IsPrimePow n then
-    -- When n is a prime power p^k, extract the prime p and compute log(p)
-    Real.log (n.minFac)
-  else
-    0
+/-- The von Mangoldt function `Λ(n)` from Mathlib. -/
+noncomputable abbrev vonMangoldt (n : ℕ) : ℝ :=
+  ArithmeticFunction.vonMangoldt n
 
-/-- The Chebyshev psi function ψ(x), which is the sum of the von Mangoldt function
-    over natural numbers not exceeding x.
+/-- The Chebyshev `ψ(x)` function from Mathlib. -/
+noncomputable abbrev psiFunction (x : ℝ) : ℝ :=
+  Chebyshev.psi x
 
-    This function provides a weighted count of prime powers and is asymptotic to x,
-    with deviations related to the zeros of the zeta function. -/
-noncomputable def psiFunction (x : ℝ) : ℝ :=
-  ∑' n : ℕ, if n ≤ ⌊x⌋ then vonMangoldt n else 0
-
-/-- The prime counting function π(x), which counts the number of primes less than or equal to x.
-
-    This is most fundamental function in number theory is central to the study of prime distribution.
-    The Riemann Hypothesis provides the tightest possible error bound for its approximation by the logarithmic integral. -/
+/-- The prime counting function `π(⌊x⌋₊)` from Mathlib. -/
 noncomputable def primeCountingFunction (x : ℝ) : ℕ :=
-  if x ≤ 0 then 0 else
-    (Finset.filter Nat.Prime (Finset.range (Int.toNat ⌊x⌋ + 1))).card
+  Nat.primeCounting ⌊x⌋₊
 
 /-- The Li coefficients, used in the Li criterion
 
@@ -106,20 +97,27 @@ noncomputable def LiCoefficients (n : ℕ) : ℝ :=
     This is the central conjecture that has remained unproven since Riemann's
     original paper in 1859, despite substantial numerical evidence supporting it. -/
 def RiemannHypothesis : Prop :=
-  ∀ (s : ℂ), IsNontrivialZero s → s.re = 1/2
+  ∀ (s : ℂ), IsNontrivialZero s → s.re = 1 / 2
 
-/-- All zeros of the Riemann zeta function outside the critical strip are simple zeros.
-    This means if ζ(s) = 0 and s is not in the critical strip (s.re ≤ 0 or s.re ≥ 1),
-    then the derivative at that point is non-zero: ζ'(s) ≠ 0. -/
-theorem zeros_outside_critical_strip_are_simple :
-  ∀ s : ℂ, ¬CriticalStrip s → riemannZeta s = 0 → deriv riemannZeta s ≠ 0 :=
-sorry
+theorem riemannHypothesis_iff_mathlib : RiemannHypothesis ↔ _root_.RiemannHypothesis := by
+  constructor
+  · intro h s hs0 htriv hs1
+    exact h s ⟨hs0, htriv, hs1⟩
+  · intro h s hs
+    exact h s hs.1 hs.2.1 hs.2.2
 
-/-- All trivial zeros of the Riemann zeta function (those at s = -2n for positive integers n)
-    are simple zeros, meaning that ζ'(-2n) ≠ 0. -/
-theorem trivial_zeros_are_simple (n : ℕ) (hn : n > 0) :
-  deriv riemannZeta (-2 * ↑n) ≠ 0 :=
-sorry
+/-!
+The Millennium problem is the statement `RiemannHypothesis`. The following two properties are
+standard refinements often discussed alongside it; we record them as `Prop`s (no `sorry` proofs).
+-/
+
+/-- All zeros of the Riemann zeta function outside the critical strip are simple zeros. -/
+def ZerosOutsideCriticalStripAreSimple : Prop :=
+  ∀ s : ℂ, ¬CriticalStrip s → riemannZeta s = 0 → deriv riemannZeta s ≠ 0
+
+/-- All trivial zeros of the Riemann zeta function are simple zeros. -/
+def TrivialZerosAreSimple : Prop :=
+  ∀ n : ℕ, n > 0 → deriv riemannZeta (-2 * ↑n) ≠ 0
 
 /-- # The Riemann Hypothesis states that all zeros of the Riemann zeta function in the critical strip are simple zeros (i.e., have multiplicity 1).
 

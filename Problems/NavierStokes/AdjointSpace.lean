@@ -39,7 +39,7 @@ local notation "IK" => @RCLike.I 𝕜 _
 
 local postfix:90 "†" => starRingEnd _
 
-export InnerProductSpace (norm_sq_eq_inner)
+  -- `InnerProductSpace.norm_sq_eq_inner` was removed/renamed in recent mathlib versions.
 
 open RCLike ComplexConjugate InnerProductSpace
 
@@ -183,7 +183,7 @@ theorem inner_sub_right (x y z : E) : ⟪x, y - z⟫ = ⟪x, y⟫ - ⟪x, z⟫ :
 
 theorem inner_mul_symm_re_eq_norm (x y : E) : re (⟪x, y⟫ * ⟪y, x⟫) = ‖⟪x, y⟫ * ⟪y, x⟫‖ := by
   rw [← inner_conj_symm, mul_comm]
-  exact re_eq_norm_of_mul_conj (inner y x)
+  exact re_eq_norm_of_mul_conj ⟪y, x⟫
 
 /-- Expand `⟪x + y, x + y⟫` -/
 theorem inner_add_add_self (x y : E) : ⟪x + y, x + y⟫ = ⟪x, x⟫ + ⟪x, y⟫ + ⟪y, x⟫ + ⟪y, y⟫ := by
@@ -257,8 +257,12 @@ instance : AdjointSpace 𝕜 𝕜 where
     apply Exists.intro 1
     simp [norm_sq_eq_def]
   conj_symm := by simp[mul_comm]
-  add_left := by simp[add_mul]
-  smul_left := by simp[mul_assoc]
+  add_left := by
+    intro x y z
+    simp [mul_add, add_mul, mul_assoc]
+  smul_left := by
+    intro x y r
+    simp [mul_assoc, mul_left_comm, mul_comm]
 
 instance : Inner 𝕜 Unit where
   inner _ _ := 0
@@ -275,16 +279,79 @@ instance : AdjointSpace 𝕜 Unit where
 instance : AdjointSpace 𝕜 (X×Y) where
   inner := fun (x,y) (x',y') => ⟪x,x'⟫_𝕜 + ⟪y,y'⟫_𝕜
   inner_top_equiv_norm := by
-    have ⟨cx,dx,hcx,hdx,_hx⟩ := inner_top_equiv_norm (𝕜:=𝕜) (E:=X)
-    have ⟨cy,dy,hcy,hdy,_hy⟩ := inner_top_equiv_norm (𝕜:=𝕜) (E:=X)
-    apply Exists.intro (cx*cx + cy*cy) -- todo: fix this constant
-    apply Exists.intro (dx*dx + dy*dy) -- todo: fix this constant
+    have ⟨cx, dx, hcx, hdx, hx⟩ := inner_top_equiv_norm (𝕜 := 𝕜) (E := X)
+    have ⟨cy, dy, hcy, hdy, hy⟩ := inner_top_equiv_norm (𝕜 := 𝕜) (E := Y)
+    refine ⟨min cx cy, dx + dy, lt_min hcx hcy, add_pos hdx hdy, ?_⟩
+    rintro ⟨x, y⟩
+    have hx' := hx x
+    have hy' := hy y
+    have hx_low : cx * ‖x‖ ^ 2 ≤ re ⟪x, x⟫_𝕜 := by
+      simpa [smul_eq_mul] using hx'.1
+    have hx_up : re ⟪x, x⟫_𝕜 ≤ dx * ‖x‖ ^ 2 := by
+      simpa [smul_eq_mul] using hx'.2
+    have hy_low : cy * ‖y‖ ^ 2 ≤ re ⟪y, y⟫_𝕜 := by
+      simpa [smul_eq_mul] using hy'.1
+    have hy_up : re ⟪y, y⟫_𝕜 ≤ dy * ‖y‖ ^ 2 := by
+      simpa [smul_eq_mul] using hy'.2
     constructor
-    · positivity
-    constructor
-    · positivity
-    · intro (x,y)
-      sorry
+    · -- lower bound
+      have hx_nonneg : 0 ≤ re ⟪x, x⟫_𝕜 := by
+        have hx_sq : 0 ≤ (‖x‖ ^ 2 : ℝ) := by
+          simpa [pow_two] using mul_nonneg (norm_nonneg x) (norm_nonneg x)
+        have : 0 ≤ cx * ‖x‖ ^ 2 := mul_nonneg (le_of_lt hcx) hx_sq
+        exact le_trans this hx_low
+      have hy_nonneg : 0 ≤ re ⟪y, y⟫_𝕜 := by
+        have hy_sq : 0 ≤ (‖y‖ ^ 2 : ℝ) := by
+          simpa [pow_two] using mul_nonneg (norm_nonneg y) (norm_nonneg y)
+        have : 0 ≤ cy * ‖y‖ ^ 2 := mul_nonneg (le_of_lt hcy) hy_sq
+        exact le_trans this hy_low
+      -- Split on which component attains the max norm on the product.
+      by_cases hxy : ‖x‖ ≤ ‖y‖
+      · have hnorm : ‖(x, y)‖ = ‖y‖ := by
+          simpa [Prod.norm_mk, max_eq_right hxy]
+        have hmin_le : min cx cy ≤ cy := min_le_right _ _
+        have hmul : (min cx cy) * ‖(x, y)‖ ^ 2 ≤ cy * ‖y‖ ^ 2 := by
+          have hy_sq : 0 ≤ (‖y‖ ^ 2 : ℝ) := by
+            simpa [pow_two] using mul_nonneg (norm_nonneg y) (norm_nonneg y)
+          simpa [hnorm] using mul_le_mul_of_nonneg_right hmin_le hy_sq
+        have hle : (min cx cy) * ‖(x, y)‖ ^ 2 ≤ re ⟪y, y⟫_𝕜 := le_trans hmul hy_low
+        have hle' : (min cx cy) * ‖(x, y)‖ ^ 2 ≤ re ⟪x, x⟫_𝕜 + re ⟪y, y⟫_𝕜 :=
+          le_trans hle (le_add_of_nonneg_left hx_nonneg)
+        simpa [inner, map_add, hnorm] using hle'
+      · have hyx : ‖y‖ ≤ ‖x‖ := le_of_not_ge hxy
+        have hnorm : ‖(x, y)‖ = ‖x‖ := by
+          simpa [Prod.norm_mk, max_eq_left hyx]
+        have hmin_le : min cx cy ≤ cx := min_le_left _ _
+        have hmul : (min cx cy) * ‖(x, y)‖ ^ 2 ≤ cx * ‖x‖ ^ 2 := by
+          have hx_sq : 0 ≤ (‖x‖ ^ 2 : ℝ) := by
+            simpa [pow_two] using mul_nonneg (norm_nonneg x) (norm_nonneg x)
+          simpa [hnorm] using mul_le_mul_of_nonneg_right hmin_le hx_sq
+        have hle : (min cx cy) * ‖(x, y)‖ ^ 2 ≤ re ⟪x, x⟫_𝕜 := le_trans hmul hx_low
+        have hle' : (min cx cy) * ‖(x, y)‖ ^ 2 ≤ re ⟪x, x⟫_𝕜 + re ⟪y, y⟫_𝕜 :=
+          le_trans hle (le_add_of_nonneg_right hy_nonneg)
+        simpa [inner, map_add, hnorm] using hle'
+    · -- upper bound
+      have hnorm_x : ‖x‖ ≤ ‖(x, y)‖ := by
+        simpa [Prod.norm_mk] using le_max_left ‖x‖ ‖y‖
+      have hnorm_y : ‖y‖ ≤ ‖(x, y)‖ := by
+        simpa [Prod.norm_mk] using le_max_right ‖x‖ ‖y‖
+      have hx_sq : ‖x‖ ^ 2 ≤ ‖(x, y)‖ ^ 2 := by
+        simpa [pow_two] using
+          mul_le_mul hnorm_x hnorm_x (norm_nonneg x) (norm_nonneg (x, y))
+      have hy_sq : ‖y‖ ^ 2 ≤ ‖(x, y)‖ ^ 2 := by
+        simpa [pow_two] using
+          mul_le_mul hnorm_y hnorm_y (norm_nonneg y) (norm_nonneg (x, y))
+      have hx_le : re ⟪x, x⟫_𝕜 ≤ dx * ‖(x, y)‖ ^ 2 :=
+        le_trans hx_up (mul_le_mul_of_nonneg_left hx_sq (le_of_lt hdx))
+      have hy_le : re ⟪y, y⟫_𝕜 ≤ dy * ‖(x, y)‖ ^ 2 :=
+        le_trans hy_up (mul_le_mul_of_nonneg_left hy_sq (le_of_lt hdy))
+      have hsum : re ⟪x, x⟫_𝕜 + re ⟪y, y⟫_𝕜 ≤ dx * ‖(x, y)‖ ^ 2 + dy * ‖(x, y)‖ ^ 2 :=
+        add_le_add hx_le hy_le
+      have : re (⟪x, x⟫_𝕜 + ⟪y, y⟫_𝕜) ≤ (dx + dy) * ‖(x, y)‖ ^ 2 := by
+        have hfactor : dx * ‖(x, y)‖ ^ 2 + dy * ‖(x, y)‖ ^ 2 = (dx + dy) * ‖(x, y)‖ ^ 2 := by ring
+        exact
+          le_trans (by simpa [map_add] using hsum) (le_of_eq hfactor)
+      simpa [inner, map_add] using this
   conj_symm := by simp
   add_left := by simp[inner_add_left]; intros; ac_rfl
   smul_left := by simp[inner_smul_left,mul_add]
@@ -293,13 +360,138 @@ open Classical in
 instance : AdjointSpace 𝕜 ((i : ι) → E i) where
   inner := fun x y => ∑ i, ⟪x i, y i⟫_𝕜
   inner_top_equiv_norm := by
-    -- have h := fun i => inner_top_equiv_norm (𝕜:=𝕜) (E:=E i)
-    -- let c := (fun i => let ci := choose (h i); ci*ci)
-    -- let d := (fun i => let di := choose <| choose_spec (h i); di*di)
-    -- universe issues with IndexType :(
-    -- apply Exists.intro (∑ i, c i ^ 2)
-    -- apply Exists.intro (∑ i, d i ^ 2)
-    sorry
+    classical
+    -- Choose comparison constants for each component space.
+    choose c d hc hd hcd using
+      (fun i : ι => (inner_top_equiv_norm (𝕜 := 𝕜) (E := E i)))
+    let cset : Finset ℝ := (Finset.univ : Finset ι).image c
+    by_cases hne : cset.Nonempty
+    · -- Nonempty index set.
+      let c0 : ℝ := cset.min' hne
+      let d0 : ℝ := ∑ i : ι, d i
+      refine ⟨c0, d0, ?_, ?_, ?_⟩
+      · -- `c0 > 0`
+        have hc0mem : c0 ∈ cset := Finset.min'_mem cset hne
+        rcases Finset.mem_image.1 hc0mem with ⟨i, _hi, hiEq⟩
+        simpa [hiEq] using hc i
+      · -- `d0 > 0`
+        -- Extract an index from `cset.Nonempty`, hence from `ι`, and use positivity of one summand.
+        rcases hne with ⟨v, hv⟩
+        rcases Finset.mem_image.1 hv with ⟨i0, _hi0, rfl⟩
+        have hdi0 : 0 < d i0 := hd i0
+        have hle : d i0 ≤ ∑ i : ι, d i := by
+          refine Finset.single_le_sum (s := Finset.univ) (f := fun i : ι => d i) ?_ (Finset.mem_univ i0)
+          intro i _hi
+          exact le_of_lt (hd i)
+        exact lt_of_lt_of_le hdi0 hle
+      · intro x
+        constructor
+        · -- lower bound
+          have hc0_pos : 0 < c0 := by
+            have hc0mem : c0 ∈ cset := Finset.min'_mem cset hne
+            rcases Finset.mem_image.1 hc0mem with ⟨i, _hi, hiEq⟩
+            simpa [hiEq] using hc i
+          have hc0_nonneg : 0 ≤ c0 := le_of_lt hc0_pos
+          -- `c0 ≤ c i` for all `i` (since `c0` is the minimum of the image).
+          have hc0_le : ∀ i : ι, c0 ≤ c i := by
+            intro i
+            have hleast : IsLeast (↑cset : Set ℝ) c0 := Finset.isLeast_min' cset hne
+            have hi : c i ∈ cset := Finset.mem_image.2 ⟨i, Finset.mem_univ i, rfl⟩
+            exact hleast.2 (by simpa using hi)
+          -- `‖x‖^2 ≤ ∑ i, ‖x i‖^2` (a maximum coordinate exists in the finite sup norm).
+          have hnorm_sq : ‖x‖ ^ 2 ≤ ∑ i : ι, ‖x i‖ ^ 2 := by
+            by_cases hx0 : ‖x‖ = 0
+            ·
+              have hnonneg : 0 ≤ ∑ i : ι, ‖x i‖ ^ 2 := by
+                refine Finset.sum_nonneg ?_
+                intro i _hi
+                simpa [pow_two] using mul_nonneg (norm_nonneg (x i)) (norm_nonneg (x i))
+              simpa [hx0] using hnonneg
+            · have hxpos : 0 < ‖x‖ := lt_of_le_of_ne (norm_nonneg x) (Ne.symm hx0)
+              have hnot : ¬ (∀ i : ι, ‖x i‖ < ‖x‖) := by
+                intro hall
+                have : ‖x‖ < ‖x‖ := (pi_norm_lt_iff (x := x) (r := ‖x‖) hxpos).2 hall
+                exact lt_irrefl _ this
+              rcases not_forall.1 hnot with ⟨i0, hi0⟩
+              have hi0' : ‖x‖ ≤ ‖x i0‖ := le_of_not_gt hi0
+              have hi0'' : ‖x i0‖ ≤ ‖x‖ := norm_le_pi_norm (f := x) i0
+              have hEq : ‖x i0‖ = ‖x‖ := le_antisymm hi0'' hi0'
+              have hterm : ‖x‖ ^ 2 ≤ ∑ i : ι, ‖x i‖ ^ 2 := by
+                -- `‖x‖^2 = ‖x i0‖^2` and the sum contains that term.
+                have hnonneg : ∀ i : ι, 0 ≤ (‖x i‖ ^ 2 : ℝ) := by
+                  intro i
+                  simpa [pow_two] using mul_nonneg (norm_nonneg (x i)) (norm_nonneg (x i))
+                have hle' : ‖x i0‖ ^ 2 ≤ ∑ i : ι, ‖x i‖ ^ 2 :=
+                  Finset.single_le_sum (s := Finset.univ) (f := fun i : ι => ‖x i‖ ^ 2)
+                    (fun i _hi => hnonneg i) (Finset.mem_univ i0)
+                simpa [hEq] using hle'
+              exact hterm
+          -- Lift componentwise inequalities and sum.
+          have hsum :
+              c0 * (∑ i : ι, ‖x i‖ ^ 2) ≤ ∑ i : ι, re ⟪x i, x i⟫_𝕜 := by
+            -- Compare each coordinate using `c0 ≤ c i`.
+            have hcoord :
+                ∀ i : ι, c0 * ‖x i‖ ^ 2 ≤ re ⟪x i, x i⟫_𝕜 := by
+              intro i
+              have hx_sq_nonneg : 0 ≤ (‖x i‖ ^ 2 : ℝ) := by
+                simpa [pow_two] using mul_nonneg (norm_nonneg (x i)) (norm_nonneg (x i))
+              have hmul : c0 * ‖x i‖ ^ 2 ≤ c i * ‖x i‖ ^ 2 :=
+                mul_le_mul_of_nonneg_right (hc0_le i) hx_sq_nonneg
+              have hci_low : c i * ‖x i‖ ^ 2 ≤ re ⟪x i, x i⟫_𝕜 := by
+                simpa [smul_eq_mul] using (hcd i (x i)).1
+              exact le_trans hmul hci_low
+            -- Sum the inequalities.
+            simpa [Finset.mul_sum] using (Finset.sum_le_sum fun i _hi => hcoord i)
+          -- Combine `‖x‖^2 ≤ ∑ ‖x i‖^2` with the summed inequalities.
+          have hmain :
+              c0 * ‖x‖ ^ 2 ≤ ∑ i : ι, re ⟪x i, x i⟫_𝕜 :=
+            le_trans (mul_le_mul_of_nonneg_left hnorm_sq hc0_nonneg) hsum
+          -- Rewrite `re (inner x x)` as a sum of real parts.
+          have hre :
+              re (∑ i : ι, ⟪x i, x i⟫_𝕜) = ∑ i : ι, re ⟪x i, x i⟫_𝕜 := by
+            simpa using (map_sum (RCLike.re : 𝕜 →+ ℝ) (fun i : ι => ⟪x i, x i⟫_𝕜) Finset.univ)
+          simpa [inner, smul_eq_mul, hre] using hmain
+        · -- upper bound
+          -- Bound each coordinate by `‖x‖` and sum.
+          have hx_sq_le : ∀ i : ι, ‖x i‖ ^ 2 ≤ ‖x‖ ^ 2 := by
+            intro i
+            have hni : ‖x i‖ ≤ ‖x‖ := norm_le_pi_norm (f := x) i
+            simpa [pow_two] using
+              mul_le_mul hni hni (norm_nonneg (x i)) (norm_nonneg x)
+          have hcoord :
+              ∀ i : ι, re ⟪x i, x i⟫_𝕜 ≤ d i * ‖x‖ ^ 2 := by
+            intro i
+            have hdi_up : re ⟪x i, x i⟫_𝕜 ≤ d i * ‖x i‖ ^ 2 := by
+              simpa [smul_eq_mul] using (hcd i (x i)).2
+            have hmul : d i * ‖x i‖ ^ 2 ≤ d i * ‖x‖ ^ 2 :=
+              mul_le_mul_of_nonneg_left (hx_sq_le i) (le_of_lt (hd i))
+            exact le_trans hdi_up hmul
+          have hsum :
+              (∑ i : ι, re ⟪x i, x i⟫_𝕜) ≤ (∑ i : ι, d i) * ‖x‖ ^ 2 := by
+            -- Sum the bounds and factor out `‖x‖^2`.
+            have : (∑ i : ι, re ⟪x i, x i⟫_𝕜) ≤ ∑ i : ι, d i * ‖x‖ ^ 2 :=
+              Finset.sum_le_sum fun i _hi => hcoord i
+            -- `∑ i, d i * t = (∑ i, d i) * t`.
+            simpa [Finset.sum_mul] using this
+          have hre :
+              re (∑ i : ι, ⟪x i, x i⟫_𝕜) = ∑ i : ι, re ⟪x i, x i⟫_𝕜 := by
+            simpa using (map_sum (RCLike.re : 𝕜 →+ ℝ) (fun i : ι => ⟪x i, x i⟫_𝕜) Finset.univ)
+          simpa [inner, smul_eq_mul, d0, hre] using hsum
+    · -- Empty index set: everything is zero, so any positive constants work.
+      refine ⟨1, 1, by positivity, by positivity, ?_⟩
+      intro x
+      have huniv : (Finset.univ : Finset ι) = ∅ := by
+        classical
+        by_contra huniv_ne
+        have huniv_nonempty : (Finset.univ : Finset ι).Nonempty :=
+          Finset.nonempty_iff_ne_empty.2 huniv_ne
+        have : cset.Nonempty := by
+          simpa [cset] using huniv_nonempty.image c
+        exact hne this
+      have hnorm : ‖x‖ = 0 := by
+        -- For an empty index set, the `L^∞` norm is `0`.
+        simpa [Pi.norm_def, huniv]
+      constructor <;> simp [inner, smul_eq_mul, huniv, hnorm]
   conj_symm := by simp
   add_left := by simp[inner_add_left,Finset.sum_add_distrib]
   smul_left := by simp[inner_smul_left,Finset.mul_sum]

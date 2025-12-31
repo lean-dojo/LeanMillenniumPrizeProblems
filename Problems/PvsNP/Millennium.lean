@@ -1,4 +1,4 @@
-import Mathlib.Tactic.LiftLets
+import Mathlib.Tactic.Basic
 import Mathlib.Computability.TuringMachine
 import Mathlib.Computability.Primrec
 import Mathlib.Computability.TMComputable
@@ -88,6 +88,62 @@ def InP {α : Type} [Primcodable α] (ea : FinEncoding α) (L : Language α) : P
   ∃ (f : α → Bool) (comp : TM2ComputableInPolyTime ea finEncodingBoolBool f),
     ∀ a, L a ↔ f a = true
 
+private def sumInl? {α β : Type} : Sum α β → Option α
+  | Sum.inl a => some a
+  | Sum.inr _ => none
+
+private def sumInr? {α β : Type} : Sum α β → Option β
+  | Sum.inl _ => none
+  | Sum.inr b => some b
+
+private theorem filterMap_sumInl_map_inl {α β : Type} (l : List α) :
+    (l.map (Sum.inl : α → Sum α β)).filterMap sumInl? = l := by
+  induction l with
+  | nil => simp
+  | cons a t ih => simp [sumInl?, ih]
+
+private theorem filterMap_sumInl_map_inr {α β : Type} (l : List β) :
+    (l.map (Sum.inr : β → Sum α β)).filterMap sumInl? = ([] : List α) := by
+  induction l with
+  | nil => simp
+  | cons b t ih => simp [sumInl?, ih]
+
+private theorem filterMap_sumInr_map_inl {α β : Type} (l : List α) :
+    (l.map (Sum.inl : α → Sum α β)).filterMap sumInr? = ([] : List β) := by
+  induction l with
+  | nil => simp
+  | cons a t ih => simp [sumInr?, ih]
+
+private theorem filterMap_sumInr_map_inr {α β : Type} (l : List β) :
+    (l.map (Sum.inr : β → Sum α β)).filterMap sumInr? = l := by
+  induction l with
+  | nil => simp
+  | cons b t ih => simp [sumInr?, ih]
+
+@[simp] private theorem filterMap_sumInl_comp_inl {α β : Type} (l : List α) :
+    List.filterMap (sumInl? ∘ (Sum.inl : α → Sum α β)) l = l := by
+  induction l with
+  | nil => simp
+  | cons a t ih => simp [sumInl?, ih]
+
+@[simp] private theorem filterMap_sumInl_comp_inr {α β : Type} (l : List β) :
+    List.filterMap (sumInl? ∘ (Sum.inr : β → Sum α β)) l = ([] : List α) := by
+  induction l with
+  | nil => simp
+  | cons b t ih => simp [sumInl?, ih]
+
+@[simp] private theorem filterMap_sumInr_comp_inl {α β : Type} (l : List α) :
+    List.filterMap (sumInr? ∘ (Sum.inl : α → Sum α β)) l = ([] : List β) := by
+  induction l with
+  | nil => simp
+  | cons a t ih => simp [sumInr?, ih]
+
+@[simp] private theorem filterMap_sumInr_comp_inr {α β : Type} (l : List β) :
+    List.filterMap (sumInr? ∘ (Sum.inr : β → Sum α β)) l = l := by
+  induction l with
+  | nil => simp
+  | cons b t ih => simp [sumInr?, ih]
+
 /--
   Create an encoding for pairs based on individual encodings.
 
@@ -110,66 +166,15 @@ def pairEncoding {α β : Type} [Primcodable α] [Primcodable β]
       (ea.encode p.1).map Sum.inl ++ (eb.encode p.2).map Sum.inr,
 
     decode := λ l =>
-      let a_list := l.filterMap (fun x => match x with
-                                | Sum.inl a => some a
-                                | _ => none)
-      let b_list := l.filterMap (fun x => match x with
-                                | Sum.inr b => some b
-                                | _ => none)
+      let a_list := l.filterMap sumInl?
+      let b_list := l.filterMap sumInr?
       match ea.decode a_list, eb.decode b_list with
       | some a, some b => some (a, b)
       | _, _ => none,
 
     decode_encode := by
-      intro inp
-      beta_reduce
-      lift_lets
-      intro a_list
-      intro b_list
-
-      have h : a_list = ea.encode inp.1 := by
-        unfold a_list
-        simp only [List.filterMap_append, List.filterMap_map, Option.some.injEq]
-        change let a_list' := _ ; _ ++ a_list' = _
-        intro a_list'
-        have h : a_list' = [] := by
-          simp_all only [List.filterMap_eq_nil_iff, Function.comp_apply, implies_true, a_list']
-        rw [h, List.append_nil]
-        change let x := _; List.filterMap _ x = x
-        intro x
-        induction x
-        · rfl
-        · rename_i a as ih
-          exact
-            Eq.symm
-              (List.append_cancel_left
-                (congrArg
-                  (HAppend.hAppend a_list)
-                  (congrArg (List.cons a) (id (Eq.symm ih)))))
-      rw [h]
-
-      replace h : b_list = eb.encode inp.2 := by
-        unfold b_list
-        simp only [List.filterMap_append, List.filterMap_map, Option.some.injEq]
-        change let b_list' := _ ; b_list' ++ _ = _
-        intro b_list'
-        have h : b_list' = [] := by
-          simp_all only [List.filterMap_eq_nil_iff, Function.comp_apply, implies_true, b_list']
-        rw [h, List.nil_append]
-        change let x := _; List.filterMap _ x = x
-        intro x
-        induction x
-        · rfl
-        · rename_i a as ih
-          exact
-            Eq.symm
-              (List.append_cancel_left
-                (congrArg
-                  (HAppend.hAppend b_list)
-                  (congrArg (List.cons a) (id (Eq.symm ih)))))
-      rw [h]
-
-      simp only [ea.decode_encode, eb.decode_encode]
+      rintro ⟨a, b⟩
+      simp [List.filterMap_append, ea.decode_encode, eb.decode_encode]
     ΓFin := inferInstance
   }
 /--

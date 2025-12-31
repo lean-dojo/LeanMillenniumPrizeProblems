@@ -81,14 +81,14 @@ variable (E : EllipticCurve K)
 
 /-- The first part of the Birch and Swinnerton-Dyer conjecture:
     The rank of the Mordell-Weil group equals the order of the zero of the L-function at s = 1 -/
-def BSD_rank_conjecture (E : EllipticCurve K) : Prop :=
-    E.rank = L_function_order_at_one E
+def BSD_rank_conjecture (E : EllipticCurve K) (inv : BSDInvariants (K := K) E) : Prop :=
+  (EllipticCurve.rank (K := K) E) = inv.L_function_order_at_one
 
 /-- The second part of the Birch and Swinnerton-Dyer conjecture:
     Formula for the leading coefficient in the Taylor expansion of the L-function at s = 1 -/
-def BSD_leading_coefficient (E : EllipticCurve K) : Prop :=
-    L_function_leading_coefficient E =
-      (Sha_order E * period E * regulator E * tamagawa_product E) /
+def BSD_leading_coefficient (E : EllipticCurve K) (inv : BSDInvariants (K := K) E) : Prop :=
+  inv.L_function_leading_coefficient =
+    (inv.Sha_order * inv.period * inv.regulator * inv.tamagawa_product) /
       (E.torsion_order ^ 2)
 
 end MilleniumBirchSwinnertonDyer

@@ -1,6 +1,11 @@
-import Mathlib.AlgebraicGeometry.EllipticCurve.Group
+import Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point
+import Mathlib.AlgebraicGeometry.EllipticCurve.Projective.Point
 import Mathlib.Analysis.Analytic.Order
 import Mathlib.Analysis.SpecialFunctions.Pow.Complex
+import Mathlib.GroupTheory.Finiteness
+import Mathlib.GroupTheory.Torsion
+import Mathlib.LinearAlgebra.TensorProduct.Basic
+import Mathlib.SetTheory.Cardinal.ToNat
 import Mathlib.Topology.Algebra.InfiniteSum.Defs
 
 /-!
@@ -55,17 +60,30 @@ end CommRing
 
 section Field
 
-variable {F : Type u} [Field F] (W : WeierstrassCurve F)
+variable {F : Type u} [Field F]
 
-/-- A `Prop` which asserts that the abelian group of rational points of a Weierstrass curve `W`
-over a field `F` is finitely generated. Mathematically, this is true if `W` is an elliptic curve
-and `F` is a global field. -/
-def MordellWeil : Prop := Module.Finite ℤ W.toAffine.Point
+/-- The (additive) group of `F`-rational points, using Mathlib's projective model. -/
+abbrev MordellWeilGroup (W : WeierstrassCurve F) : Type u :=
+  (W.toProjective).Point
+
+/--
+A `Prop` asserting that the group of rational points of `W` is finitely generated.
+
+Mathematically, this is true for elliptic curves over global fields (Mordell–Weil theorem),
+but that theorem is not currently available in Mathlib.
+-/
+def MordellWeil (W : WeierstrassCurve F) : Prop :=
+  AddGroup.FG (MordellWeilGroup (F := F) W)
 
 /-- The **Mordell-Weil rank** of a Weierstrass curve `W` over a field `F`, defined to be the
-`Module.finrank` of the abelian group its rational points. This definition is mathematically correct
-if such group is finitely generated. -/
-protected noncomputable def rank := Module.finrank ℤ W.toAffine.Point
+`ℚ`-dimension of `ℚ ⊗[ℤ] (E(F)/torsion)`, expressed as an `ENat` via `Cardinal.toENat`.
+
+If the group is finitely generated, this recovers the usual integer rank.
+-/
+noncomputable def rank (W : WeierstrassCurve F) : ENat :=
+  Cardinal.toENat <|
+    Module.rank ℚ
+      (TensorProduct ℤ ℚ ((MordellWeilGroup (F := F) W) ⧸ AddCommGroup.torsion _))
 
 end Field
 
@@ -88,9 +106,10 @@ Mordell-Weil group of the corresponding elliptic curve over `ℚ` is finitely ge
 and its *fake* L-function has an analytic continuation to the whole complex plane,
 whose order of zeroes at `1` is equal to the Mordell-Weil rank. -/
 def BSD : Prop :=
-  ∀ W : WeierstrassCurve ℤ, W.Δ ≠ 0 → (W.baseChange ℚ).MordellWeil ∧
-    ∃ (L : ℂ → ℂ) (σ : ℝ) (han : ∀ s : ℂ, AnalyticAt ℂ L s),
-      (∀ s : ℂ, s.re > σ → L s = W.fakeHasseWeil s) ∧ (han 1).order = (W.baseChange ℚ).rank
+  ∀ W : WeierstrassCurve ℤ, W.Δ ≠ 0 → WeierstrassCurve.MordellWeil (W.baseChange ℚ) ∧
+    ∃ (L : ℂ → ℂ) (σ : ℝ) (_han : ∀ s : ℂ, AnalyticAt ℂ L s),
+      (∀ s : ℂ, s.re > σ → L s = W.fakeHasseWeil s) ∧
+        analyticOrderAt L 1 = WeierstrassCurve.rank (W.baseChange ℚ)
 
 end Int
 

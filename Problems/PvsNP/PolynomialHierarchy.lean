@@ -131,27 +131,28 @@ def Delta2P {α : Type} [Primcodable α] (ea : FinEncoding α) (L : Language α)
 
 
 /--
-  Similarly, Πₖᴾ represents k alternations starting with a universal quantifier.
--/
-def PikP (k : ℕ) : {α : Type} → [inst : Primcodable α] → (ea : FinEncoding α) → Language α → Prop
-| α, inst, ea, L => match k with
-  | 0 => Pi0P ea L
-  | k+1 => sorry -- TODO Cannot figure out how to make PikP find Sigmakp //SigmakP k α inst ea (Complement L)
-
-/--
   The general definition for Σₖᴾ can be recursive, representing
   k alternations of existential and universal quantifiers.
 -/
 def SigmakP (k : ℕ) : {α : Type} → [inst : Primcodable α] → (ea : FinEncoding α) → Language α → Prop
-| α, inst, ea, L => match k with
+| α, inst, ea, L =>
+  match k with
   | 0 => Sigma0P ea L
   | k+1 =>
       ∃ (β : Type) (instβ : Primcodable β) (eb : FinEncoding β) (L' : Language (α × β)),
-        -- L' is in Πₖᴾ
-        (if k = 0 then Pi0P (pairEncoding ea eb) L' else PikP k (pairEncoding ea eb) L') ∧
-        -- Certificate size is polynomially bounded
+        -- L' is in Πₖᴾ, i.e. its complement is in Σₖᴾ.
+        SigmakP k (pairEncoding ea eb) (Complement L') ∧
+        -- Certificate size is polynomially bounded.
         ∃ (p : Polynomial ℕ),
           ∀ a, L a ↔ ∃ b, (eb.encode b).length ≤ Polynomial.eval (ea.encode a).length p ∧ L' (a, b)
+
+/--
+`Πₖᴾ` is defined as complements of `Σₖᴾ`.
+
+This definition is the standard one and avoids any `sorry`/axioms in the hierarchy definitions.
+-/
+def PikP (k : ℕ) : {α : Type} → [inst : Primcodable α] → (ea : FinEncoding α) → Language α → Prop
+| _α, _inst, ea, L => SigmakP k ea (Complement L)
 /--
   The polynomial hierarchy is the union of all Σₖᴾ classes.
 
@@ -184,15 +185,4 @@ def PHCollapses : Prop :=
 -/
 def PHDoesNotCollapse : Prop :=
   ¬PHCollapses
-
-/--
-  # If P = NP, then the polynomial hierarchy collapses to P.
-
-  The fundamental relationship between
-  the P vs NP question and the structure of the polynomial hierarchy.
--/
-theorem ph_collapse_if_p_eq_np :
-  PEqualsNP → ∀ k, ∀ (α : Type) [Primcodable α] (ea : FinEncoding α) (L : Language α),
-    SigmakP k ea L ↔ InP ea L := sorry
-
 end Millennium

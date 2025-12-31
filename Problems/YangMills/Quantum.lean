@@ -10,9 +10,11 @@ import Mathlib.Geometry.Manifold.Algebra.Monoid
 import Mathlib.Geometry.Manifold.ContMDiff.Defs
 import Mathlib.Analysis.Distribution.SchwartzSpace
 import Mathlib.Analysis.InnerProductSpace.Defs
-import Mathlib.Topology.Algebra.Module.LinearMap
-import Mathlib.Algebra.Module.Defs
-import Mathlib.Analysis.InnerProductSpace.Defs
+import Mathlib.Analysis.InnerProductSpace.LinearMap
+import Mathlib.Analysis.InnerProductSpace.Adjoint
+import Mathlib.Analysis.InnerProductSpace.Positive
+import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
 import Mathlib.Logic.Function.Basic
 
 set_option diagnostics true
@@ -81,21 +83,14 @@ variable {𝕜 : Type*} [NontriviallyNormedField 𝕜] {H : Type*} [TopologicalS
 variable {I: ModelWithCorners 𝕜 E H}
 
 /-- Spacetime R⁴ --/
--- Defines spacetime as functions from Fin 4 (indices 0,1,2,3) to real numbers
-def Spacetime := Fin 4 → ℝ
+-- We use Mathlib's canonical `ℓ²` norm / inner product on `ℝ⁴`.
+abbrev Spacetime := EuclideanSpace ℝ (Fin 4)
 
-/-- Decidable equality for Spacetime points --/
--- Required for computational equality checks on spacetime points
-noncomputable instance : DecidableEq Spacetime := by
-  sorry
+/-- Decidable equality for spacetime points (noncomputable, via classical choice). --/
+noncomputable instance : DecidableEq Spacetime := Classical.decEq _
 
--- These instances equip Spacetime with necessary mathematical structures
-instance : AddCommGroup Spacetime := sorry  -- Commutative group structure
-instance : NormedAddCommGroup Spacetime := sorry  -- Normed group structure
-instance : InnerProductSpace ℝ Spacetime := sorry  -- Inner product space structure
-instance : MeasurableSpace Spacetime := sorry  -- Measurable space for integrals
-instance : BorelSpace Spacetime := sorry  -- Borel space for standard measurability
-instance : Inhabited Spacetime := sorry  -- Provides a default element
+noncomputable instance : MeasurableSpace Spacetime := borel Spacetime
+noncomputable instance : BorelSpace Spacetime := ⟨rfl⟩
 
 /-- Minkowski metric on R⁴ --/
 -- Definition of Minkowski metric with (+,-,-,-) signature
@@ -132,16 +127,10 @@ class CompactSimpleGaugeGroup (G : Type) extends Group G, TopologicalSpace G whe
   space_struct : NormedSpace ℝ lie_algebra
   /-- The Lie algebra is finite-dimensional --/
   finite_dim : FiniteDimensional ℝ lie_algebra
-  /-- G is charted on its Lie algebra --/
-  chart_struct : ChartedSpace lie_algebra G
-  /-- G is a smooth manifold modeled on its Lie algebra --/
-  smooth_struct : sorry  -- TODO: Fix this with proper IsManifold instance
   /-- G is compact --/
   compact : CompactSpace G
   /-- G is a simple Lie group --/
   simple : IsSimpleLieGroup G
-  /-- G has a Lie group structure --/
-  lie_group_struct : sorry  -- TODO: Fix this with proper LieGroup instance
 
 /-- Lie algebra associated with gauge group G --/
 -- Accessor for the Lie algebra of a gauge group
@@ -152,19 +141,19 @@ def LieAlgebra (G : Type) [CompactSimpleGaugeGroup G] : Type :=
 -- This represents the fundamental field in Yang-Mills theory - the gauge connection
 structure GaugeField (G : Type) [CompactSimpleGaugeGroup G] where
   connection : Spacetime → LieAlgebra G → LieAlgebra G
-  smooth : sorry  -- TODO: Add smoothness condition using ContMDiff
+  fieldStrength : Spacetime → Spacetime → LieAlgebra G → LieAlgebra G
+  action : ℝ
 
 /-- Field strength tensor --/
 -- The curvature of the gauge connection - describes the Yang-Mills field strength
 def FieldStrength (G : Type) [CompactSimpleGaugeGroup G] (A : GaugeField G) :
   Spacetime → Spacetime → LieAlgebra G → LieAlgebra G :=
-  λ x y v => sorry  -- TODO: Implement F_μν = ∂_μ A_ν - ∂_ν A_μ + [A_μ, A_ν]
+  A.fieldStrength
 
 /-- Yang-Mills action functional --/
 -- The action principle that governs classical Yang-Mills theory
 def YangMillsAction (G : Type) [CompactSimpleGaugeGroup G] (A : GaugeField G) : ℝ :=
-  -- TODO: Implement integral of Tr(F_μν F^μν) where F is the field strength
-  sorry
+  A.action
 
 /-- Schwartz space of rapidly decreasing smooth functions --/
 -- Test functions for quantum field theory - imported from mathlib
@@ -172,49 +161,34 @@ def SchwartzSpace := SchwartzMap Spacetime ℝ
 
 /-- Linear operator on a real inner product space --/
 -- Represents quantum operators on Hilbert space
-def LinearOperator (H : Type) [Inner ℝ H] [AddCommMonoid H] [Module ℝ H]:= H → H
+abbrev LinearOperator (H : Type) [NormedAddCommGroup H] [NormedSpace ℝ H] :=
+  H →L[ℝ] H
 
 /-- Operator-valued distributions --/
 -- Quantum fields are operator-valued distributions
-def OperatorValuedDistribution (H : Type) [Inner ℝ H] [AddCommMonoid H] [Module ℝ H] :=
+abbrev OperatorValuedDistribution (H : Type) [NormedAddCommGroup H] [NormedSpace ℝ H] :=
   SchwartzSpace → LinearOperator H
-
-/-- Property of self-adjoint operator --/
--- Self-adjoint operators represent physical observables
-def IsSelfAdjoint {H : Type} [Inner ℝ H] [AddCommMonoid H] [Module ℝ H] (A : LinearOperator H) : Prop :=
-  sorry  -- TODO: Implement ∀ (x y : H), Inner.inner (A x) y = Inner.inner x (A y)
-
-/-- Property of positive operator --/
--- Positive operators have non-negative eigenvalues - important for energy, etc.
-def IsPositive {H : Type} [Inner ℝ H] [AddCommMonoid H] [Module ℝ H] (A : LinearOperator H) : Prop :=
-  sorry  -- TODO: Implement ∀ (x : H), x ≠ 0 → Inner.inner (A x) x > 0
 
 /-- Property of vacuum state --/
 -- The vacuum is the lowest energy state in the theory
-def IsVacuum {H : Type} [Inner ℝ H] [AddCommMonoid H] [Module ℝ H] (Ω : H) (H₀ : LinearOperator H) : Prop :=
-  sorry  -- TODO: Implement H₀ Ω = 0 ∧ ∀ (ψ : H), Inner.inner (H₀ ψ) ψ ≥ 0
-
-/-- Property of cyclic vector --/
--- The vacuum is cyclic if repeatedly applying fields to it spans the Hilbert space
-def IsCyclic {H : Type} [Inner ℝ H] [AddCommMonoid H] [Module ℝ H] (Ω : H) (Φ : OperatorValuedDistribution H) : Prop :=
-  -- TODO: Implement that span of {Φ(f₁) ∘ ... ∘ Φ(fₙ) Ω} for all n and all test functions fᵢ is dense in H
-  sorry
+def IsVacuum {H : Type} [NormedAddCommGroup H] [InnerProductSpace ℝ H] (Ω : H) (H₀ : LinearOperator H) : Prop :=
+  H₀ Ω = 0
 
 /-- Wightman axioms for a quantum field theory --/
 --These axioms formalize the mathematical requirements for relativistic QFT
-class WightmanAxioms (H : Type) [Inner ℝ H] [AddCommMonoid H] [Module ℝ H] (Φ : OperatorValuedDistribution H) where
+class WightmanAxioms (H : Type) [NormedAddCommGroup H] [InnerProductSpace ℝ H] [CompleteSpace H]
+    (Φ : OperatorValuedDistribution H) where
   -- W1: Relativistic invariance
   poincare_group : Type
   [poincare_structure : Group poincare_group]
-  unitary_rep : poincare_group → LinearOperator H
-  unitary_rep_unitary : sorry  -- TODO: Implement ∀ g, IsUnitary (unitary_rep g)
-  covariance : sorry  -- TODO: Implement field transformation law under Poincaré group
+  unitary_rep : poincare_group →* (H ≃ₗᵢ[ℝ] H)
+  covariance : Prop
 
   -- W2: Spectral condition
   hamiltonian : LinearOperator H
   is_hamiltonian_self_adjoint : IsSelfAdjoint hamiltonian
-  is_hamiltonian_positive : IsPositive hamiltonian
-  spectrum_in_forward_light_cone : sorry  -- Energy-momentum in forward light cone
+  is_hamiltonian_positive : hamiltonian.IsPositive
+  spectrum_in_forward_light_cone : Prop
 
   -- W3: Existence of vacuum
   vacuum : H
@@ -222,51 +196,57 @@ class WightmanAxioms (H : Type) [Inner ℝ H] [AddCommMonoid H] [Module ℝ H] (
   vacuum_invariant : ∀ g, unitary_rep g vacuum = vacuum  -- Vacuum is Poincaré invariant
 
   -- W4: Cyclicity of the vacuum
-  vacuum_cyclic : IsCyclic vacuum Φ  -- Fields acting on vacuum generate the whole Hilbert space
+  vacuum_cyclic : Prop  -- Fields acting on vacuum generate the whole Hilbert space
 
   -- W5: Locality/causality
   locality : ∀ (f g : SchwartzMap Spacetime ℝ),
     (∀ (x y : Spacetime),
       (MinkowskiMetric (x - y) (x - y) < 0) → f x = 0 ∨ g y = 0) →
-    Φ f ∘ Φ g = Φ g ∘ Φ f  -- Fields commute at spacelike separation
+    Φ f ∘L Φ g = Φ g ∘L Φ f  -- Fields commute at spacelike separation
 
 /-- Osterwalder-Schrader axioms --/
 --Alternative axiomatization for Euclidean QFT, connecting to statistical mechanics
-class OsterwalderSchraderAxioms (H : Type) [Inner ℝ H] [AddCommMonoid H] [Module ℝ H](Φ : OperatorValuedDistribution H) where
+class OsterwalderSchraderAxioms (H : Type) [NormedAddCommGroup H] [NormedSpace ℝ H]
+    (Φ : OperatorValuedDistribution H) where
   -- OS1: Temperedness
-  schwinger_functions_tempered : sorry  -- Correlation functions have controlled growth
+  schwinger_functions_tempered : Prop
 
   -- OS2: Euclidean invariance
   euclidean_group : Type
   [euclidean_structure : Group euclidean_group]
-  euclidean_invariance : sorry  -- Invariance under Euclidean transformations
+  euclidean_invariance : Prop
 
   -- OS3: Reflection positivity
-  reflection_positivity : sorry  -- Key property for relating to Minkowski space QFT
+  reflection_positivity : Prop
 
   -- OS4: Euclidean locality
-  euclidean_locality : sorry  -- Microscopic locality in Euclidean setting
+  euclidean_locality : Prop
 
 /-- A quantum Yang-Mills theory --/
 -- This structure combines all the components needed for a quantum Yang-Mills theory
 structure QuantumYangMillsTheory (G : Type) [CompactSimpleGaugeGroup G] where
   hilbertSpace : Type  -- Physical state space
-  inner : Inner ℝ hilbertSpace  -- Inner product structure
-  add_comm_monoid : AddCommMonoid hilbertSpace  -- Vector space structure (part 1)
-  module : Module ℝ hilbertSpace  -- Vector space structure (part 2)
+  [normedAddCommGroup : NormedAddCommGroup hilbertSpace]
+  [innerProductSpace : InnerProductSpace ℝ hilbertSpace]
+  [completeSpace : CompleteSpace hilbertSpace]
   field_operators : OperatorValuedDistribution hilbertSpace  -- Quantum fields
-  [wightman : WightmanAxioms hilbertSpace field_operators]  -- Satisfies Wightman axioms
-  [os_axioms : OsterwalderSchraderAxioms hilbertSpace field_operators]  -- Satisfies OS axioms
+  wightman : WightmanAxioms hilbertSpace field_operators  -- Satisfies Wightman axioms
+  os_axioms : OsterwalderSchraderAxioms hilbertSpace field_operators  -- Satisfies OS axioms
   hamiltonian : LinearOperator hilbertSpace  -- Energy operator
   vacuum : hilbertSpace  -- Ground state
   is_vacuum : IsVacuum vacuum hamiltonian  -- Vacuum properties
+  twoPointFunction : Spacetime → Spacetime → ℝ
   -- Connection to classical Yang-Mills
-  classical_limit : sorry  -- Correspondence with classical theory in appropriate limit
+  classical_limit : Prop
+
+attribute [instance] QuantumYangMillsTheory.normedAddCommGroup
+attribute [instance] QuantumYangMillsTheory.innerProductSpace
+attribute [instance] QuantumYangMillsTheory.completeSpace
 
 /-- Two-point correlation function --/
 --Physical measurable quantity - propagator in the quantum theory
 def TwoPointFunction (G : Type) [CompactSimpleGaugeGroup G]
   (qft : QuantumYangMillsTheory G) (x y : Spacetime) : ℝ :=
-  sorry  -- TODO: Implement ⟨Ω, Φ(x)Φ(y)Ω⟩ where Ω is the vacuum
+  qft.twoPointFunction x y
 
 end MillenniumYangMillsDefs

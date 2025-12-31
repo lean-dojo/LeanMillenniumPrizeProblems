@@ -28,7 +28,7 @@ open EuclideanSpace MeasureTheory Order NavierStokes
 -/
 def IsPeriodic {α : Type} (f : Euc ℝ 3 → α) : Prop :=
   ∀ (x : Euc ℝ 3) (i : Fin 3) (n : ℤ),
-    let e_i : Euc ℝ 3 := fun j => if j = i then 1 else 0
+    let e_i : Euc ℝ 3 := standardBasis (n := 3) i
     f (x + n • e_i) = f x
 
 /--
