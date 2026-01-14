@@ -7,45 +7,15 @@ open LieGroup MillenniumYangMillsDefs
 /-!
 # Yang-Mills Existence and Mass Gap Problem
 
-This file formalizes the Millennium Prize problem on the Yang-Mills existence and mass gap. This was the hardest conjecture to formalize for me as I didnt know basically any concepts and had to learn and debug a lot with Claude and LeanSearch and the Mathlib library + watch videos.
+This file states the Clay Millennium problem “Yang–Mills existence and mass gap” in Lean, following
+the official Clay problem description:
+`Problems/YangMills/references/clay/yangmills.pdf`.
 
-The problem asks to prove that:
-1. For any compact simple gauge group G, a non-trivial quantum Yang-Mills theory exists on R⁴
-2. This theory has a mass gap Δ > 0 (difference in energy between vacuum and lowest energy state)
+The problem asks to prove that for any compact simple gauge group `G`, a non-trivial quantum
+Yang–Mills theory exists on `ℝ⁴` and has a mass gap `Δ > 0`.
 
-In a more simpler term basically 1 is the Existence: For any compact simple gauge group G, there exists a quantum field theory on 4D spacetime that satisfies the axioms of quantum field theory.
-
-In a more simpler term 2 is the Mass Gap: This theory has a "mass gap" - meaning there's a positive minimum energy difference between the vacuum state (lowest energy state) and the first excited state.
-
-The conjecture is significant because Yang-Mills theories form the foundation of the Standard Model in particle physics, but a rigorous mathematical construction has remained elusive.
-
-### The Quantum.lean file contains essential mathematical structures needed to formalize quantum field theory:
-
-1. Spacetime: Defined as Fin 4 → ℝ, representing 4D Minkowski spacetime with points as functions from indices to coordinates.
-2. MinkowskiMetric: The metric tensor with signature (+,-,-,-) defining spacetime geometry.
-3. CompactSimpleGaugeGroup: Represents gauge groups like SU(2) or SU(3), with properties:
-  3.1 Has a Lie group structure
-  3.2 Is compact (bounded and closed)
-  3.3 Is simple (no non-trivial normal subgroups)
-  3.4 Has an associated Lie algebra
-4. GaugeField: The connection/gauge potential representing the fundamental field in Yang-Mills theory.
-5. FieldStrength: The curvature of the gauge field, analogous to electromagnetic field tensor.
-6. SchwartzSpace: Test functions for quantum field theory, representing smooth functions that decay rapidly.
-7. OperatorValuedDistribution: Quantum fields as operator-valued distributions on test functions.
-8. WightmanAxioms: The fundamental axioms for rigorous quantum field theory:
-  8.1 Relativistic invariance: Fields transform correctly under spacetime symmetries
-  8.2 Spectral condition: Energy is positive and momentum is in forward light cone
-  8.3 Existence of vacuum: Lowest energy state exists and is invariant
-  8.4 Cyclicity: Fields acting on vacuum generate the whole state space
-  8.5 Locality/causality: Fields at spacelike separation commute
-  8.6 OsterwalderSchraderAxioms: Alternative axiomatization connecting to statistical mechanics.
-9. QuantumYangMillsTheory: The complete structure bringing together:
-  9.1 A Hilbert space of quantum states
-  9.2 Field operators satisfying the axioms
-  9.3 Hamiltonian (energy operator)
-  9.4 Vacuum state
-  9.5 Connection to classical Yang-Mills theory
-  9.6 TwoPointFunction: The correlation function used to probe particle content and mass gap.
+In the Clay writeup, the Hamiltonian `H` has a **mass gap** `Δ` if it has no spectrum in the
+interval `(0, Δ)`.
 
 ## References
 - Jaffe, A., & Witten, E. "Quantum Yang-Mills Theory"
@@ -53,31 +23,106 @@ The conjecture is significant because Yang-Mills theories form the foundation of
 - Osterwalder & Schrader (1973, 1975): "Axioms for Euclidean Green's functions"
 -/
 
-/-- Mass gap in terms of two-point function decay
-The two-point function should decay exponentially with distance, with rate controlled by Δ--/
-def HasMassGapViaTwoPoint (G : Type) [CompactSimpleGaugeGroup G]
-  (qft : QuantumYangMillsTheory G) (Δ : ℝ) : Prop :=
-  Δ > 0 ∧ -- The mass gap must be positive
-  ∃ (C : ℝ), C > 0 ∧ -- There exists some positive constant C
-  ∀ (t : ℝ), t > 0 → -- For all positive time separations
-    let mk : (Fin 4 → ℝ) → Spacetime :=
-      (EuclideanSpace.equiv (ι := Fin 4) (𝕜 := ℝ)).symm
-    let x : Spacetime := mk (fun i => if i = 0 then t else 0) -- Point at time t, space origin
-    let y : Spacetime := mk (fun _ => 0) -- Point at time 0, space origin
-    TwoPointFunction G qft x y ≤ C * Real.exp (-Δ * t) -- Exponential decay with rate Δ
+/-!
+We do not formalize the spectral theory of the Hamiltonian operator here, so we use a standard
+“quadratic form” inequality that implies a spectral gap above the vacuum when combined with
+self-adjointness/positivity (already part of `WightmanAxioms` in `Problems/YangMills/Quantum.lean`).
+-/
 
-/-- Mass gap in terms of Hamiltonian spectrum
-There should be a minimum energy gap between vacuum and excited states--/
-def HasMassGapViaSpectrum (G : Type) [CompactSimpleGaugeGroup G]
-  (qft : QuantumYangMillsTheory G) (Δ : ℝ) : Prop :=
+/-- A non-trivial theory: the Hilbert space has at least two distinct states. -/
+def NontrivialTheory {G : Type} [CompactSimpleGaugeGroup G] (qft : QuantumYangMillsTheory G) : Prop :=
+  Nontrivial qft.hilbertSpace
+
+/--
+Mass gap (Lean-level stand-in for “no spectrum in (0,Δ)”).
+
+This is phrased in terms of the Hamiltonian from the Wightman axioms:
+`H := qft.wightman.hamiltonian` and vacuum `Ω := qft.wightman.vacuum`.
+-/
+def HasMassGap (G : Type) [CompactSimpleGaugeGroup G]
+    (qft : QuantumYangMillsTheory G) (Δ : ℝ) : Prop :=
   Δ > 0 ∧
-  ∀ state : qft.hilbertSpace,
-    inner ℝ state qft.vacuum = 0 →
-      Δ * inner ℝ state state ≤ inner ℝ (qft.hamiltonian state) state
+    ∀ ψ : qft.hilbertSpace,
+      inner ℝ ψ qft.wightman.vacuum = 0 →
+        Δ * inner ℝ ψ ψ ≤ inner ℝ (qft.wightman.hamiltonian ψ) ψ
+
+/--
+Mass gap in the form used in the Clay statement: the Hamiltonian has no spectrum in `(0, Δ)`.
+
+Here `spectrum ℝ qft.wightman.hamiltonian` is Mathlib's spectrum of a bounded operator.
+-/
+def HasMassGapSpectrum (G : Type) [CompactSimpleGaugeGroup G]
+    (qft : QuantumYangMillsTheory G) (Δ : ℝ) : Prop :=
+  Δ > 0 ∧ Disjoint (spectrum ℝ qft.wightman.hamiltonian) (Set.Ioo 0 Δ)
+
+/--
+The “mass” `m` as described in the Clay writeup: the supremum of the admissible spectral gaps.
+
+This is a definition only (no properties are proved here).
+-/
+noncomputable def Mass (G : Type) [CompactSimpleGaugeGroup G] (qft : QuantumYangMillsTheory G) : ℝ :=
+  sSup {Δ : ℝ | HasMassGapSpectrum G qft Δ}
+
+/--
+“Existence” requirements highlighted in the Clay statement.
+
+In this development, these are carried as *data + laws* inside `QuantumYangMillsTheory`:
+- Wightman axioms (`qft.wightman`)
+- Local-operator correspondence (`qft.localOperators`)
+- Short-distance agreement (`qft.shortDistance`)
+- Stress tensor (`qft.stressTensor`)
+- Operator product expansion (`qft.operatorProductExpansion`)
+
+So the remaining non-vacuity condition we explicitly require is that the theory is non-trivial.
+-/
+def ClayExistence {G : Type} [CompactSimpleGaugeGroup G] (qft : QuantumYangMillsTheory G) : Prop :=
+  NontrivialTheory qft
+
+/--
+The Clay writeup defines the “mass” `m` as the supremum of possible mass gaps and requires `m < ∞`.
+
+We model “finite mass” as a (non-sharp) global upper bound on the gaps witnessed by `HasMassGap`.
+-/
+def FiniteMass (G : Type) [CompactSimpleGaugeGroup G] (qft : QuantumYangMillsTheory G) : Prop :=
+  ∃ m : ℝ, m > 0 ∧ ∀ Δ : ℝ, HasMassGap G qft Δ → Δ ≤ m
+
+/--
+Finite mass condition corresponding to the Clay definition of “mass” as the supremum of gaps.
+
+We record this as the existence of an upper bound on all spectral gaps.
+-/
+def FiniteMassSpectrum (G : Type) [CompactSimpleGaugeGroup G] (qft : QuantumYangMillsTheory G) : Prop :=
+  ∃ m : ℝ, m > 0 ∧ ∀ Δ : ℝ, HasMassGapSpectrum G qft Δ → Δ ≤ m
+
+/--
+Clustering estimate from the Clay writeup (equation (2), stated as a `Prop`).
+
+We model `O(⃗x) = U(⃗x) O U(⃗x)⁻¹` using the spatial translation representation
+`U := qft.wightman.spaceTranslation`.
+-/
+def ClusteringProperty (G : Type) [CompactSimpleGaugeGroup G]
+    (qft : QuantumYangMillsTheory G) (Δ : ℝ) : Prop :=
+  ∀ C : ℝ, 0 < C → C < Δ →
+    ∀ O : LinearOperator qft.hilbertSpace,
+      IsCentered qft.wightman.vacuum O →
+        ∃ R : ℝ, 0 ≤ R ∧
+          ∀ x y : Space,
+            R ≤ dist x y →
+              |vacuumExpectation qft.wightman.vacuum
+                    ((localOperatorAt qft.wightman.spaceTranslation x O).comp
+                      (localOperatorAt qft.wightman.spaceTranslation y O))| ≤
+                Real.exp (-C * dist x y)
+
+/--
+The Clay writeup notes that a mass gap implies clustering; we record this as a statement.
+-/
+def MassGapImpliesClustering (G : Type) [CompactSimpleGaugeGroup G]
+    (qft : QuantumYangMillsTheory G) : Prop :=
+  ∀ Δ : ℝ, HasMassGapSpectrum G qft Δ → ClusteringProperty G qft Δ
 
 /-- # The Yang–Mills existence and mass gap problem statement. -/
 def YangMillsExistenceAndMassGap (G : Type) [CompactSimpleGaugeGroup G] : Prop :=
   ∃ (qft : QuantumYangMillsTheory G) (Δ : ℝ),
-    HasMassGapViaSpectrum G qft Δ ∧ HasMassGapViaTwoPoint G qft Δ
+    ClayExistence qft ∧ HasMassGapSpectrum G qft Δ ∧ FiniteMassSpectrum G qft
 
 end MillenniumYangMills

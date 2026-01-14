@@ -48,6 +48,7 @@ noncomputable def standardBasis (i : Fin n) : Euc ℝ n :=
 noncomputable def partialDeriv (i : Fin n) (f : Euc ℝ n → ℝ) (x : Euc ℝ n) : ℝ :=
   (fderiv ℝ f x) (standardBasis (n := n) i)
 
+/-- Unfolding lemma: `partialDeriv` is definitionally `fderiv` applied to the standard basis vector. -/
 theorem partialDeriv_eq_fderiv (i : Fin n) (f : Euc ℝ n → ℝ) (x : Euc ℝ n) :
     partialDeriv (n := n) i f x = (fderiv ℝ f x) (standardBasis (n := n) i) :=
   rfl
@@ -58,6 +59,7 @@ noncomputable def iteratedPartialDeriv (indices : List (Fin n)) (f : Euc ℝ n �
   | [] => f x
   | i :: rest => partialDeriv (n := n) i (fun y => iteratedPartialDeriv rest f y) x
 
+/-- Iterated derivatives of the zero function are zero. -/
 @[simp]
 theorem iteratedPartialDeriv_zero (indices : List (Fin n)) (x : Euc ℝ n) :
     iteratedPartialDeriv (n := n) indices (0 : Euc ℝ n → ℝ) x = 0 := by

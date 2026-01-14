@@ -14,7 +14,9 @@ import Mathlib.Analysis.InnerProductSpace.LinearMap
 import Mathlib.Analysis.InnerProductSpace.Adjoint
 import Mathlib.Analysis.InnerProductSpace.Positive
 import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Algebra.Algebra.Spectrum.Basic
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
+import Mathlib.Topology.Basic
 import Mathlib.Logic.Function.Basic
 
 set_option diagnostics true
@@ -26,11 +28,16 @@ open LieGroup
 /-!
 # Yang-Mills Existence and Mass Gap Problem
 
-This file formalizes the Millennium Prize problem on the Yang-Mills existence and mass gap by creating multiple definitions that I think are needed.
+This file provides scaffolding used to state the Clay Millennium problem “Yang–Mills existence and
+mass gap”.
 
-So my understanding is that Yang-Mills Millennium Prize problem asks two fundamental questions:
-1. Does a mathematically rigorous quantum Yang-Mills theory exist?
-2. Does this theory have a "mass gap" (positive minimum energy above vacuum)?
+The official Clay problem description is:
+`Problems/YangMills/references/clay/yangmills.pdf`.
+
+At a high level it asks:
+1. Construct a non-trivial 4D quantum Yang–Mills theory (satisfying strong axioms such as Wightman
+   or Osterwalder–Schrader).
+2. Prove it has a mass gap `Δ > 0` (a spectral gap above the vacuum).
 
 ## Some Key Mathematical Components
 
@@ -47,7 +54,8 @@ So my understanding is that Yang-Mills Millennium Prize problem asks two fundame
 - `SchwartzSpace`: Test functions for handling the mathematical singularities
 
 ### Axioms for Quantum Field Theory
-Two equivalent systems establishing what makes a valid quantum field theory:
+We record (a simplified form of) the Wightman axioms as a baseline for “axiomatic properties at least
+as strong as those cited” in the Clay statement.
 
 1. `WightmanAxioms`: Direct approach in physical spacetime
    - Forces must obey special relativity (Poincaré invariance)
@@ -56,14 +64,9 @@ Two equivalent systems establishing what makes a valid quantum field theory:
    - Physical states can be built from vacuum using fields
    - Causality: measurements at space-like separation don't interfere
 
-2. `OsterwalderSchraderAxioms`: Alternative formulation in "imaginary time"
-   - Makes mathematical analysis easier
-   - Connects to statistical mechanics
-   - Requires "reflection positivity" to connect back to physics
-
 ### The Mass Gap
 The mathematical statement that particles have positive mass:
-- Energy spectrum has a gap between vacuum (E=0) and first excited state (E≥m>0)
+- The Hamiltonian has no spectrum in the interval `(0, Δ)` for some `Δ > 0`
 - This explains why force carriers like gluons don't appear as free particles
 
 Proving that a quantum Yang-Mills theory:
@@ -86,10 +89,16 @@ variable {I: ModelWithCorners 𝕜 E H}
 -- We use Mathlib's canonical `ℓ²` norm / inner product on `ℝ⁴`.
 abbrev Spacetime := EuclideanSpace ℝ (Fin 4)
 
+/-- Spatial points `ℝ³` (used in the Clay clustering discussion). -/
+abbrev Space := EuclideanSpace ℝ (Fin 3)
+
 /-- Decidable equality for spacetime points (noncomputable, via classical choice). --/
 noncomputable instance : DecidableEq Spacetime := Classical.decEq _
 
+/-- Use the Borel σ-algebra on `Spacetime = ℝ⁴`. -/
 noncomputable instance : MeasurableSpace Spacetime := borel Spacetime
+
+/-- `Spacetime` is a Borel space (by definition of the model). -/
 noncomputable instance : BorelSpace Spacetime := ⟨rfl⟩
 
 /-- Minkowski metric on R⁴ --/
@@ -174,6 +183,17 @@ abbrev OperatorValuedDistribution (H : Type) [NormedAddCommGroup H] [NormedSpace
 def IsVacuum {H : Type} [NormedAddCommGroup H] [InnerProductSpace ℝ H] (Ω : H) (H₀ : LinearOperator H) : Prop :=
   H₀ Ω = 0
 
+/-- Conjugation action of a unitary operator `U` on an operator `A`: `U A U⁻¹`. -/
+noncomputable def conjugateOperator {H : Type} [NormedAddCommGroup H] [NormedSpace ℝ H]
+    (U : H ≃ₗᵢ[ℝ] H) (A : LinearOperator H) : LinearOperator H :=
+  (U.toContinuousLinearEquiv.toContinuousLinearMap).comp
+    (A.comp (U.symm.toContinuousLinearEquiv.toContinuousLinearMap))
+
+/-- The linear span of vectors obtained by applying smeared fields to the vacuum. -/
+def fieldGeneratedSubmodule {H : Type} [NormedAddCommGroup H] [NormedSpace ℝ H]
+    (Φ : OperatorValuedDistribution H) (Ω : H) : Submodule ℝ H :=
+  Submodule.span ℝ (Set.range fun f : SchwartzSpace => (Φ f) Ω)
+
 /-- Wightman axioms for a quantum field theory --/
 --These axioms formalize the mathematical requirements for relativistic QFT
 class WightmanAxioms (H : Type) [NormedAddCommGroup H] [InnerProductSpace ℝ H] [CompleteSpace H]
@@ -182,21 +202,46 @@ class WightmanAxioms (H : Type) [NormedAddCommGroup H] [InnerProductSpace ℝ H]
   poincare_group : Type
   [poincare_structure : Group poincare_group]
   unitary_rep : poincare_group →* (H ≃ₗᵢ[ℝ] H)
-  covariance : Prop
+  action_on_tests : poincare_group → SchwartzSpace → SchwartzSpace
+  action_on_tests_one : ∀ f, action_on_tests (1 : poincare_group) f = f
+  action_on_tests_mul :
+    ∀ g₁ g₂ f, action_on_tests (g₁ * g₂) f = action_on_tests g₁ (action_on_tests g₂ f)
+  covariance :
+    ∀ g f, Φ (action_on_tests g f) = conjugateOperator (unitary_rep g) (Φ f)
 
   -- W2: Spectral condition
   hamiltonian : LinearOperator H
   is_hamiltonian_self_adjoint : IsSelfAdjoint hamiltonian
   is_hamiltonian_positive : hamiltonian.IsPositive
-  spectrum_in_forward_light_cone : Prop
+
+  /--
+  The Clay writeup discusses clustering in terms of *spatial translations* generated by momentum
+  operators `P⃗`. We do not formalize unbounded generators, but we record the resulting unitary
+  representation of spatial translations `ℝ³` as data.
+  -/
+  spaceTranslation : Space → (H ≃ₗᵢ[ℝ] H)
+  spaceTranslation_zero : spaceTranslation 0 = 1
+  spaceTranslation_add :
+    ∀ x y : Space, spaceTranslation (x + y) = spaceTranslation x * spaceTranslation y
+
+  /--
+  The Clay statement formulates the mass gap as: “`H` has no spectrum in `(0, Δ)`”.
+
+  Here we use Mathlib's Banach-algebra spectrum `spectrum ℝ hamiltonian` of the (bounded) operator
+  `hamiltonian`, and we additionally record two consequences explicitly referenced in the Clay
+  text: non-negativity (positive energy) and vacuum energy `0`.
+  -/
+  spectrum_nonneg : ∀ E, E ∈ spectrum ℝ hamiltonian → 0 ≤ E
+  vacuum_energy_zero : 0 ∈ spectrum ℝ hamiltonian
 
   -- W3: Existence of vacuum
   vacuum : H
   is_vacuum : IsVacuum vacuum hamiltonian
   vacuum_invariant : ∀ g, unitary_rep g vacuum = vacuum  -- Vacuum is Poincaré invariant
+  vacuum_spatial_invariant : ∀ x : Space, spaceTranslation x vacuum = vacuum
 
   -- W4: Cyclicity of the vacuum
-  vacuum_cyclic : Prop  -- Fields acting on vacuum generate the whole Hilbert space
+  vacuum_cyclic : Dense (fieldGeneratedSubmodule Φ vacuum : Set H)
 
   -- W5: Locality/causality
   locality : ∀ (f g : SchwartzMap Spacetime ℝ),
@@ -204,23 +249,95 @@ class WightmanAxioms (H : Type) [NormedAddCommGroup H] [InnerProductSpace ℝ H]
       (MinkowskiMetric (x - y) (x - y) < 0) → f x = 0 ∨ g y = 0) →
     Φ f ∘L Φ g = Φ g ∘L Φ f  -- Fields commute at spacelike separation
 
-/-- Osterwalder-Schrader axioms --/
---Alternative axiomatization for Euclidean QFT, connecting to statistical mechanics
-class OsterwalderSchraderAxioms (H : Type) [NormedAddCommGroup H] [NormedSpace ℝ H]
-    (Φ : OperatorValuedDistribution H) where
-  -- OS1: Temperedness
-  schwinger_functions_tempered : Prop
+/-!
+Extra structure appearing explicitly in the Clay statement (Section 4 of the PDF).
 
-  -- OS2: Euclidean invariance
-  euclidean_group : Type
-  [euclidean_structure : Group euclidean_group]
-  euclidean_invariance : Prop
+We represent “local gauge-invariant polynomials in the curvature `F` and its covariant derivatives”
+as a small *syntactic* datatype; a full treatment would require a substantial development of
+classical gauge theory and renormalized QFT.
+-/
 
-  -- OS3: Reflection positivity
-  reflection_positivity : Prop
+/-- A syntactic language for (intended) gauge-invariant local polynomials in curvature and its derivatives. -/
+inductive GaugeInvariantLocalPolynomial (G : Type) : Type
+  | zero : GaugeInvariantLocalPolynomial G
+  | one : GaugeInvariantLocalPolynomial G
+  | curvature : GaugeInvariantLocalPolynomial G
+  | covDeriv : ℕ → GaugeInvariantLocalPolynomial G → GaugeInvariantLocalPolynomial G
+  | add : GaugeInvariantLocalPolynomial G → GaugeInvariantLocalPolynomial G → GaugeInvariantLocalPolynomial G
+  | mul : GaugeInvariantLocalPolynomial G → GaugeInvariantLocalPolynomial G → GaugeInvariantLocalPolynomial G
+  | trace : GaugeInvariantLocalPolynomial G → GaugeInvariantLocalPolynomial G
 
-  -- OS4: Euclidean locality
-  euclidean_locality : Prop
+/-- The syntactic polynomial language is inhabited by `0`. -/
+instance {G : Type} : Inhabited (GaugeInvariantLocalPolynomial G) := ⟨.zero⟩
+
+/--
+Assignment of local quantum field operators to gauge-invariant local polynomials (Clay statement, §4).
+
+We record a *correspondence* as an injective map into operator-valued distributions.
+-/
+structure LocalOperatorAssignment (G : Type) (H : Type) [NormedAddCommGroup H] [NormedSpace ℝ H] where
+  op : GaugeInvariantLocalPolynomial G → OperatorValuedDistribution H
+  injective : Function.Injective op
+
+/-- Vacuum expectation value of an operator. -/
+noncomputable def vacuumExpectation {H : Type} [NormedAddCommGroup H] [InnerProductSpace ℝ H]
+    (Ω : H) (A : LinearOperator H) : ℝ :=
+  inner ℝ Ω (A Ω)
+
+/-- Ordered product of smeared field operators (as a continuous linear operator). -/
+noncomputable def smearedProduct {H : Type} [NormedAddCommGroup H] [NormedSpace ℝ H]
+    (Φ : OperatorValuedDistribution H) : List SchwartzSpace → LinearOperator H
+  | [] => ContinuousLinearMap.id ℝ H
+  | f :: fs => (Φ f).comp (smearedProduct Φ fs)
+
+/-- Wightman-style correlation functional for a list of test functions. -/
+noncomputable def correlation {H : Type} [NormedAddCommGroup H] [InnerProductSpace ℝ H]
+    (Φ : OperatorValuedDistribution H) (Ω : H) (fs : List SchwartzSpace) : ℝ :=
+  vacuumExpectation Ω (smearedProduct Φ fs)
+
+/--
+Short-distance agreement with perturbative predictions (Clay statement, §4).
+
+We keep this abstract by allowing the user to pick a scaling action on test functions, and require
+the correlators to converge to a “predicted” value as the scale tends to `0⁺`.
+-/
+structure ShortDistanceAgreement {H : Type} [NormedAddCommGroup H] [InnerProductSpace ℝ H]
+    (Φ : OperatorValuedDistribution H) (Ω : H) where
+  scale : ℝ → SchwartzSpace → SchwartzSpace
+  prediction : ℝ → List SchwartzSpace → ℝ
+  agrees :
+    ∀ fs : List SchwartzSpace,
+      Filter.Tendsto
+        (fun ε : ℝ => correlation Φ Ω (fs.map (scale ε)) - prediction ε fs)
+        (nhdsWithin (0 : ℝ) {ε : ℝ | 0 < ε})
+        (nhds 0)
+
+/--
+A stress-energy tensor datum, with a (deliberately abstract) distributional conservation law.
+
+The Clay statement mentions the existence of a stress tensor among the expected short-distance
+structures; here we record a symmetry condition and a conservation identity in terms of a chosen
+“partial derivative” operator on test functions.
+-/
+structure StressEnergyTensor (H : Type) [NormedAddCommGroup H] [NormedSpace ℝ H] where
+  /-- A chosen derivative operator on test functions, representing `∂_μ`. -/
+  testDeriv : Fin 4 → SchwartzSpace → SchwartzSpace
+  /-- Components `T_{μν}` as operator-valued distributions. -/
+  T : Fin 4 → Fin 4 → OperatorValuedDistribution H
+  /-- Symmetry `T_{μν} = T_{νμ}`. -/
+  symmetric : ∀ μ ν, T μ ν = T ν μ
+  /-- Conservation `∑_μ T_{μν}(∂_μ f) = 0` (as an operator) for all `ν` and test functions `f`. -/
+  conserved : ∀ ν f, (Finset.univ.sum fun μ : Fin 4 => T μ ν (testDeriv μ f)) = 0
+
+/-- An (abstract) operator product expansion datum. -/
+structure OperatorProductExpansion (G : Type) (H : Type) [NormedAddCommGroup H] [NormedSpace ℝ H] where
+  coefficient :
+    GaugeInvariantLocalPolynomial G →
+      GaugeInvariantLocalPolynomial G →
+        GaugeInvariantLocalPolynomial G → ℝ
+  /-- For fixed `A,B`, only finitely many `C` have nonzero coefficient (a minimal “local finiteness”). -/
+  finite_support :
+    ∀ A B, (Set.Finite {C : GaugeInvariantLocalPolynomial G | coefficient A B C ≠ 0})
 
 /-- A quantum Yang-Mills theory --/
 -- This structure combines all the components needed for a quantum Yang-Mills theory
@@ -231,22 +348,49 @@ structure QuantumYangMillsTheory (G : Type) [CompactSimpleGaugeGroup G] where
   [completeSpace : CompleteSpace hilbertSpace]
   field_operators : OperatorValuedDistribution hilbertSpace  -- Quantum fields
   wightman : WightmanAxioms hilbertSpace field_operators  -- Satisfies Wightman axioms
-  os_axioms : OsterwalderSchraderAxioms hilbertSpace field_operators  -- Satisfies OS axioms
-  hamiltonian : LinearOperator hilbertSpace  -- Energy operator
-  vacuum : hilbertSpace  -- Ground state
-  is_vacuum : IsVacuum vacuum hamiltonian  -- Vacuum properties
-  twoPointFunction : Spacetime → Spacetime → ℝ
-  -- Connection to classical Yang-Mills
-  classical_limit : Prop
+  localOperators : LocalOperatorAssignment G hilbertSpace
+  shortDistance : ShortDistanceAgreement field_operators wightman.vacuum
+  stressTensor : StressEnergyTensor hilbertSpace
+  operatorProductExpansion : OperatorProductExpansion G hilbertSpace
+
+  /--
+  The local operator assignment is compatible with Poincaré covariance (Clay statement, §4).
+  -/
+  localOperators_covariant :
+    ∀ g p f,
+      (localOperators.op p) (wightman.action_on_tests g f) =
+        conjugateOperator (wightman.unitary_rep g) ((localOperators.op p) f)
+
+  /--
+  The assigned local operators satisfy locality/causality in the same smeared sense as in the
+  Wightman axioms.
+  -/
+  localOperators_locality :
+    ∀ (p q : GaugeInvariantLocalPolynomial G) (f g : SchwartzMap Spacetime ℝ),
+      (∀ (x y : Spacetime),
+        (MinkowskiMetric (x - y) (x - y) < 0) → f x = 0 ∨ g y = 0) →
+      (localOperators.op p f) ∘L (localOperators.op q g) =
+        (localOperators.op q g) ∘L (localOperators.op p f)
 
 attribute [instance] QuantumYangMillsTheory.normedAddCommGroup
 attribute [instance] QuantumYangMillsTheory.innerProductSpace
 attribute [instance] QuantumYangMillsTheory.completeSpace
 
-/-- Two-point correlation function --/
---Physical measurable quantity - propagator in the quantum theory
-def TwoPointFunction (G : Type) [CompactSimpleGaugeGroup G]
-  (qft : QuantumYangMillsTheory G) (x y : Spacetime) : ℝ :=
-  qft.twoPointFunction x y
+/-! Helper definitions for writing statements close to the Clay text. -/
+
+/-- A “local operator at a spatial point” obtained by conjugating by spatial translation. -/
+noncomputable def localOperatorAt {H : Type} [NormedAddCommGroup H] [NormedSpace ℝ H]
+    (U : Space → (H ≃ₗᵢ[ℝ] H)) (x : Space) (O : LinearOperator H) : LinearOperator H :=
+  conjugateOperator (U x) O
+
+/-- “Centered” operator: its vacuum expectation value vanishes. -/
+def IsCentered {H : Type} [NormedAddCommGroup H] [InnerProductSpace ℝ H]
+    (Ω : H) (O : LinearOperator H) : Prop :=
+  vacuumExpectation Ω O = 0
+
+/-- A “two-point function” on test functions, defined as a vacuum expectation of a product. -/
+noncomputable def TwoPointFunction (G : Type) [CompactSimpleGaugeGroup G]
+    (qft : QuantumYangMillsTheory G) (f g : SchwartzSpace) : ℝ :=
+  correlation qft.field_operators qft.wightman.vacuum [f, g]
 
 end MillenniumYangMillsDefs

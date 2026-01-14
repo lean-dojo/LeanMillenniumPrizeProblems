@@ -45,44 +45,58 @@ open RCLike ComplexConjugate InnerProductSpace
 
 section BasicProperties
 
+/-- Conjugate symmetry of the inner product. -/
 @[simp mid+1]
 theorem inner_conj_symm (x y : E) : ⟪y, x⟫† = ⟪x, y⟫ := by rw[conj_symm]
 
+/-- Symmetry of the real inner product (the `𝕜 = ℝ` special case). -/
 theorem real_inner_comm (x y : F) : ⟪y, x⟫_ℝ = ⟪x, y⟫_ℝ := by
   rw[← conj_symm]; simp only [conj_trivial]
 
+/-- Swapping arguments preserves the predicate `⟪x,y⟫ = 0`. -/
 theorem inner_eq_zero_symm {x y : E} : ⟪x, y⟫ = 0 ↔ ⟪y, x⟫ = 0 := by
   rw [← inner_conj_symm]
   exact star_eq_zero
 
+/-- The imaginary part of `⟪x,x⟫` vanishes. -/
 @[simp mid+1]
 theorem inner_self_im (x : E) : RCLike.im ⟪x, x⟫ = 0 := by
   rw [← @ofReal_inj 𝕜, im_eq_conj_sub]; simp
 
+/-- Additivity in the left argument. -/
 theorem inner_add_left (x y z : E) : ⟪x + y, z⟫ = ⟪x, z⟫ + ⟪y, z⟫ := by rw[add_left]
 
+/-- Additivity in the right argument (derived from conjugate symmetry). -/
 theorem inner_add_right (x y z : E) : ⟪x, y + z⟫ = ⟪x, y⟫ + ⟪x, z⟫ := by
   rw [← inner_conj_symm, inner_add_left, RingHom.map_add]
   simp only [inner_conj_symm]
 
+/-- Symmetry of real parts: `re ⟪x,y⟫ = re ⟪y,x⟫`. -/
 theorem inner_re_symm (x y : E) : re ⟪x, y⟫ = re ⟪y, x⟫ := by rw [← inner_conj_symm, conj_re]
 
+/-- Skew-symmetry of imaginary parts: `im ⟪x,y⟫ = -im ⟪y,x⟫`. -/
 theorem inner_im_symm (x y : E) : im ⟪x, y⟫ = -im ⟪y, x⟫ := by rw [← inner_conj_symm, conj_im]
 
+/-- Conjugate-linearity in the left argument. -/
 theorem inner_smul_left (x y : E) (r : 𝕜) : ⟪r • x, y⟫ = r† * ⟪x, y⟫ := by rw [smul_left]
 
+/-- Real scalar multiplication in the left argument (`𝕜 = ℝ`). -/
 theorem real_inner_smul_left (x y : F) (r : ℝ) : ⟪r • x, y⟫_ℝ = r * ⟪x, y⟫_ℝ :=
   inner_smul_left _ _ _
 
+/-- Coercing a real scalar to `𝕜` recovers the usual real-linearity in the left argument. -/
 theorem inner_smul_real_left (x y : E) (r : ℝ) : ⟪(r : 𝕜) • x, y⟫ = r • ⟪x, y⟫ := by
   rw [inner_smul_left, conj_ofReal, Algebra.smul_def]
 
+/-- Linearity in the right argument. -/
 theorem inner_smul_right (x y : E) (r : 𝕜) : ⟪x, r • y⟫ = r * ⟪x, y⟫ := by
   rw [← inner_conj_symm, inner_smul_left, RingHom.map_mul, conj_conj, inner_conj_symm]
 
+/-- Real scalar multiplication in the right argument (`𝕜 = ℝ`). -/
 theorem real_inner_smul_right (x y : F) (r : ℝ) : ⟪x, r • y⟫_ℝ = r * ⟪x, y⟫_ℝ :=
   inner_smul_right _ _ _
 
+/-- Coercing a real scalar to `𝕜` recovers the usual real-linearity in the right argument. -/
 theorem inner_smul_real_right (x y : E) (r : ℝ) : ⟪x, (r : 𝕜) • y⟫ = r • ⟪x, y⟫ := by
   rw [inner_smul_right, Algebra.smul_def]
 
@@ -106,33 +120,41 @@ theorem inner_sum {ι : Type*} (s : Finset ι) (f : ι → E) (x : E) :
     ⟪x, ∑ i ∈ s, f i⟫ = ∑ i ∈ s, ⟪x, f i⟫ :=
   map_sum (LinearMap.flip sesqFormOfInner x) _ _
 
+/-- `⟪0,x⟫ = 0`. -/
 @[simp mid+1]
 theorem inner_zero_left (x : E) : ⟪0, x⟫ = 0 := by
   rw [← zero_smul 𝕜 (0 : E), inner_smul_left, RingHom.map_zero, zero_mul]
 
+/-- Taking the real part of `⟪0,x⟫` gives `0`. -/
 theorem inner_re_zero_left (x : E) : re ⟪0, x⟫ = 0 := by
   simp only [inner_zero_left, AddMonoidHom.map_zero]
 
+/-- `⟪x,0⟫ = 0`. -/
 @[simp mid+1]
 theorem inner_zero_right (x : E) : ⟪x, 0⟫ = 0 := by
   rw [← inner_conj_symm, inner_zero_left, RingHom.map_zero]
 
+/-- Taking the real part of `⟪x,0⟫` gives `0`. -/
 theorem inner_re_zero_right (x : E) : re ⟪x, 0⟫ = 0 := by
   simp only [inner_zero_right, AddMonoidHom.map_zero]
 
+/-- Nonnegativity of `re ⟪x,x⟫`, using the `inner_top_equiv_norm` axiom. -/
 theorem inner_self_nonneg {x : E} : 0 ≤ re ⟪x, x⟫ := by
   have ⟨c,d,hc,_,h⟩ := inner_top_equiv_norm (𝕜:=𝕜) (E:=E)
   have ⟨h'',_⟩ := h x
   apply le_trans _ h''
   positivity
 
+/-- Nonnegativity of `⟪x,x⟫_ℝ` in the real case. -/
 theorem real_inner_self_nonneg {x : F} : 0 ≤ ⟪x, x⟫_ℝ :=
   @inner_self_nonneg ℝ F _ _ _ x
 
+/-- The inner product `⟪x,x⟫` is real (its real part, coerced back to `𝕜`). -/
 @[simp mid+1]
 theorem inner_self_ofReal_re (x : E) : (re ⟪x, x⟫ : 𝕜) = ⟪x, x⟫ :=
   ((RCLike.is_real_TFAE (⟪x, x⟫ : 𝕜)).out 2 3).2 (inner_self_im _)
 
+/-- Characterization of `x = 0` via the inequality `re ⟪x,x⟫ ≤ 0`. -/
 @[simp mid+1]
 theorem inner_self_nonpos {x : E} : re ⟪x, x⟫ ≤ 0 ↔ x = 0 := by
   constructor
@@ -144,9 +166,11 @@ theorem inner_self_nonpos {x : E} : re ⟪x, x⟫ ≤ 0 ↔ x = 0 := by
     simp_all only [gt_iff_lt, smul_eq_mul, norm_le_zero_iff]
   · simp_all only [inner_zero_right, map_zero, le_refl, implies_true]
 
+/-- Real version of `inner_self_nonpos`. -/
 theorem real_inner_self_nonpos {x : F} : ⟪x, x⟫_ℝ ≤ 0 ↔ x = 0 :=
   @inner_self_nonpos ℝ F _ _ _ x
 
+/-- Characterization of `x = 0` via the equation `⟪x,x⟫ = 0`. -/
 @[simp mid+1]
 theorem inner_self_eq_zero {x : E} : ⟪x, x⟫ = 0 ↔ x = 0 := by
   constructor
@@ -155,32 +179,42 @@ theorem inner_self_eq_zero {x : E} : ⟪x, x⟫ = 0 ↔ x = 0 := by
     simp only [h, map_zero, le_refl]
   · simp_all only [inner_zero_right, implies_true]
 
+/-- Nonvanishing of `⟪x,x⟫` is equivalent to `x ≠ 0`. -/
 theorem inner_self_ne_zero {x : E} : ⟪x, x⟫ ≠ 0 ↔ x ≠ 0 :=
   inner_self_eq_zero.not
 
+/-- Norm of the inner product is symmetric in the arguments. -/
 theorem norm_inner_symm (x y : E) : ‖⟪x, y⟫‖ = ‖⟪y, x⟫‖ := by rw [← inner_conj_symm, norm_conj]
 
 
+/-- Negating the left argument negates the inner product. -/
 @[simp mid+1]
 theorem inner_neg_left (x y : E) : ⟪-x, y⟫ = -⟪x, y⟫ := by
   rw [← neg_one_smul 𝕜 x, inner_smul_left]
   simp
 
+/-- Negating the right argument negates the inner product. -/
 @[simp mid+1]
 theorem inner_neg_right (x y : E) : ⟪x, -y⟫ = -⟪x, y⟫ := by
   rw [← inner_conj_symm, inner_neg_left]; simp only [RingHom.map_neg, inner_conj_symm]
 
+/-- Negating both arguments leaves the inner product unchanged. -/
 theorem inner_neg_neg (x y : E) : ⟪-x, -y⟫ = ⟪x, y⟫ := by simp
 
 -- Porting note: removed `simp` because it can prove it using `inner_conj_symm`
+
+/-- The self-inner product is fixed by conjugation (`⟪x,x⟫† = ⟪x,x⟫`). -/
 theorem inner_self_conj (x : E) : ⟪x, x⟫† = ⟪x, x⟫ := inner_conj_symm _ _
 
+/-- Expand an inner product with a subtraction in the left argument. -/
 theorem inner_sub_left (x y z : E) : ⟪x - y, z⟫ = ⟪x, z⟫ - ⟪y, z⟫ := by
   simp [sub_eq_add_neg, inner_add_left]
 
+/-- Expand an inner product with a subtraction in the right argument. -/
 theorem inner_sub_right (x y z : E) : ⟪x, y - z⟫ = ⟪x, y⟫ - ⟪x, z⟫ := by
   simp [sub_eq_add_neg, inner_add_right]
 
+/-- The product `⟪x,y⟫ * ⟪y,x⟫` is real and equals its norm. -/
 theorem inner_mul_symm_re_eq_norm (x y : E) : re (⟪x, y⟫ * ⟪y, x⟫) = ‖⟪x, y⟫ * ⟪y, x⟫‖ := by
   rw [← inner_conj_symm, mul_comm]
   exact re_eq_norm_of_mul_conj ⟪y, x⟫
@@ -196,7 +230,7 @@ theorem real_inner_add_add_self (x y : F) :
   simp only [inner_add_add_self, this, add_left_inj]
   ring
 
--- Expand `⟪x - y, x - y⟫`
+/-- Expand `⟪x - y, x - y⟫`. -/
 theorem inner_sub_sub_self (x y : E) : ⟪x - y, x - y⟫ = ⟪x, x⟫ - ⟪x, y⟫ - ⟪y, x⟫ + ⟪y, y⟫ := by
   simp only [inner_sub_left, inner_sub_right]; ring
 
@@ -209,9 +243,11 @@ theorem real_inner_sub_sub_self (x y : F) :
 
 variable (𝕜)
 
+/-- Extensionality: if `⟪v,x⟫ = ⟪v,y⟫` for all `v`, then `x = y`. -/
 theorem ext_inner_left {x y : E} (h : ∀ v, ⟪v, x⟫ = ⟪v, y⟫) : x = y := by
   rw [← sub_eq_zero, ← @inner_self_eq_zero 𝕜, inner_sub_right, sub_eq_zero, h (x - y)]
 
+/-- Extensionality: if `⟪x,v⟫ = ⟪y,v⟫` for all `v`, then `x = y`. -/
 theorem ext_inner_right {x y : E} (h : ∀ v, ⟪x, v⟫ = ⟪y, v⟫) : x = y := by
   rw [← sub_eq_zero, ← @inner_self_eq_zero 𝕜, inner_sub_left, sub_eq_zero, h (x - y)]
 
@@ -223,18 +259,19 @@ def innerₛₗ : E →ₗ⋆[𝕜] E →ₗ[𝕜] 𝕜 :=
   LinearMap.mk₂'ₛₗ _ _ (fun v w => ⟪v, w⟫) inner_add_left (fun _ _ _ => inner_smul_left _ _ _)
     inner_add_right fun _ _ _ => inner_smul_right _ _ _
 
+/-- `innerₛₗ` agrees with `⟪·,·⟫` after coercion to a function. -/
 @[simp mid+1]
 theorem innerₛₗ_apply_coe (v : E) : ⇑(innerₛₗ 𝕜 v) = fun w => ⟪v, w⟫ :=
   rfl
 
+/-- `innerₛₗ v w = ⟪v,w⟫`. -/
 @[simp]
 theorem innerₛₗ_apply (v w : E) : innerₛₗ 𝕜 v w = ⟪v, w⟫ :=
   rfl
 
 variable (F)
 /-- The inner product as a bilinear map in the real case. -/
-noncomputable
-def innerₗ : F →ₗ[ℝ] F →ₗ[ℝ] ℝ := innerₛₗ ℝ
+noncomputable def innerₗ : F →ₗ[ℝ] F →ₗ[ℝ] ℝ := innerₛₗ ℝ
 
 @[simp] lemma flip_innerₗ : (innerₗ F).flip = innerₗ F := by
   ext v w
@@ -251,6 +288,7 @@ variable
   {ι : Type*} [Fintype ι]
   {E : ι → Type*} [∀ i, NormedAddCommGroup (E i)] [∀ i, AdjointSpace 𝕜 (E i)]
 
+/-- The base field `𝕜` is an `AdjointSpace` with the standard inner product `⟪x,y⟫ = conj x * y`. -/
 instance : AdjointSpace 𝕜 𝕜 where
   inner_top_equiv_norm := by
     apply Exists.intro 1
@@ -264,9 +302,11 @@ instance : AdjointSpace 𝕜 𝕜 where
     intro x y r
     simp [mul_assoc, mul_left_comm, mul_comm]
 
+/-- The unit type carries the trivial inner product. -/
 instance : Inner 𝕜 Unit where
   inner _ _ := 0
 
+/-- `Unit` is an `AdjointSpace` with the trivial inner product. -/
 instance : AdjointSpace 𝕜 Unit where
   inner_top_equiv_norm := by
     apply Exists.intro 1
@@ -276,6 +316,7 @@ instance : AdjointSpace 𝕜 Unit where
   add_left := by simp[Inner.inner]
   smul_left := by simp[Inner.inner]
 
+/-- Product of `AdjointSpace`s, with inner product given by the sum of componentwise inner products. -/
 instance : AdjointSpace 𝕜 (X×Y) where
   inner := fun (x,y) (x',y') => ⟪x,x'⟫_𝕜 + ⟪y,y'⟫_𝕜
   inner_top_equiv_norm := by
@@ -357,6 +398,7 @@ instance : AdjointSpace 𝕜 (X×Y) where
   smul_left := by simp[inner_smul_left,mul_add]
 
 open Classical in
+/-- Finite product of `AdjointSpace`s, with inner product defined by summing componentwise inner products. -/
 instance : AdjointSpace 𝕜 ((i : ι) → E i) where
   inner := fun x y => ∑ i, ⟪x i, y i⟫_𝕜
   inner_top_equiv_norm := by
@@ -497,7 +539,9 @@ instance : AdjointSpace 𝕜 ((i : ι) → E i) where
   smul_left := by simp[inner_smul_left,Finset.mul_sum]
 
 
+/-- Inner product on a product type splits as the sum of componentwise inner products. -/
 theorem inner_prod_split (x y : X×Y) : ⟪x,y⟫_𝕜 = ⟪x.1,y.1⟫_𝕜 + ⟪x.2,y.2⟫_𝕜 := by rfl
 
+/-- Inner product on a dependent function type is the sum of componentwise inner products. -/
 theorem inner_forall_split (f g : (i : ι) → E i) :
     ⟪f,g⟫_𝕜 = ∑ i, ⟪f i, g i⟫_𝕜 := by rfl

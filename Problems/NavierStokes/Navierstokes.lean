@@ -25,9 +25,13 @@ noncomputable def MaterialDerivative (n : ℕ) (u : VelocityField n) :
       -- Convective term: (u·∇)v
       ∑ j : Fin n, u x j * partialDeriv (n := n + 1) (j.succ) (fun y => v y i) x)
 
-/-- The divergence-free condition: ∇·u = 0 -/
-noncomputable def DivergenceFree {n : ℕ} (u : VelocityField n) : Prop :=
-  ∀ x, ∑ i : Fin n, partialDeriv (n := n + 1) (i.succ) (fun y => u y i) x = 0
+/-- Divergence of a velocity field at a spacetime point: `div u = ∑ᵢ ∂ᵢ uᵢ`. -/
+noncomputable def divergence {n : ℕ} (u : VelocityField n) (x : Euc ℝ (n+1)) : ℝ :=
+  ∑ i : Fin n, partialDeriv (n := n + 1) (i.succ) (fun y => u y i) x
+
+/-- Divergence-free condition at a spacetime point. -/
+def DivergenceFreeAt {n : ℕ} (u : VelocityField n) (x : Euc ℝ (n+1)) : Prop :=
+  divergence u x = 0
 
 /-- The viscous stress term: ν·Δu -/
 noncomputable def ViscousTerm (n : ℕ) (nu : ℝ) (u : VelocityField n) (x : Euc ℝ (n+1)) : Euc ℝ n :=
@@ -127,6 +131,10 @@ structure NavierStokesEquations (n : ℕ) where
 
 -- ===========================================================================
 
+/-- Spacetime domain `ℝⁿ × [0,T)` viewed inside `ℝ^{n+1}`. -/
+def TimeDomain (n : ℕ) (T : ℝ) : Set (Euc ℝ (n+1)) :=
+  {x | 0 ≤ x 0 ∧ x 0 < T}
+
 /--
   A solution to the Navier-Stokes equations.
 
@@ -167,14 +175,6 @@ structure Solution {n : ℕ} (nse : NavierStokesEquations n) where
   T_pos : T > 0
 
   /--
-    Domain is [0,T) × ℝⁿ - the spacetime region where the solution is defined.
-
-    This represents the product of the time interval [0,T) with the entire
-    spatial domain ℝⁿ, giving a half-open cylinder in ℝⁿ⁺¹.
-  -/
-  domain : Set (Euc ℝ (n+1)) := {x | 0 ≤ x 0 ∧ x 0 < T}
-
-  /--
     The solution satisfies the momentum equation - Newton's 2nd law for fluids.
 
     This is the core dynamical equation of fluid motion:
@@ -188,7 +188,11 @@ structure Solution {n : ℕ} (nse : NavierStokesEquations n) where
 
     This equation expresses conservation of momentum in the fluid.
   -/
-  momentum_equation : ∀ x ∈ domain, MaterialDerivative n u u x + PressureGradient p x = ViscousTerm n nse.nu u x + nse.f x
+  momentum_equation :
+    ∀ x : Euc ℝ (n+1),
+      x ∈ TimeDomain n T →
+        MaterialDerivative n u u x + PressureGradient p x =
+          ViscousTerm n nse.nu u x + nse.f x
 
   /--
     The solution satisfies the incompressibility condition - fluid volume is preserved.
@@ -199,7 +203,8 @@ structure Solution {n : ℕ} (nse : NavierStokesEquations n) where
 
     This is a kinematic constraint rather than a dynamic equation.
   -/
-  incompressible : ∀ x ∈ domain, DivergenceFree u
+  incompressible :
+    ∀ x : Euc ℝ (n+1), x ∈ TimeDomain n T → DivergenceFreeAt u x
 
   /--
     The solution matches the initial condition at t=0.
@@ -210,12 +215,66 @@ structure Solution {n : ℕ} (nse : NavierStokesEquations n) where
   -/
   initial_condition : ∀ x : Euc ℝ n, u (pairToEuc 0 x) = nse.initialVelocity x
 
+namespace Solution
+
+/-- The spacetime region `ℝⁿ × [0,T)` on which a `Solution` is required to satisfy the PDE. -/
+abbrev domain {n : ℕ} {nse : NavierStokesEquations n} (sol : Solution nse) : Set (Euc ℝ (n+1)) :=
+  TimeDomain n sol.T
+
+end Solution
+
+-- ===========================================================================
+
+/-- Spacetime domain `ℝⁿ × [0,∞)` viewed inside `ℝ^{n+1}`. -/
+def GlobalDomain (n : ℕ) : Set (Euc ℝ (n+1)) :=
+  {x | 0 ≤ x 0}
+
+/--
+A global-in-time Navier–Stokes solution on `ℝⁿ × [0,∞)`.
+
+This matches the Clay statement's use of solutions on `ℝ³ × [0,∞)`, avoiding the finite-horizon
+parameter `T` used by `Solution`.
+-/
+structure GlobalSolution {n : ℕ} (nse : NavierStokesEquations n) where
+  /-- Velocity field `u : ℝ^{n+1} → ℝⁿ`. -/
+  u : VelocityField n
+  /-- Pressure field `p : ℝ^{n+1} → ℝ`. -/
+  p : PressureField n
+
+  /-- Momentum equation (Navier–Stokes) on `t ≥ 0`. -/
+  momentum_equation :
+    ∀ x : Euc ℝ (n+1),
+      x ∈ GlobalDomain n →
+        MaterialDerivative n u u x + PressureGradient p x =
+          ViscousTerm n nse.nu u x + nse.f x
+
+  /-- Incompressibility `div u = 0` on `t ≥ 0`. -/
+  incompressible :
+    ∀ x : Euc ℝ (n+1), x ∈ GlobalDomain n → DivergenceFreeAt u x
+
+  /-- Initial condition at time `t = 0`. -/
+  initial_condition : ∀ x : Euc ℝ n, u (pairToEuc 0 x) = nse.initialVelocity x
+
+/-- A global solution whose fields are smooth (a Lean stand-in for `C^∞`). -/
+structure GlobalSmoothSolution {n : ℕ} (nse : NavierStokesEquations n) extends GlobalSolution nse where
+  velocity_smooth : ContDiff ℝ ⊤ u
+  pressure_smooth : ContDiff ℝ ⊤ p
+
 -- ===========================================================================
 /--
   The energy of a fluid flow at time t.
 
   This function captures the total kinetic energy of the fluid at a given time t.
   It is defined as the integral of the squared velocity field over the spatial domain.
+-/
+noncomputable def energyIntegral {n : ℕ} (u : VelocityField n) (t : ℝ) : ℝ :=
+  ∫ x : Euc ℝ n, ∑ i : Fin n, (u (pairToEuc t x) i)^2
+
+/--
+Kinetic energy `E(t) = (1/2) ∫ |u(x,t)|^2 dx` (a normalized variant of `energyIntegral`).
+
+This matches the physical normalization used in many Navier–Stokes references; the Clay PDF uses the
+un-normalized “energy” in its condition (7).
 -/
 noncomputable def kineticEnergy {n : ℕ} (u : VelocityField n) (t : ℝ) : ℝ :=
   ∫ x : Euc ℝ n, (1/2) * ∑ i : Fin n, (u (pairToEuc t x) i)^2
@@ -229,9 +288,13 @@ noncomputable def enstrophy {n : ℕ} (u : VelocityField n) (t : ℝ) : ℝ :=
 /-- A smooth solution to the Navier-Stokes equations -/
 structure SmoothSolution {n : ℕ} (nse : NavierStokesEquations n) extends Solution nse where
   /-- The velocity field is infinitely differentiable -/
-  velocity_smooth : ∀ x ∈ domain, ContDiffAt ℝ ⊤ (λ y => u y) x
+  velocity_smooth :
+    ∀ x : Euc ℝ (n+1),
+      x ∈ TimeDomain n T → ContDiffAt ℝ ⊤ (fun y => u y) x
   /-- The pressure field is infinitely differentiable -/
-  pressure_smooth : ∀ x ∈ domain, ContDiffAt ℝ ⊤ (λ y => p y) x
+  pressure_smooth :
+    ∀ x : Euc ℝ (n+1),
+      x ∈ TimeDomain n T → ContDiffAt ℝ ⊤ (fun y => p y) x
 
 -- ===========================================================================
 /--
@@ -273,11 +336,6 @@ structure WeakSolution {n : ℕ} (nse : NavierStokesEquations n) where
     T is positive - ensures a non-degenerate time interval.
   -/
   T_pos : T > 0
-
-  /--
-    Domain is [0,T) × ℝⁿ - the spacetime region where the solution is defined.
-  -/
-  domain : Set (Euc ℝ (n+1)) := {x | 0 ≤ x 0 ∧ x 0 < T}
 
   /--
     The velocity field belongs to the appropriate Sobolev space.
@@ -324,7 +382,8 @@ structure WeakSolution {n : ℕ} (nse : NavierStokesEquations n) where
     -- Test function requirements (smooth, compact support, divergence-free)
     ContDiff ℝ ⊤ φ →
     (∃ K : Set (Euc ℝ (n+1)), IsCompact K ∧ ∀ x ∉ K, φ x = 0) →
-    (∀ x ∈ domain, ∑ i : Fin n, partialDeriv (i.succ) (λ y => φ y i) x = 0) →
+    (∀ x : Euc ℝ (n+1), x ∈ TimeDomain n T →
+        ∑ i : Fin n, partialDeriv (i.succ) (λ y => φ y i) x = 0) →
     -- Weak formulation of momentum equation
     ∫ t in Set.Icc 0 T, ∫ x : Euc ℝ n,
       (-(∑ i : Fin n, u (pairToEuc t x) i * partialDeriv 0 (λ y => φ y i) (pairToEuc t x))  -- Time derivative term
@@ -373,6 +432,14 @@ structure WeakSolution {n : ℕ} (nse : NavierStokesEquations n) where
     (∃ K : Set (Euc ℝ n), IsCompact K ∧ ∀ x ∉ K, φ x = 0) →
     ∫ x : Euc ℝ n, (∑ i : Fin n, u (pairToEuc 0 x) i * φ x i) =
     ∫ x : Euc ℝ n, (∑ i : Fin n, nse.initialVelocity x i * φ x i)
+
+namespace WeakSolution
+
+/-- The spacetime region `ℝⁿ × [0,T)` on which a `WeakSolution` is considered. -/
+abbrev domain {n : ℕ} {nse : NavierStokesEquations n} (sol : WeakSolution nse) : Set (Euc ℝ (n+1)) :=
+  TimeDomain n sol.T
+
+end WeakSolution
 
 /--
   Leray-Hopf weak solutions to the Navier-Stokes equations.

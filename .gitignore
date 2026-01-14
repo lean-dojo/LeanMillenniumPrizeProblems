@@ -20,3 +20,6 @@ tmp/
 
 # Cache files
 .cache/
+
+# Reference PDFs are stored under `Problems/**/references/`.
+*.pdf.sha256

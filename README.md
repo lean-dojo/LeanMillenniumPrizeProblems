@@ -1,12 +1,167 @@
-# Formalization of the Millennium Prize Problems in Lean4
+# Lean Millennium Prize Problem statements
 
-This is a repository for the Lean Millennium Problems project. **The goal of this project is to formalize the Millennium Problem statements in the Lean theorem prover**, which is the first of its kind. The Millennium Problems are seven problems in mathematics that were stated by the Clay Mathematics Institute in 2000. A correct solution to any of these problems results in a one million dollar prize. As of now, only the Poincaré Conjecture has been solved. I would hope that one day there would be an 8th Millennium Problem that is to have the full formalization/solutions of all the Millennium Problems in Lean or even better a full formalization of the whole field of mathematics in Lean.
+This repository focuses on **formalizing the official Clay Mathematics Institute Millennium Prize
+Problem statements** in Lean 4 (Mathlib). It is *not* a repository of solutions; the goal is to
+make each problem statement precise and machine-checkable.
 
 <center>
 <img src="millennium_problems.png" >
 </center>
 
-**Note:** I tried to formalize the problems as accurately as possible. However, I am not a mathematician, so there may be inaccuracies in the formalizations. If you find any inaccuracies, please let me know! The formalizations are complete in the sense that I use definitions (That are important to define the conjectures) that have sorries in them, and I do not prove all definitions/theorems that are needed to formalize the problems. I hope that this project can be a starting point for a bigger project where we can formalize all the definitions and theorems needed to fully say the formalization of the conjectures is complete from the ground up, like the Poincaré Conjecture formalization, which is already in Mathlib.
+## Quick Start
+
+- Build everything: `lake build`
+- Problem statements live in: `Problems/<Problem>/Millennium.lean`
+- Official Clay PDFs live in: `Problems/<Problem>/references/clay/`
+
+To (re)download or verify that the PDFs exist locally, use `scripts/clay_refs.py`
+(see `scripts/README.md`).
+
+## Design Goals
+
+- Keep the repository **`sorry`-free** and **free of user `axiom`s**.
+- When Mathlib does not yet provide enough foundations (common in analysis/QFT), we avoid “fake”
+  placeholders by **parameterizing** statements over explicit *data packages* that record the
+  required objects/properties.
+- Prefer statements that match the wording of the Clay PDFs, with the PDF stored alongside the
+  formalization for easy review.
+
+## Safety Checks
+
+This branch has been checked with [SafeVerify](https://github.com/GasStationManager/SafeVerify) on the compiled
+`.olean` files for all modules under `Problems/**` (self-check), replaying declarations in the kernel and
+enforcing SafeVerify’s restrictions (no `unsafe`/`partial` declarations and no axioms beyond `propext`,
+`Quot.sound`, `Classical.choice`).
+
+## What’s Implemented
+
+Each problem folder contains a `Millennium.lean` that states the Clay problem precisely, plus
+supporting files with definitions/lemmas needed to express that statement.
+
+Some “narrative” examples mentioned in the PDFs (e.g. AKS: `PRIME ∈ P`, Cook–Levin: `SAT` is
+NP-complete) are not currently formalized as Lean theorems; formalizing them would require major
+additional developments in complexity theory within Mathlib.
+
+## Status (per problem)
+
+This repo focuses on *problem statements*, so “status” below refers to how fully each Clay PDF has
+been turned into Lean definitions/theorems (not whether the underlying conjecture is proved).
+
+**Legend**
+- Status:
+  - **Statement**: the Clay statement is expressed as a Lean `Prop` with supporting definitions.
+  - **Parameterized**: the statement is expressed, but depends on an explicit “data package” that
+    stands in for missing Mathlib foundations (keeps the repo `axiom`-free).
+  - **Mathlib**: the statement is already in Mathlib (and may be proved there); this repo restates it.
+- Clay fidelity:
+  - **Direct**: close translation of the Clay PDF statement (modulo routine formalization choices).
+  - **Parameterized**: same mathematical shape as the PDF, but some objects/maps are parameters.
+  - **Modeled**: uses a Lean-level proxy for a PDF concept that is not yet formalized (e.g. spectra
+    of unbounded operators).
+
+| Problem | Main Lean statement | Location | Status | Clay fidelity |
+|---|---|---|---|---|
+| P vs NP | `Millennium.PEqualsNP` | `Problems/PvsNP/Millennium.lean` | Statement | Direct |
+| Riemann Hypothesis | `Millennium.RiemannHypothesis` | `Problems/RiemannHypothesis/Millennium.lean` | Statement | Direct |
+| Navier–Stokes | `MillenniumNavierStokes.NavierStokesMillenniumProblem` | `Problems/NavierStokes/Millennium.lean` | Statement | Direct |
+| Hodge Conjecture | `MillenniumHodge.HodgeConjecture` | `Problems/Hodge/Millennium.lean` | Parameterized | Parameterized |
+| Birch–Swinnerton–Dyer | `MillenniumBirchSwinnertonDyer.BirchSwinnertonDyerConjecture` | `Problems/BirchSwinnertonDyer/Millennium.lean` | Parameterized | Parameterized |
+| Yang–Mills mass gap | `MillenniumYangMills.YangMillsExistenceAndMassGap` | `Problems/YangMills/Millennium.lean` | Parameterized | Modeled |
+| Poincaré Conjecture | `MillenniumPoincare.PoincareConjecture3` | `Problems/Poincare/Millennium.lean` | Mathlib | Direct |
+
+<details>
+<summary>P vs NP: what’s in Lean vs. still missing</summary>
+
+- Clay PDF: `Problems/PvsNP/references/clay/pvsnp.pdf`
+- What’s formalized:
+  - `P`/`NP` as languages over finite alphabets (`List alphabet`), using Cook’s verifier-based `NP`
+    definition (`Millennium.InNP`) and deterministic polynomial-time TM2 computability (`Millennium.InP`).
+  - Polynomial-time many-one reductions (`Millennium.PolyTimeReducible`) and `NP`-completeness (`Millennium.NPComplete`).
+  - Several basic “Cook Proposition 1” implications (closure under reduction, etc.).
+- What’s still narrative / external:
+  - Concrete `NP`-complete problems (`SAT`, `3SAT`, …) and the Cook–Levin theorem.
+  - Worked examples mentioned in the PDF (AKS primality, etc.).
+  - Equivalences between different complexity models (e.g. nondeterministic TM vs verifier definition).
+</details>
+
+<details>
+<summary>Riemann Hypothesis: what’s in Lean vs. still missing</summary>
+
+- Clay PDF: `Problems/RiemannHypothesis/references/clay/riemann.pdf`
+- What’s formalized:
+  - The Clay statement as `Millennium.RiemannHypothesis`, with an equivalence lemma to Mathlib’s
+    `_root_.RiemannHypothesis`.
+  - Several standard narrative facts reused from Mathlib (Dirichlet series/Euler product on `Re(s) > 1`,
+    residue at `s = 1`, completed zeta functional equation, Chebyshev functions, …).
+- What’s still narrative / external:
+  - Most of the “equivalent formulations” and prime-number-theory consequences discussed in the PDF.
+</details>
+
+<details>
+<summary>Navier–Stokes: what’s in Lean vs. still missing</summary>
+
+- Clay PDF: `Problems/NavierStokes/references/clay/navierstokes.pdf`
+- What’s formalized:
+  - Fefferman’s hypotheses and statements (A)–(D), with a single entry point in
+    `Problems/NavierStokes/Millennium.lean` and details split across:
+    `Problems/NavierStokes/MillenniumRDomain.lean` (A,C) and
+    `Problems/NavierStokes/MillenniumBoundedDomain.lean` (B,D + disjunction).
+  - A lightweight PDE scaffold (`Problems/NavierStokes/Navierstokes.lean`) for (global) smooth solutions.
+- Notable formalization choices:
+  - Multi-indices are represented as lists of coordinate directions (slightly stronger than commutative multi-indices).
+  - “Smooth” is `ContDiff ℝ ⊤`.
+- What’s still narrative / external:
+  - The analytic existence/uniqueness/regularity theory itself (this repo only states the problem).
+</details>
+
+<details>
+<summary>Hodge Conjecture: what’s in Lean vs. still missing</summary>
+
+- Clay PDF: `Problems/Hodge/references/clay/hodge.pdf`
+- What’s formalized:
+  - The conjecture statement `MillenniumHodge.HodgeConjecture`, parameterized by `HodgeData`
+    (`Problems/Hodge/Variety.lean`) bundling the cycle class map / Hodge decomposition interfaces.
+- What’s still missing in Mathlib (hence parameterized here):
+  - Construction of singular cohomology for complex varieties, the cycle class map, and the Hodge decomposition
+    in the generality used by the Clay write-up.
+</details>
+
+<details>
+<summary>Birch–Swinnerton–Dyer: what’s in Lean vs. still missing</summary>
+
+- Clay PDF: `Problems/BirchSwinnertonDyer/references/clay/birchswin.pdf`
+- What’s formalized:
+  - The rank part as `MillenniumBirchSwinnertonDyer.BirchSwinnertonDyerConjecture`, phrased via
+    `analyticOrderAt` at `s = 1`.
+  - A refined-formula variant as `MillenniumBirchSwinnertonDyer.RefinedBirchSwinnertonDyerConjecture`
+    (still “data-only” for the arithmetic invariants).
+- What’s still missing in Mathlib (hence parameterized here):
+  - Construction/analytic continuation of the Hasse–Weil `L`-function for elliptic curves; this is abstracted
+    as `MillenniumBirchSwinnertonDyer.ClayLSeriesData`.
+</details>
+
+<details>
+<summary>Yang–Mills: what’s in Lean vs. still missing</summary>
+
+- Clay PDF: `Problems/YangMills/references/clay/yangmills.pdf`
+- What’s formalized:
+  - A Lean formulation `MillenniumYangMills.YangMillsExistenceAndMassGap` in terms of a bundled
+    `QuantumYangMillsTheory` satisfying Wightman-style axioms (`Problems/YangMills/Quantum.lean`).
+- Notable formalization choices (modeling gaps):
+  - The Clay “mass gap” is phrased using Mathlib’s `spectrum` of a (bounded) Hamiltonian operator, which is
+    a stand-in for the unbounded spectral theory used in physics.
+- What’s still narrative / external:
+  - Constructing any non-trivial 4D QFT meeting these axioms, and proving the (modeled) mass gap.
+</details>
+
+<details>
+<summary>Poincaré Conjecture: what’s in Lean vs. still missing</summary>
+
+- Clay PDF: `Problems/Poincare/references/clay/poincare.pdf`
+- What’s formalized:
+  - The (topological) 3D statement as `MillenniumPoincare.PoincareConjecture3`.
+  - Mathlib already contains a proof; this repo mainly provides a Clay-aligned entry point and references.
+</details>
 
 ## Installation
 
@@ -14,49 +169,15 @@ To install Lean, follow the instructions at [the Lean website](https://leanprove
 
 ## Folder Structure
 
-The Problems are the main folder of the project. The stars indicate the completion of the formalization of the problem as in the definitions/theorems needed to state the problem precisely in Lean. All the conjectures are fully defined assuming the definitions are correct. It contains the following subfolders.
+The main code is under `Problems/`. Each subfolder corresponds to one Millennium Prize Problem.
 
-1. **HodgeConjecture**: ⭐⭐☆☆☆ (Partial Completion)
+## References
 
-   This problem concerns the relationship between algebraic geometry and topology in complex manifolds. The Hodge Conjecture states that certain types of cohomology classes (called Hodge classes) on projective algebraic varieties are rational linear combinations of cohomology classes of algebraic cycles. My formalization focuses on defining smooth projective varieties, cohomology groups, and the key concepts of Hodge classes and algebraic cycles. References include Claire Voisin's "Hodge Theory and Complex Algebraic Geometry", Wikipedia and materials from the Clay Mathematics Institute.
-
-2. **Navier-Stokes**: ⭐⭐⭐⭐☆ (Nearly Complete for Bounded Domain Formulation, ie on the Torus) and ⭐⭐⭐⭐⭐ (Complete for Unbounded Domain Formulation)
-
-   This problem asks whether solutions to the Navier-Stokes equations (which model fluid flow) always remain smooth and well-defined or whether they can develop singularities in finite time. The formalization includes definitions of classical and weak solutions, energy inequalities, and the precise statements of the millennium problem in both unbounded and periodic domains. I drew upon Evans' "Partial Differential Equations" textbook and the official Clay Mathematics Institute problem description by Charles Fefferman, and I asked my friends who work in PDE theory for verification.
-
-3. **PvsNP**: ⭐⭐⭐⭐☆ (Nearly Complete) 
-
-   This problem asks whether every computational problem whose solution can be quickly verified (NP) can also be quickly solved (P). My formalization defines the complexity classes P and NP using Turing machines, polynomial-time computation, and verification. I also included a formalization of the polynomial hierarchy. The main references were my undergraduate complexity theory course notes, Sipser's "Introduction to the Theory of Computation" and Arora & Barak's "Computational Complexity: A Modern Approach".
-
-4. **RiemannHypothesis**: ⭐⭐⭐⭐⭐ (Complete)
- 
-   This conjecture states that all non-trivial zeros of the Riemann zeta function have a real part equal to 1/2. The formalization defines the critical strip, critical line, non-trivial zeros, and related concepts like the von Mangoldt function and the Li criterion. References included Edwards' "Riemann's Zeta Function", Wikipedia, My undergraduate complex analyis notes and Bombieri's "Problems of the Millennium: the Riemann Hypothesis".
-
-5. **YangMillsExistenceAndMassGap**: ⭐⭐☆☆☆ (Partial Completion)
-
-   This problem asks for a rigorous mathematical construction of quantum Yang-Mills theories and proof that they exhibit a "mass gap" (positive minimum energy). The formalization includes definitions of spacetime, gauge groups, gauge fields, quantum field axioms (Wightman and Osterwalder-Schrader), and the mass gap property. References included Jaffe & Witten's "Quantum Yang-Mills Theory" and some parts of the standard quantum field theory textbooks like Streater & Wightman's "PCT, Spin and Statistics, and All That."
-
-6. **BirchSwinnertonDyer**: ⭐⭐⭐☆☆ (Moderate Complete)
-
-   This conjecture relates the rank of an elliptic curve's Mordell-Weil group to the behavior of its L-function. The formalization includes definitions of elliptic curves, their Mordell-Weil groups, L-functions, and both parts of the BSD conjecture (rank equals order of zero, and formula for leading coefficient). References included Silverman's "The Arithmetic of Elliptic Curves", my undergraduate complex analysis/number theory notes and Tate's "The Arithmetic of Elliptic Curves".
-
-7. **PoincareConjecture**: ⭐⭐⭐⭐⭐ (Complete)
-
-   This theorem (proven by Perelman in 2003) states that every simply connected, closed 3-manifold is homeomorphic to the 3-sphere. Although this problem has been solved, I included a formalization that defines the key topological concepts involved and states the conjecture precisely. I utilized the existing definitions in Mathlib while simplifying the presentation. References included Milnor's "The Poincaré Conjecture", Wikipedia and Morgan & Tian's "Ricci Flow and the Poincaré Conjecture".
-
-Each problem's formalization includes core definitions necessary to state the problem precisely in Lean, with `sorry` placeholders for components that would require substantial additional development. For problems requiring a specialized mathematical background (Problems 1, 5, 7) beyond my expertise, I consulted with Claude AI to understand the basics and ensure the formalizations captured the essential mathematical structures correctly, plus heavily used LeanSearch and Mathlib for definitions and theorems.
-
-Each of these subfolders contains a Lean file with the name Millennium.lean having the main formalized problem.
-
-## References/Tools/Documentation
-
-1. https://www.claymath.org/millennium-problems/
-2. https://en.wikipedia.org/wiki/Millennium_Prize_Problems
-3. https://www.claymath.org/millennium-problems/
-4. https://leansearch.net/
-5. https://leanprover-community.github.io/mathlib4_docs/
-6. Github Copilot (Only Claude 3.7 Sonnet)
+- Clay Millennium Problems overview: https://www.claymath.org/millennium-problems/
+- Lean 4: https://leanprover.github.io/
+- Mathlib docs: https://leanprover-community.github.io/mathlib4_docs/
 
 ## Contributing
 
-If you would like to contribute to this project, please contact me! I hope that we can work together to formalize all the Millennium Problems Fully with all definitions in Lean and make this a bigger formalization project, and hopefully, someone can add the full proof of the Poincaré Conjecture as well. For the Navier-Stokes, one can notice a lot of formalization has been done for partial derivatives, etc., and so the formalization is fully complete as this is part of our lab's bigger goal to formalize Evan's Graduate Textbook in PDEs in Lean. 
+Contributions are welcome — especially improvements that make the formal statements closer to the
+Clay PDFs, or that replace “external results” with genuine Lean developments and proofs.

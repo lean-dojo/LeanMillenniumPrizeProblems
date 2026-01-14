@@ -11,17 +11,18 @@ import Problems.PvsNP.Millennium
 /-!
 # The Polynomial Hierarchy
 
-Okay this file was just for fun and basically I wanted to formalize the polynomial hierarchy (PH), which is a hierarchy of complexity classes
-that extends the classes P and NP. The hierarchy provides a framework for classifying problems
-that require multiple alternating layers of existential and universal quantification.
+This file defines the polynomial hierarchy (PH), a hierarchy of complexity classes extending P and NP.
+We use the standard "quantifier" characterization: each level is obtained by adding a polynomially
+bounded existential witness in front of a predicate from the previous co-level.
 
 ## Overview
 
-The polynomial hierarchy is defined recursively:
-- Σ₀ᴾ = Π₀ᴾ = Δ₀ᴾ = P
-- Σᵏ⁺¹ᴾ = NP^{Σᵏᴾ} (problems solvable by an NP machine with access to a Σᵏᴾ oracle)
-- Πᵏ⁺¹ᴾ = co-Σᵏ⁺¹ᴾ (the complements of problems in Σᵏ⁺¹ᴾ)
-- Δᵏ⁺¹ᴾ = P^{Σᵏᴾ} (problems solvable in polynomial time with access to a Σᵏᴾ oracle)
+The hierarchy is defined recursively (quantifier form):
+- `Σ₀ᴾ = Π₀ᴾ = P`
+- `Σₖ₊₁ᴾ` consists of languages `L` such that `a ∈ L ↔ ∃ b (|b| ≤ poly(|a|) ∧ (a,b) ∈ L')` for some `L' ∈ Πₖᴾ`
+- `Πₖᴾ` is defined as complements of `Σₖᴾ`
+
+We do not formalize oracle machines here, so we do not define the `Δₖᴾ` oracle classes.
 
 ## Examples
 
@@ -60,29 +61,41 @@ def Complement {α : Type} [Primcodable α] (L : Language α) : Language α :=
   fun a => ¬(L a)
 
 /--
-  Oracle machines are Turing machines that have access to an oracle,
-  which can solve instances of a specific problem in a single step.
+`Σₖᴾ` defined via polynomially-bounded alternating quantifiers (quantifier form).
 
-  This definition extends our complexity classes to handle oracle machines.
+This is one standard characterization of the polynomial hierarchy; it avoids having to formalize
+oracle machines inside the development.
 -/
-def OracleLanguage {α β : Type} [Primcodable α] [Primcodable β]
-    (oracle : Language β) (f : α → β) : Language α :=
-  fun a => oracle (f a)
+def SigmakP (k : ℕ) : {α : Type} → [inst : Primcodable α] → (ea : FinEncoding α) → Language α → Prop
+| α, inst, ea, L =>
+  match k with
+  | 0 => InP ea L
+  | k+1 =>
+      ∃ (β : Type) (instβ : Primcodable β) (eb : FinEncoding β) (L' : Language (α × β)),
+        -- `L'` is in `Πₖᴾ`, i.e. its complement is in `Σₖᴾ`.
+        SigmakP k (pairEncoding ea eb) (Complement L') ∧
+        -- Witness size is polynomially bounded.
+        ∃ (p : Polynomial ℕ),
+          ∀ a, L a ↔ ∃ b, (eb.encode b).length ≤ Polynomial.eval (ea.encode a).length p ∧ L' (a, b)
 
 /--
-  Σ₀ᴾ = Π₀ᴾ = Δ₀ᴾ = P
+`Πₖᴾ` is defined as complements of `Σₖᴾ`.
+-/
+def PikP (k : ℕ) : {α : Type} → [inst : Primcodable α] → (ea : FinEncoding α) → Language α → Prop
+| _α, _inst, ea, L => SigmakP k ea (Complement L)
+
+/--
+  Σ₀ᴾ = Π₀ᴾ = P
 
   The base level of the polynomial hierarchy is P, the class of
   problems solvable in polynomial time.
 -/
 def Sigma0P {α : Type} [Primcodable α] (ea : FinEncoding α) : Language α → Prop :=
-  InP ea
+  SigmakP 0 ea
 
+/-- `Π₀ᴾ = P` (since complements do not add power at level `0`). -/
 def Pi0P {α : Type} [Primcodable α] (ea : FinEncoding α) : Language α → Prop :=
-  Sigma0P ea
-
-def Delta0P {α : Type} [Primcodable α] (ea : FinEncoding α) : Language α → Prop :=
-  Sigma0P ea
+  PikP 0 ea
 
 /--
   Σ₁ᴾ = NP
@@ -93,7 +106,7 @@ def Delta0P {α : Type} [Primcodable α] (ea : FinEncoding α) : Language α →
   Examples: SAT, Hamiltonian Path, Clique problem
 -/
 def Sigma1P {α : Type} [Primcodable α] (ea : FinEncoding α) : Language α → Prop :=
-  InNP ea
+  SigmakP 1 ea
 
 /--
   Π₁ᴾ = co-NP
@@ -104,55 +117,7 @@ def Sigma1P {α : Type} [Primcodable α] (ea : FinEncoding α) : Language α →
   Examples: TAUTOLOGY, No-Hamiltonian Path, No-Clique
 -/
 def Pi1P {α : Type} [Primcodable α] (ea : FinEncoding α) (L : Language α) : Prop :=
-  Sigma1P ea (Complement L)
-
-/--
-  Δ₁ᴾ = P
-
-  The first level of the delta hierarchy is still P.
--/
-def Delta1P {α : Type} [Primcodable α] (ea : FinEncoding α) : Language α → Prop :=
-  InP ea
-
-/--
-  Δ₂ᴾ = P^NP
-
-  The class of problems solvable in polynomial time given an oracle for NP.
-  Equivalently, problems solvable by a polynomial-time algorithm that can
-  make a polynomial number of calls to an NP oracle.
-
-  Examples: Problems solvable by binary search over NP queries,
-            Finding the exact size of a maximum clique using an NP oracle
--/
-def Delta2P {α : Type} [Primcodable α] (ea : FinEncoding α) (L : Language α) : Prop :=
-  ∃ (β : Type) (instβ : Primcodable β) (eb : FinEncoding β) (L' : Language β) (f : α → β),
-    Sigma1P eb L' ∧
-    (∃ (comp : TM2ComputableInPolyTime ea eb f), ∀ a, L a ↔ L' (f a))
-
-
-/--
-  The general definition for Σₖᴾ can be recursive, representing
-  k alternations of existential and universal quantifiers.
--/
-def SigmakP (k : ℕ) : {α : Type} → [inst : Primcodable α] → (ea : FinEncoding α) → Language α → Prop
-| α, inst, ea, L =>
-  match k with
-  | 0 => Sigma0P ea L
-  | k+1 =>
-      ∃ (β : Type) (instβ : Primcodable β) (eb : FinEncoding β) (L' : Language (α × β)),
-        -- L' is in Πₖᴾ, i.e. its complement is in Σₖᴾ.
-        SigmakP k (pairEncoding ea eb) (Complement L') ∧
-        -- Certificate size is polynomially bounded.
-        ∃ (p : Polynomial ℕ),
-          ∀ a, L a ↔ ∃ b, (eb.encode b).length ≤ Polynomial.eval (ea.encode a).length p ∧ L' (a, b)
-
-/--
-`Πₖᴾ` is defined as complements of `Σₖᴾ`.
-
-This definition is the standard one and avoids any `sorry`/axioms in the hierarchy definitions.
--/
-def PikP (k : ℕ) : {α : Type} → [inst : Primcodable α] → (ea : FinEncoding α) → Language α → Prop
-| _α, _inst, ea, L => SigmakP k ea (Complement L)
+  PikP 1 ea L
 /--
   The polynomial hierarchy is the union of all Σₖᴾ classes.
 

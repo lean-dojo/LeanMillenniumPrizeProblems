@@ -40,6 +40,7 @@ variable (E : EllipticCurve K)
 noncomputable abbrev MordellWeilGroup : Type u :=
   (E.1.toProjective).Point
 
+/-- The Mordell–Weil group inherits an abelian group structure from Mathlib. -/
 noncomputable instance : AddCommGroup (MordellWeilGroup (K := K) E) := by
   dsimp [MordellWeilGroup]
   infer_instance

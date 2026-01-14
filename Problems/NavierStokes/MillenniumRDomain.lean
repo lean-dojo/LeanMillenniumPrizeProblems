@@ -5,126 +5,115 @@ import Problems.NavierStokes.Navierstokes
 namespace MillenniumNSRDomain
 
 open EuclideanSpace MeasureTheory Order NavierStokes
+open scoped BigOperators
 
+/-!
+# Navier–Stokes Millennium problem (Fefferman) on `ℝ³`
+
+This file states Fefferman's parts (A) and (C) from the Clay problem description
+`Problems/NavierStokes/references/clay/navierstokes.pdf`.
+
+We follow the PDF's numbering:
+
+* (4) decay of the initial velocity and its spatial derivatives
+* (5) decay of the force and its space/time derivatives
+* (6) smoothness of the solution `(p,u)` on `ℝ³ × [0,∞)`
+* (7) bounded energy: `∫_{ℝ³} |u(x,t)|^2 dx < C` uniformly in `t ≥ 0`
+-/
+
+/-- Initial velocity field `u₀ : ℝ³ → ℝ³` in Fefferman's statements (A) and (C). -/
+abbrev InitialVelocityR3 : Type := Euc ℝ 3 → Euc ℝ 3
+
+/-- Force field `f : (t,x) ∈ ℝ × ℝ³ ↦ ℝ³`, i.e. a function on spacetime `ℝ⁴`. -/
+abbrev ForceFieldR3 : Type := Euc ℝ 4 → Euc ℝ 3
+
+/-- Divergence-free condition for an initial velocity field on `ℝ³`. -/
+def DivergenceFreeInitial (u₀ : InitialVelocityR3) : Prop :=
+  ∀ x, ∑ i : Fin 3, partialDeriv i (fun y => u₀ y i) x = 0
+
+/-! ## Fefferman's conditions (4)–(7) -/
+
+/-- Spatial derivatives of a vector field, packaged as an `ℝ³`-vector. -/
+noncomputable def spatialDerivVec (u₀ : InitialVelocityR3) (α : List (Fin 3)) (x : Euc ℝ 3) : Euc ℝ 3 :=
+  Euc.ofFun (𝕜 := ℝ) (n := 3) (fun i : Fin 3 => iteratedPartialDeriv (n := 3) α (fun y => u₀ y i) x)
 
 /--
-  # The Millennium Problem statement for Navier-Stokes equations in 3D on the full domain!
+Fefferman's decay condition (4) for the initial velocity `u₀` on `ℝ³`.
 
-  Again this is my understanding of the problem and the statement plus has been verified by some
-  Analysis graduate students.
-
-  The Clay Mathematics Institute Millennium Prize Problem on
-  Navier-Stokes equations, which asks for either a proof of existence of
-  smooth solutions for all time or a proof of blow-up (breakdown) of solutions.
-
-  The Navier-Stokes equations model the motion of incompressible fluid flows,
-  and despite their widespread use in physics and engineering, the question of
-  whether their solutions remain smooth for all time remains open.
+We encode multi-indices as lists of coordinate directions; this is (slightly) stronger than the
+commutative multi-index formulation, but matches the intent.
 -/
-structure MillenniumProblem where
-  /--
-    Given smooth initial data with finite energy.
-    The initial velocity field is a function from 3D space to 3D vectors.
-  -/
-  initialVelocity : Euc ℝ 3 → Euc ℝ 3
+def FeffermanCond4 (u₀ : InitialVelocityR3) : Prop :=
+  ContDiff ℝ ⊤ u₀ ∧
+    ∀ (α : List (Fin 3)) (K : ℕ),
+      ∃ C : ℝ, 0 < C ∧ ∀ x : Euc ℝ 3,
+        ‖spatialDerivVec u₀ α x‖ ≤ C / (1 + ‖x‖) ^ K
 
-  /--
-    The initial velocity is infinitely differentiable (smooth).
-    This is represented by ContDiff ℝ ⊤, where ⊤ indicates infinite differentiability.
-  -/
-  initialVelocity_smooth : ContDiff ℝ ⊤ initialVelocity
-
-  /--
-    The initial velocity has finite energy.
-    This is a physical requirement ensuring the total kinetic energy of the fluid
-    is finite, which is measured by the L² norm of the velocity field.
-  -/
-  initialVelocity_finite_energy : HasFiniteIntegral (fun x => ∑ i : Fin 3, (initialVelocity x i)^2)
-
-  /--
-    The initial velocity is divergence free.
-    This condition represents the incompressibility of the fluid,
-    mathematically expressed as ∇⋅v = 0. It means the fluid density
-    remains constant as it flows.
-  -/
-  initialVelocity_div_free : ∀ x, ∑ i : Fin 3, partialDeriv i (λ y => initialVelocity y i) x = 0
-
-
-  /-- Viscosity coefficient (must be positive) -/
-  nu : ℝ
-
-  /-- Viscosity is positive - a physical requirement -/
-  nu_pos : nu > 0
-
-  /-- External force field acting on the fluid -/
-  f : ForceField 3
-
-  /--
-    The Navier-Stokes equations with this initial data.
-
-    We set up a specific instance of the Navier-Stokes system with:
-    - Viscosity (nu) = 1 (normalized)
-    - No external forces (f = 0)
-    - Our specified initial velocity field
-
-    These equations represent the fundamental laws of fluid motion,
-    combining Newton's second law with the assumption of constant density.
-  -/
-  nse : NavierStokesEquations 3 := {
-    nu := nu,                            -- Kinematic viscosity (from parameter)
-    f := f,                              -- External force field
-    nu_pos := nu_pos,                    -- Proof that viscosity is positive
-    initialVelocity := initialVelocity,  -- Initial velocity field
-    initialDivergenceFree := initialVelocity_div_free  -- Proof of incompressibility
-  }
+/-- Mixed (time + space) derivatives of a force field, packaged as an `ℝ³`-vector. -/
+noncomputable def spaceTimeDerivVec (f : ForceFieldR3) (α : List (Fin 3)) (m : ℕ) (x : Euc ℝ 4) : Euc ℝ 3 :=
+  let idx : List (Fin 4) := (List.replicate m (0 : Fin 4)) ++ (α.map Fin.succ)
+  Euc.ofFun (𝕜 := ℝ) (n := 3) (fun i : Fin 3 => iteratedPartialDeriv (n := 4) idx (fun y => f y i) x)
 
 /--
-  # The existence part of the Millennium Problem.
+Fefferman's decay condition (5) for the forcing term `f` on `ℝ³ × [0,∞)`.
 
-  Now the first possible resolution to the Millennium Problem:
-  that there exists a globally defined smooth solution to the Navier-Stokes equations
-  that extends for all time (t ∈ [0,∞)).
-
-  In mathematical terms, this means there is a velocity field that:
-  - Satisfies the Navier-Stokes equations at every point in space and time
-  - Remains smooth (infinitely differentiable) for all time
-  - Never develops singularities or discontinuities
-
-  Where ⊤ is the top element (infinity) in the WithTop ℝ type, representing unbounded time.
+We express the weight as `(1 + |x| + t)^{-K}` using `‖getSpace x‖` for `|x|` and the time coordinate `x 0 = t`.
 -/
-def ExistenceOfSmoothSolution (problem : MillenniumProblem) : Prop :=
-  ∃ sol : SmoothSolution problem.nse, sol.T = (⊤ : WithTop ℝ)
+def FeffermanCond5 (f : ForceFieldR3) : Prop :=
+  ContDiff ℝ ⊤ f ∧
+    ∀ (α : List (Fin 3)) (m K : ℕ),
+      ∃ C : ℝ, 0 < C ∧
+        ∀ x : Euc ℝ 4, 0 ≤ x 0 →
+          ‖spaceTimeDerivVec f α m x‖ ≤ C / (1 + ‖getSpace x‖ + x 0) ^ K
+
+/-- Fefferman's smoothness condition (6) for a solution `(p,u)`. -/
+def FeffermanCond6 (u : VelocityField 3) (p : PressureField 3) : Prop :=
+  ContDiff ℝ ⊤ u ∧ ContDiff ℝ ⊤ p
+
+/-- Fefferman's bounded-energy condition (7) for a velocity field `u`. -/
+def FeffermanCond7 (u : VelocityField 3) : Prop :=
+  ∃ C : ℝ,
+    ∀ t : ℝ, 0 ≤ t →
+      HasFiniteIntegral (fun x : Euc ℝ 3 => ∑ i : Fin 3, (u (pairToEuc t x) i) ^ 2) ∧
+        energyIntegral u t < C
+
+/-! ## Fefferman's statements (A) and (C) -/
+
+/-- Navier–Stokes equations on `ℝ³` for given `ν`, initial data, and forcing. -/
+def nseR3 (ν : ℝ) (ν_pos : ν > 0) (u₀ : InitialVelocityR3) (u₀_div : DivergenceFreeInitial u₀)
+    (f : ForceField 3) : NavierStokesEquations 3 :=
+  { nu := ν
+    f := f
+    nu_pos := ν_pos
+    initialVelocity := u₀
+    initialDivergenceFree := u₀_div }
 
 /--
-  # The breakdown of smooth solutions part of the Millennium Problem.
+Fefferman's statement (A): Existence and smoothness on `ℝ³`, with `f ≡ 0`.
 
-  Now the second possible resolution to the Millennium Problem:
-  that there exists a maximal time T < ∞ beyond which smooth solutions cannot be extended.
-
-  This corresponds to the formation of a singularity or "blowup" where:
-  - Some quantity (like velocity or its derivatives) becomes unbounded
-  - The solution loses regularity (smoothness)
-  - Physical quantities like energy may concentrate in infinitesimal regions
-
-  The second part (∀ sol'...) ensures T is truly the maximal possible time,
-  meaning no smooth solution can exist beyond this critical time.
+This asks for a global smooth solution on `ℝ³ × [0,∞)` satisfying (6) and (7), for every smooth
+divergence-free initial velocity satisfying (4).
 -/
-def BreakdownOfSmoothSolution (problem : MillenniumProblem) : Prop :=
-  ∃ sol : SmoothSolution problem.nse, sol.T < (⊤ : WithTop ℝ) ∧
-    ∀ sol' : SmoothSolution problem.nse, sol'.T ≤ sol.T
+def FeffermanA : Prop :=
+  ∀ (ν : ℝ) (ν_pos : ν > 0) (u₀ : InitialVelocityR3),
+    FeffermanCond4 u₀ →
+    ∀ hdiv : DivergenceFreeInitial u₀,
+      ∃ sol : GlobalSmoothSolution (nseR3 ν ν_pos u₀ hdiv (fun _ => 0)),
+        FeffermanCond7 sol.u
 
 /--
-  # The Millennium Problem Statement: The mathematical dichotomy.
+Fefferman's statement (C): Breakdown on `ℝ³` (forcing allowed).
 
-  Okay so basically the statement says that exactly one of the two possibilities must occur:
-
-  1. Either for ALL valid initial conditions (smooth, divergence-free, finite energy),
-     smooth solutions exist for all time (global existence)
-  2. OR there EXISTS at least one valid initial condition for which
-     no smooth solution can exist beyond some finite time (finite-time blowup)
+There exist smooth data `u₀,f` satisfying (4) and (5) for which there is **no** global smooth
+solution on `ℝ³ × [0,∞)` satisfying (6) and (7).
 -/
-def MillenniumProblemStatement : Prop :=
-  (∀ problem : MillenniumProblem, ExistenceOfSmoothSolution problem) ∨
-  (∃ problem : MillenniumProblem, BreakdownOfSmoothSolution problem)
+def FeffermanC : Prop :=
+  ∃ (ν : ℝ) (ν_pos : ν > 0) (u₀ : InitialVelocityR3) (f : ForceFieldR3),
+    FeffermanCond4 u₀ ∧
+    DivergenceFreeInitial u₀ ∧
+    FeffermanCond5 f ∧
+      ∀ hdiv : DivergenceFreeInitial u₀,
+        ¬ (∃ sol : GlobalSmoothSolution (nseR3 ν ν_pos u₀ hdiv (fun x => f x)),
+              FeffermanCond7 sol.u)
 
 end MillenniumNSRDomain

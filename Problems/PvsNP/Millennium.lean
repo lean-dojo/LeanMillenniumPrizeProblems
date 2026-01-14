@@ -7,28 +7,37 @@ import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Set.Basic
 import Mathlib.Order.Basic
 import Init.Data.List.Lemmas
+import Problems.PvsNP.TM2PolyTimeComp
 
 /-!
 # The P vs NP Problem
 
 This file formalizes the P vs NP problem, one of the seven Millennium Prize Problems
-established by the Clay Mathematics Institute. I have used material from my undegraduate complexity theory course.
-This was so fun to formalize and I also included another file polynomial time hierarchy.
+established by the Clay Mathematics Institute. It follows Cook's Clay problem description:
+`Problems/PvsNP/references/clay/pvsnp.pdf`.
+
+The reference PDF is included in this repo under `Problems/PvsNP/references/clay/`.
+
+Note: the Clay PDF also mentions standard *external* results and examples (e.g. AKS: `PRIME ∈ P`,
+Cook–Levin: `SAT` is NP-complete). Those results are not yet formalized here; this file focuses on
+the definitions and the Clay statement itself.
 
 ## Overview
 
-The P vs NP problem asks whether every problem whose solution can be quickly verified
-by a computer (NP) can also be quickly solved by a computer (P).
+The P vs NP problem asks whether every language accepted by some nondeterministic algorithm
+in polynomial time is also accepted by some deterministic algorithm in polynomial time.
 
 - P refers to polynomial time: problems solvable in polynomial time
-- NP refers to nondeterministic polynomial time: problems verifiable in polynomial time
+- NP refers to nondeterministic polynomial time: equivalently, problems verifiable in polynomial time
 
 ## Examples
 
+These are narrative examples from the Clay PDF; they are not currently present as Lean theorems in
+this repository.
+
 Examples of problems in P:
-- Sorting a list of numbers
-- Finding the greatest common divisor of two integers
 - Determining if a number is prime (AKS algorithm)
+- Reachability in a directed graph (PATH)
 
 Examples of problems in NP:
 - Boolean satisfiability problem (SAT)
@@ -54,12 +63,13 @@ set_option linter.unusedVariables false
 set_option diagnostics true
 set_option diagnostics.threshold 7000
 
-open Turing
+open _root_.Turing
 open Computability
 
 /--
   A language (decision problem) is a predicate on strings.
-  We'll encode this as a predicate on a type with a finite encoding.
+  We treat this abstractly as a predicate on some input type `α`, together with a choice
+  of finite encoding `ea : FinEncoding α` that plays the role of the input alphabet.
 
   In computational complexity theory, decision problems are typically
   formulated as languages - sets of strings that satisfy a certain property.
@@ -69,7 +79,7 @@ open Computability
   - PRIME: The set of all prime numbers (encoded as strings)
   - HAMPATH: The set of all graphs containing a Hamiltonian path
 -/
-def Language (α : Type) [Primcodable α] := α → Prop
+def Language (α : Type) := α → Prop
 
 /--
   The class P consists of languages decidable in polynomial time
@@ -84,7 +94,7 @@ def Language (α : Type) [Primcodable α] := α → Prop
   - Linear programming
   - 2-SAT (2-variable per clause satisfiability)
 -/
-def InP {α : Type} [Primcodable α] (ea : FinEncoding α) (L : Language α) : Prop :=
+def InP {α : Type} (ea : FinEncoding α) (L : Language α) : Prop :=
   ∃ (f : α → Bool) (comp : TM2ComputableInPolyTime ea finEncodingBoolBool f),
     ∀ a, L a ↔ f a = true
 
@@ -158,8 +168,7 @@ private theorem filterMap_sumInr_map_inr {α β : Type} (l : List β) :
   This encoding is crucial for defining verification in NP problems
   where we need to handle both the input and its certificate.
 -/
-def pairEncoding {α β : Type} [Primcodable α] [Primcodable β]
-    (ea : FinEncoding α) (eb : FinEncoding β) : FinEncoding (α × β) :=
+def pairEncoding {α β : Type} (ea : FinEncoding α) (eb : FinEncoding β) : FinEncoding (α × β) :=
   { Γ := Sum ea.Γ eb.Γ, -- Combined alphabet using Sum type
 
     encode := λ p =>
@@ -177,33 +186,79 @@ def pairEncoding {α β : Type} [Primcodable α] [Primcodable β]
       simp [List.filterMap_append, ea.decode_encode, eb.decode_encode]
     ΓFin := inferInstance
   }
+
 /--
-  For NP, we need to define verifiability with a certificate.
-  Certificate type will depend on the problem.
+Computable many-one reducibility (Cook, Definition 1).
 
-  A language is in NP if membership can be efficiently verified using a certificate.
-  Specifically, there must exist:
-  1. A certificate type β
-  2. A polynomial-time verification relation R
-  3. A polynomial bound on the size of certificates
-
-  Examples in NP:
-  - Boolean satisfiability (SAT): certificate is a satisfying assignment
-  - Traveling salesman problem: certificate is a tour below a given cost
-  - Graph coloring: certificate is a valid k-coloring
-  - Subset sum: certificate is the subset that sums to the target value
+`L₁ ≤ₘ L₂` if there exists a (total) computable function `f` such that
+`x ∈ L₁ ↔ f x ∈ L₂`.
 -/
-def InNP {α : Type} [Primcodable α] (ea : FinEncoding α) (L : Language α) : Prop :=
-  ∃ (β : Type) (instβ : Primcodable β) (eb : FinEncoding β) (R : α → β → Prop),
-    -- There exists a polynomial bound on certificate size
-    ∃ (p : Polynomial ℕ),
-      -- We need to define verification in terms of a function on pairs
-      (∃ (verifier : α × β → Bool)
-          (comp : TM2ComputableInPolyTime (pairEncoding ea eb) finEncodingBoolBool verifier),
-        ∀ a b, R a b ↔ verifier (a, b) = true) ∧
-      -- For every a in the language, there exists a certificate b
-      -- with size bounded by a polynomial in the size of a
-      (∀ a, L a ↔ ∃ b, R a b ∧ (eb.encode b).length ≤ Polynomial.eval (ea.encode a).length p)
+def ManyOneReducible {α β : Type} (ea : FinEncoding α) (eb : FinEncoding β)
+    (L₁ : Language α) (L₂ : Language β) : Prop :=
+  ∃ (f : α → β) (comp : TM2Computable ea eb f),
+    ∀ a, L₁ a ↔ L₂ (f a)
+
+/--
+A (binary) checking relation `R` is *computable* if membership in the associated language
+`L_R = { w#y | R(w, y) }` is decidable by a Turing machine (without a time bound).
+-/
+def ComputableCheckingRelation {α β : Type} (ea : FinEncoding α) (eb : FinEncoding β)
+    (R : α → β → Prop) : Prop :=
+  ∃ (verifier : α × β → Bool) (comp : TM2Computable (pairEncoding ea eb) finEncodingBoolBool verifier),
+    ∀ a b, R a b ↔ verifier (a, b) = true
+
+/--
+Computably enumerable languages (c.e.): `L` is c.e. iff there is a computable checking relation
+`R(x, y)` such that `x ∈ L ↔ ∃y, R(x, y)` (Cook, Section 2).
+-/
+def ComputablyEnumerable {α : Type} (ea : FinEncoding α) (L : Language α) : Prop :=
+  ∃ (β : Type) (eb : FinEncoding β) (R : α → β → Prop),
+    ComputableCheckingRelation ea eb R ∧
+      ∀ a, L a ↔ ∃ b, R a b
+
+/--
+c.e.-completeness (Cook, Definition 2): `L` is c.e.-complete if `L` is c.e. and every c.e.
+language many-one reduces to `L`.
+-/
+def CEComplete {α : Type} (ea : FinEncoding α) (L : Language α) : Prop :=
+  ComputablyEnumerable ea L ∧
+    ∀ {β : Type} (eb : FinEncoding β) (L' : Language β),
+      ComputablyEnumerable eb L' → ManyOneReducible eb ea L' L
+
+/--
+A checking relation `R` is *polynomial-time* if the associated language
+`L_R = { w#y | R(w, y) }` is in `P` (Cook's Clay problem description).
+
+We model the separator `#` using `pairEncoding`: the string `w#y` is represented by the
+concatenation of the left-tagged encoding of `w` and the right-tagged encoding of `y`.
+-/
+def PolyTimeCheckingRelation {α β : Type} (ea : FinEncoding α) (eb : FinEncoding β)
+    (R : α → β → Prop) : Prop :=
+  InP (pairEncoding ea eb) (fun p => R p.1 p.2)
+
+/--
+`NP` (Cook): A language `L` is in `NP` if there exist `k ∈ ℕ` and a polynomial-time checking
+relation `R` such that for all inputs `w`,
+
+`w ∈ L ↔ ∃ y (|y| ≤ |w|^k ∧ R(w, y))`.
+
+Here `|w|` and `|y|` are measured as the lengths of `ea.encode w` and `eb.encode y`.
+-/
+def InNP {α : Type} (ea : FinEncoding α) (L : Language α) : Prop :=
+  ∃ (β : Type) (eb : FinEncoding β) (R : α → β → Prop) (k : ℕ),
+    PolyTimeCheckingRelation ea eb R ∧
+      ∀ a, L a ↔ ∃ b, (eb.encode b).length ≤ (ea.encode a).length ^ k ∧ R a b
+
+/--
+Polynomial-time many-one reducibility (Cook, Definition 3).
+
+`L₁ ≤ₚ L₂` if there is a polynomial-time computable function `f` such that
+`x ∈ L₁ ↔ f x ∈ L₂`.
+-/
+def PolyTimeReducible {α β : Type} (ea : FinEncoding α) (eb : FinEncoding β)
+    (L₁ : Language α) (L₂ : Language β) : Prop :=
+  ∃ (f : α → β) (comp : TM2ComputableInPolyTime ea eb f),
+    ∀ a, L₁ a ↔ L₂ (f a)
 
 
 /--
@@ -221,18 +276,74 @@ def InNP {α : Type} [Primcodable α] (ea : FinEncoding α) (L : Language α) : 
   - Clique problem: Finding a complete subgraph of a given size
   - Vertex cover: Finding a set of vertices that covers all edges
 -/
-def NPComplete {α : Type} [Primcodable α] (ea : FinEncoding α) (L : Language α) : Prop :=
+def NPComplete {α : Type} (ea : FinEncoding α) (L : Language α) : Prop :=
   InNP ea L ∧
-  ∀ (β : Type) [Primcodable β] (eb : FinEncoding β) (L' : Language β),
-    InNP eb L' →
-    ∃ (f : β → α) (comp : TM2ComputableInPolyTime eb ea f),
-      ∀ b, L' b ↔ L (f b)
+    ∀ {β : Type} (eb : FinEncoding β) (L' : Language β),
+      InNP eb L' → PolyTimeReducible eb ea L' L
 
 /--
-  The P = NP question asks whether these classes are equal.
+Cook, Proposition 1(a): If `L₁ ≤ₚ L₂` and `L₂ ∈ P`, then `L₁ ∈ P`.
+-/
+theorem Proposition1a {α β : Type} (ea : FinEncoding α) (eb : FinEncoding β)
+    (L₁ : Language α) (L₂ : Language β) :
+    PolyTimeReducible ea eb L₁ L₂ → InP eb L₂ → InP ea L₁ := by
+  intro hRed hP
+  rcases hRed with ⟨f, hfComp, hf⟩
+  rcases hP with ⟨g, hgComp, hg⟩
+  classical
+  rcases _root_.Millennium.Turing.TM2ComputableInPolyTime.comp hfComp hgComp with ⟨hComp⟩
+  refine ⟨g ∘ f, hComp, ?_⟩
+  intro a
+  simpa [Function.comp] using (hf a).trans (hg (f a))
 
-  If P = NP, then every problem whose solution can be quickly verified (NP)
-  can also be quickly solved (P).
+/--
+Transitivity of polynomial-time many-one reducibility.
+
+This is Cook's reducibility notion (`≤ₚ`) and uses the proved composition theorem
+`TM2ComputableInPolyTime.comp` from `Problems/PvsNP/TM2PolyTimeComp.lean`.
+-/
+theorem PolyTimeReducible.trans {α β γ : Type} (ea : FinEncoding α) (eb : FinEncoding β)
+    (ec : FinEncoding γ) (L₁ : Language α) (L₂ : Language β) (L₃ : Language γ) :
+    PolyTimeReducible ea eb L₁ L₂ → PolyTimeReducible eb ec L₂ L₃ → PolyTimeReducible ea ec L₁ L₃ := by
+  intro h12 h23
+  rcases h12 with ⟨f, hfComp, hf⟩
+  rcases h23 with ⟨g, hgComp, hg⟩
+  classical
+  rcases _root_.Millennium.Turing.TM2ComputableInPolyTime.comp hfComp hgComp with ⟨hComp⟩
+  refine ⟨g ∘ f, hComp, ?_⟩
+  intro a
+  simpa [Function.comp] using (hf a).trans (hg (f a))
+
+/--
+Cook, Proposition 1(b): If `L₁` is NP-complete, `L₂ ∈ NP`, and `L₁ ≤ₚ L₂`, then `L₂` is
+NP-complete.
+-/
+theorem Proposition1b {α β : Type} (ea : FinEncoding α) (eb : FinEncoding β)
+    (L₁ : Language α) (L₂ : Language β) :
+    NPComplete ea L₁ → InNP eb L₂ → PolyTimeReducible ea eb L₁ L₂ → NPComplete eb L₂ := by
+  intro hL₁complete hL₂np hL₁L₂
+  refine ⟨hL₂np, ?_⟩
+  intro γ ec L₃ hL₃np
+  have hL₃L₁ : PolyTimeReducible ec ea L₃ L₁ :=
+    hL₁complete.2 ec L₃ hL₃np
+  exact PolyTimeReducible.trans ec ea eb L₃ L₁ L₂ hL₃L₁ hL₁L₂
+
+/--
+Trivial “string” encoding for `List alphabet` when `alphabet` is finite.
+
+This is the identity encoding (`encode = id`, `decode = some`) and is used to express the Clay
+statement for languages over finite alphabets.
+-/
+def finEncodingString (alphabet : Type) [Fintype alphabet] : FinEncoding (List alphabet) :=
+  { Γ := alphabet
+    encode := id
+    decode := fun l => some l
+    decode_encode := by intro l; rfl
+    ΓFin := inferInstance }
+
+/--
+  The P = NP question, stated in the form used in Cook's Clay problem description:
+  does every language in NP also belong to P?
 
   Implications if P = NP:
   - Many hard optimization problems would become efficiently solvable
@@ -240,8 +351,38 @@ def NPComplete {α : Type} [Primcodable α] (ea : FinEncoding α) (L : Language 
   - Automated theorem proving would be much more powerful
 -/
 def PEqualsNP : Prop :=
-  ∀ (α : Type) [Primcodable α] (ea : FinEncoding α) (L : Language α),
-    InP ea L ↔ InNP ea L
+  ∀ (alphabet : Type) [Fintype alphabet] [Nontrivial alphabet] (L : Language (List alphabet)),
+    InNP (finEncodingString alphabet) L → InP (finEncodingString alphabet) L
+
+/--
+Cook, Proposition 1(c): If `L` is NP-complete and `L ∈ P`, then `P = NP`.
+
+Here we phrase `P = NP` as `PEqualsNP`, i.e. the Clay problem statement for languages over
+finite alphabets with at least two elements.
+-/
+theorem Proposition1c (alphabet : Type) [Fintype alphabet] [Nontrivial alphabet]
+    (L : Language (List alphabet)) :
+    NPComplete (finEncodingString alphabet) L → InP (finEncodingString alphabet) L → PEqualsNP := by
+  intro hComplete hP alphabet' _ _ L' hNP'
+  have hRed : PolyTimeReducible (finEncodingString alphabet') (finEncodingString alphabet) L' L :=
+    hComplete.2 (finEncodingString alphabet') L' hNP'
+  exact Proposition1a (finEncodingString alphabet') (finEncodingString alphabet) L' L hRed hP
+
+/-- An NP-complete language is, in particular, in NP. -/
+theorem NPComplete.inNP {α : Type} {ea : FinEncoding α} {L : Language α} :
+    NPComplete ea L → InNP ea L :=
+  fun h => h.1
+
+/--
+If `L` is NP-complete and `L' ∈ NP`, then `L'` polynomial-time reduces to `L`.
+
+This just unwraps the second field of `NPComplete`.
+-/
+theorem NPComplete.polyTimeReducible_of_inNP {α β : Type} {ea : FinEncoding α} {eb : FinEncoding β}
+    {L : Language α} {L' : Language β} :
+    NPComplete ea L → InNP eb L' → PolyTimeReducible eb ea L' L := by
+  intro h hL'
+  exact h.2 eb L' hL'
 
 /--
   The P ≠ NP conjecture.
@@ -257,5 +398,9 @@ def PEqualsNP : Prop :=
 -/
 def PNotEqualsNP : Prop :=
   ¬PEqualsNP
+
+/-- `PNotEqualsNP` is definitionaly `¬PEqualsNP`. -/
+theorem PNotEqualsNP_iff : PNotEqualsNP ↔ ¬PEqualsNP :=
+  Iff.rfl
 
 end Millennium
