@@ -97,11 +97,23 @@ def FeffermanD : Prop :=
               FeffermanCond10 sol.u sol.p)
 
 /--
-The Clay Millennium problem asks for a proof of one of Fefferman's four statements (A)–(D).
+The four Fefferman alternatives appearing in Clay's Navier--Stokes problem statement.
 
-Here we assemble them as a single disjunction.
+We keep these as separate targets. Assembling the `ℝ³` alternatives into a single proposition
+`FeffermanA ∨ FeffermanC` is classically too weak in this formalization: if (A) fails, the
+zero-force counterexample already satisfies the forcing hypotheses in (C).
 -/
-def FeffermanMillenniumProblem : Prop :=
-  MillenniumNSRDomain.FeffermanA ∨ FeffermanB ∨ MillenniumNSRDomain.FeffermanC ∨ FeffermanD
+structure FeffermanMillenniumProblems where
+  /-- Fefferman's statement (A), existence and smoothness on `ℝ³` with zero force. -/
+  A : Prop := MillenniumNSRDomain.FeffermanA
+  /-- Fefferman's statement (B), existence and smoothness in the periodic setting with zero force. -/
+  B : Prop := FeffermanB
+  /-- Fefferman's statement (C), breakdown on `ℝ³` with forcing allowed. -/
+  C : Prop := MillenniumNSRDomain.FeffermanC
+  /-- Fefferman's statement (D), breakdown in the periodic setting with forcing allowed. -/
+  D : Prop := FeffermanD
+
+/-- The separated Navier--Stokes Millennium problem targets. -/
+def FeffermanMillenniumProblem : FeffermanMillenniumProblems := {}
 
 end MillenniumNS_BoundedDomain

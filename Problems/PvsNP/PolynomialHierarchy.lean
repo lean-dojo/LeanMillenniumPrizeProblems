@@ -1,6 +1,6 @@
-import Mathlib.Computability.TuringMachine
-import Mathlib.Computability.Primrec
-import Mathlib.Computability.TMComputable
+import Mathlib.Computability.TuringMachine.StackTuringMachine
+import Mathlib.Computability.Primrec.List
+import Mathlib.Computability.TuringMachine.Computable
 import Mathlib.Computability.Encoding
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Set.Basic

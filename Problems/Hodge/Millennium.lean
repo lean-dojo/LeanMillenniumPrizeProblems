@@ -4,7 +4,7 @@ namespace MillenniumHodge
 
 open AlgebraicGeometry Scheme Complex Algebra VarietyDefinition
 
-universe u u₁ u₂ u₃
+universe u₁ u₂ u₃
 
 /-!
 # The Hodge Conjecture
@@ -67,7 +67,7 @@ The Hodge Conjecture: for a smooth complex projective variety,
 every Hodge class is a rational linear combination of cycle classes.
 -/
 def HodgeConjecture : Prop :=
-  ∀ (X : SmoothProjectiveVariety.{0, u} ℂ) (p : ℕ) (data : HodgeData.{u₁, u₂, u₃, u} X),
+  ∀ (X : SmoothProjectiveVariety ℂ) (p : ℕ) (data : HodgeData.{u₁, u₂, u₃} X),
     data.hodgeClass p ≤ data.algebraicCohomology p
 
 end MillenniumHodge

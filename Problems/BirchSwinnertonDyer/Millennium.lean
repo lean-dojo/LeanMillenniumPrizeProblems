@@ -133,7 +133,7 @@ theorem localEulerFactor_aeval_eq_clay
   have hΔ' : (W.baseChange (ZMod (p : ℕ))).Δ ≠ 0 := by
     simpa [WeierstrassCurve.baseChange, WeierstrassCurve.map_Δ] using hΔmod
   have hIsUnit : IsUnit (W.baseChange (ZMod (p : ℕ))).Δ := by
-    simpa [isUnit_iff_ne_zero, hΔ']
+    simp [isUnit_iff_ne_zero, hΔ']
   letI : (W.baseChange (ZMod (p : ℕ))).IsElliptic := ⟨hIsUnit⟩
   have hEll : (W.baseChange (ZMod (p : ℕ))).IsElliptic := by infer_instance
   have hap :

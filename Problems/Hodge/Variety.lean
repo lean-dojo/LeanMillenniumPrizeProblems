@@ -127,7 +127,7 @@ theorem hodgeSubspace_le_hodgeFiltration (data : HodgeData X) (n p a : ℕ) (ha 
 The `ℚ`-subspace of Hodge classes in degree `2p` (Clay PDF, Section 1):
 rational classes whose complexification lies in `H^{p,p}(X)`.
 -/
-def hodgeClass (data : HodgeData X) (p : ℕ) : Submodule ℚ (data.cohomologyQ (2 * p)) :=
+noncomputable def hodgeClass (data : HodgeData X) (p : ℕ) : Submodule ℚ (data.cohomologyQ (2 * p)) :=
   Submodule.comap (data.extensionOfScalarsQC (2 * p))
     ((data.hodgeSubspace (2 * p) p p).restrictScalars ℚ)
 
@@ -144,7 +144,7 @@ The Clay PDF notes that, for projective non-singular varieties,
 In this repository we define `hodgeClass` using the `(p,p)`-summand, and also provide this
 filtration-based variant.
 -/
-def hodgeClassFiltration (data : HodgeData X) (p : ℕ) : Submodule ℚ (data.cohomologyQ (2 * p)) :=
+noncomputable def hodgeClassFiltration (data : HodgeData X) (p : ℕ) : Submodule ℚ (data.cohomologyQ (2 * p)) :=
   Submodule.comap (data.extensionOfScalarsQC (2 * p))
     ((data.hodgeFiltration (2 * p) p).restrictScalars ℚ)
 
