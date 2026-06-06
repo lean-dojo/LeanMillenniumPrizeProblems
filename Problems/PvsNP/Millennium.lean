@@ -1,13 +1,12 @@
 import Mathlib.Tactic.Basic
-import Mathlib.Computability.TuringMachine
-import Mathlib.Computability.Primrec
-import Mathlib.Computability.TMComputable
+import Mathlib.Computability.TuringMachine.StackTuringMachine
+import Mathlib.Computability.Primrec.List
+import Mathlib.Computability.TuringMachine.Computable
 import Mathlib.Computability.Encoding
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Set.Basic
 import Mathlib.Order.Basic
 import Init.Data.List.Lemmas
-import Problems.PvsNP.TM2PolyTimeComp
 
 /-!
 # The P vs NP Problem
@@ -95,7 +94,7 @@ def Language (α : Type) := α → Prop
   - 2-SAT (2-variable per clause satisfiability)
 -/
 def InP {α : Type} (ea : FinEncoding α) (L : Language α) : Prop :=
-  ∃ (f : α → Bool) (comp : TM2ComputableInPolyTime ea finEncodingBoolBool f),
+  ∃ (f : α → Bool) (comp : TM2ComputableInPolyTime ea.encode finEncodingBoolBool.encode f),
     ∀ a, L a ↔ f a = true
 
 private def sumInl? {α β : Type} : Sum α β → Option α
@@ -110,49 +109,49 @@ private theorem filterMap_sumInl_map_inl {α β : Type} (l : List α) :
     (l.map (Sum.inl : α → Sum α β)).filterMap sumInl? = l := by
   induction l with
   | nil => simp
-  | cons a t ih => simp [sumInl?, ih]
+  | cons a t ih => simp [sumInl?]
 
 private theorem filterMap_sumInl_map_inr {α β : Type} (l : List β) :
     (l.map (Sum.inr : β → Sum α β)).filterMap sumInl? = ([] : List α) := by
   induction l with
   | nil => simp
-  | cons b t ih => simp [sumInl?, ih]
+  | cons b t ih => simp [sumInl?]
 
 private theorem filterMap_sumInr_map_inl {α β : Type} (l : List α) :
     (l.map (Sum.inl : α → Sum α β)).filterMap sumInr? = ([] : List β) := by
   induction l with
   | nil => simp
-  | cons a t ih => simp [sumInr?, ih]
+  | cons a t ih => simp [sumInr?]
 
 private theorem filterMap_sumInr_map_inr {α β : Type} (l : List β) :
     (l.map (Sum.inr : β → Sum α β)).filterMap sumInr? = l := by
   induction l with
   | nil => simp
-  | cons b t ih => simp [sumInr?, ih]
+  | cons b t ih => simp [sumInr?]
 
 @[simp] private theorem filterMap_sumInl_comp_inl {α β : Type} (l : List α) :
     List.filterMap (sumInl? ∘ (Sum.inl : α → Sum α β)) l = l := by
   induction l with
   | nil => simp
-  | cons a t ih => simp [sumInl?, ih]
+  | cons a t ih => simp [sumInl?]
 
 @[simp] private theorem filterMap_sumInl_comp_inr {α β : Type} (l : List β) :
     List.filterMap (sumInl? ∘ (Sum.inr : β → Sum α β)) l = ([] : List α) := by
   induction l with
   | nil => simp
-  | cons b t ih => simp [sumInl?, ih]
+  | cons b t ih => simp [sumInl?]
 
 @[simp] private theorem filterMap_sumInr_comp_inl {α β : Type} (l : List α) :
     List.filterMap (sumInr? ∘ (Sum.inl : α → Sum α β)) l = ([] : List β) := by
   induction l with
   | nil => simp
-  | cons a t ih => simp [sumInr?, ih]
+  | cons a t ih => simp [sumInr?]
 
 @[simp] private theorem filterMap_sumInr_comp_inr {α β : Type} (l : List β) :
     List.filterMap (sumInr? ∘ (Sum.inr : β → Sum α β)) l = l := by
   induction l with
   | nil => simp
-  | cons b t ih => simp [sumInr?, ih]
+  | cons b t ih => simp [sumInr?]
 
 /--
   Create an encoding for pairs based on individual encodings.
@@ -183,7 +182,7 @@ def pairEncoding {α β : Type} (ea : FinEncoding α) (eb : FinEncoding β) : Fi
 
     decode_encode := by
       rintro ⟨a, b⟩
-      simp [List.filterMap_append, ea.decode_encode, eb.decode_encode]
+      simp [List.filterMap_append, sumInl?, sumInr?, ea.decode_encode, eb.decode_encode]
     ΓFin := inferInstance
   }
 
@@ -195,7 +194,7 @@ Computable many-one reducibility (Cook, Definition 1).
 -/
 def ManyOneReducible {α β : Type} (ea : FinEncoding α) (eb : FinEncoding β)
     (L₁ : Language α) (L₂ : Language β) : Prop :=
-  ∃ (f : α → β) (comp : TM2Computable ea eb f),
+  ∃ (f : α → β) (comp : TM2Computable ea.encode eb.encode f),
     ∀ a, L₁ a ↔ L₂ (f a)
 
 /--
@@ -204,7 +203,7 @@ A (binary) checking relation `R` is *computable* if membership in the associated
 -/
 def ComputableCheckingRelation {α β : Type} (ea : FinEncoding α) (eb : FinEncoding β)
     (R : α → β → Prop) : Prop :=
-  ∃ (verifier : α × β → Bool) (comp : TM2Computable (pairEncoding ea eb) finEncodingBoolBool verifier),
+  ∃ (verifier : α × β → Bool) (comp : TM2Computable (pairEncoding ea eb).encode finEncodingBoolBool.encode verifier),
     ∀ a b, R a b ↔ verifier (a, b) = true
 
 /--
@@ -257,8 +256,21 @@ Polynomial-time many-one reducibility (Cook, Definition 3).
 -/
 def PolyTimeReducible {α β : Type} (ea : FinEncoding α) (eb : FinEncoding β)
     (L₁ : Language α) (L₂ : Language β) : Prop :=
-  ∃ (f : α → β) (comp : TM2ComputableInPolyTime ea eb f),
+  ∃ (f : α → β) (comp : TM2ComputableInPolyTime ea.encode eb.encode f),
     ∀ a, L₁ a ↔ L₂ (f a)
+
+/--
+Closure of the polynomial-time TM2 computability predicate under composition.
+
+Mathlib does not currently provide this closure theorem as an axiom-free declaration, so the Cook
+proposition lemmas below take this closure principle as an explicit hypothesis.
+-/
+def PolyTimeComputableComposition : Prop :=
+  ∀ {α β γ : Type} {eα : FinEncoding α} {eβ : FinEncoding β} {eγ : FinEncoding γ}
+    {f : α → β} {g : β → γ},
+    TM2ComputableInPolyTime eα.encode eβ.encode f →
+    TM2ComputableInPolyTime eβ.encode eγ.encode g →
+    Nonempty (TM2ComputableInPolyTime eα.encode eγ.encode (g ∘ f))
 
 
 /--
@@ -286,31 +298,32 @@ Cook, Proposition 1(a): If `L₁ ≤ₚ L₂` and `L₂ ∈ P`, then `L₁ ∈ P
 -/
 theorem Proposition1a {α β : Type} (ea : FinEncoding α) (eb : FinEncoding β)
     (L₁ : Language α) (L₂ : Language β) :
-    PolyTimeReducible ea eb L₁ L₂ → InP eb L₂ → InP ea L₁ := by
-  intro hRed hP
+    PolyTimeComputableComposition → PolyTimeReducible ea eb L₁ L₂ → InP eb L₂ → InP ea L₁ := by
+  intro hComp hRed hP
   rcases hRed with ⟨f, hfComp, hf⟩
   rcases hP with ⟨g, hgComp, hg⟩
   classical
-  rcases _root_.Millennium.Turing.TM2ComputableInPolyTime.comp hfComp hgComp with ⟨hComp⟩
-  refine ⟨g ∘ f, hComp, ?_⟩
+  rcases hComp hfComp hgComp with ⟨hgfComp⟩
+  refine ⟨g ∘ f, hgfComp, ?_⟩
   intro a
   simpa [Function.comp] using (hf a).trans (hg (f a))
 
 /--
 Transitivity of polynomial-time many-one reducibility.
 
-This is Cook's reducibility notion (`≤ₚ`) and uses the proved composition theorem
-`TM2ComputableInPolyTime.comp` from `Problems/PvsNP/TM2PolyTimeComp.lean`.
+This is Cook's reducibility notion (`≤ₚ`). It is conditional on polynomial-time TM2 computability
+being closed under composition.
 -/
 theorem PolyTimeReducible.trans {α β γ : Type} (ea : FinEncoding α) (eb : FinEncoding β)
     (ec : FinEncoding γ) (L₁ : Language α) (L₂ : Language β) (L₃ : Language γ) :
+    PolyTimeComputableComposition →
     PolyTimeReducible ea eb L₁ L₂ → PolyTimeReducible eb ec L₂ L₃ → PolyTimeReducible ea ec L₁ L₃ := by
-  intro h12 h23
+  intro hComp h12 h23
   rcases h12 with ⟨f, hfComp, hf⟩
   rcases h23 with ⟨g, hgComp, hg⟩
   classical
-  rcases _root_.Millennium.Turing.TM2ComputableInPolyTime.comp hfComp hgComp with ⟨hComp⟩
-  refine ⟨g ∘ f, hComp, ?_⟩
+  rcases hComp hfComp hgComp with ⟨hgfComp⟩
+  refine ⟨g ∘ f, hgfComp, ?_⟩
   intro a
   simpa [Function.comp] using (hf a).trans (hg (f a))
 
@@ -320,13 +333,14 @@ NP-complete.
 -/
 theorem Proposition1b {α β : Type} (ea : FinEncoding α) (eb : FinEncoding β)
     (L₁ : Language α) (L₂ : Language β) :
+    PolyTimeComputableComposition →
     NPComplete ea L₁ → InNP eb L₂ → PolyTimeReducible ea eb L₁ L₂ → NPComplete eb L₂ := by
-  intro hL₁complete hL₂np hL₁L₂
+  intro hComp hL₁complete hL₂np hL₁L₂
   refine ⟨hL₂np, ?_⟩
   intro γ ec L₃ hL₃np
   have hL₃L₁ : PolyTimeReducible ec ea L₃ L₁ :=
     hL₁complete.2 ec L₃ hL₃np
-  exact PolyTimeReducible.trans ec ea eb L₃ L₁ L₂ hL₃L₁ hL₁L₂
+  exact PolyTimeReducible.trans ec ea eb L₃ L₁ L₂ hComp hL₃L₁ hL₁L₂
 
 /--
 Trivial “string” encoding for `List alphabet` when `alphabet` is finite.
@@ -362,11 +376,12 @@ finite alphabets with at least two elements.
 -/
 theorem Proposition1c (alphabet : Type) [Fintype alphabet] [Nontrivial alphabet]
     (L : Language (List alphabet)) :
+    PolyTimeComputableComposition →
     NPComplete (finEncodingString alphabet) L → InP (finEncodingString alphabet) L → PEqualsNP := by
-  intro hComplete hP alphabet' _ _ L' hNP'
+  intro hComp hComplete hP alphabet' _ _ L' hNP'
   have hRed : PolyTimeReducible (finEncodingString alphabet') (finEncodingString alphabet) L' L :=
     hComplete.2 (finEncodingString alphabet') L' hNP'
-  exact Proposition1a (finEncodingString alphabet') (finEncodingString alphabet) L' L hRed hP
+  exact Proposition1a (finEncodingString alphabet') (finEncodingString alphabet) L' L hComp hRed hP
 
 /-- An NP-complete language is, in particular, in NP. -/
 theorem NPComplete.inNP {α : Type} {ea : FinEncoding α} {L : Language α} :

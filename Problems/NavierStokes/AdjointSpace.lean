@@ -160,7 +160,7 @@ theorem inner_self_nonpos {x : E} : re ⟪x, x⟫ ≤ 0 ↔ x = 0 := by
   constructor
   · have ⟨c,d,hc,_,h⟩ := inner_top_equiv_norm (𝕜:=𝕜) (E:=E)
     have ⟨h,_⟩ := h x
-    intro h'; simp[h'] at h
+    intro h'; simp at h
     have : ‖x‖^2 ≤ 0 := by nlinarith
     have : ‖x‖ ≤ 0 := by nlinarith
     simp_all only [gt_iff_lt, smul_eq_mul, norm_le_zero_iff]
@@ -297,10 +297,10 @@ instance : AdjointSpace 𝕜 𝕜 where
   conj_symm := by simp[mul_comm]
   add_left := by
     intro x y z
-    simp [mul_add, add_mul, mul_assoc]
+    simp [mul_add]
   smul_left := by
     intro x y r
-    simp [mul_assoc, mul_left_comm, mul_comm]
+    simp [mul_left_comm, mul_comm]
 
 /-- The unit type carries the trivial inner product. -/
 instance : Inner 𝕜 Unit where
@@ -349,7 +349,7 @@ instance : AdjointSpace 𝕜 (X×Y) where
       -- Split on which component attains the max norm on the product.
       by_cases hxy : ‖x‖ ≤ ‖y‖
       · have hnorm : ‖(x, y)‖ = ‖y‖ := by
-          simpa [Prod.norm_mk, max_eq_right hxy]
+          simp [Prod.norm_mk, max_eq_right hxy]
         have hmin_le : min cx cy ≤ cy := min_le_right _ _
         have hmul : (min cx cy) * ‖(x, y)‖ ^ 2 ≤ cy * ‖y‖ ^ 2 := by
           have hy_sq : 0 ≤ (‖y‖ ^ 2 : ℝ) := by
@@ -361,7 +361,7 @@ instance : AdjointSpace 𝕜 (X×Y) where
         simpa [inner, map_add, hnorm] using hle'
       · have hyx : ‖y‖ ≤ ‖x‖ := le_of_not_ge hxy
         have hnorm : ‖(x, y)‖ = ‖x‖ := by
-          simpa [Prod.norm_mk, max_eq_left hyx]
+          simp [Prod.norm_mk, max_eq_left hyx]
         have hmin_le : min cx cy ≤ cx := min_le_left _ _
         have hmul : (min cx cy) * ‖(x, y)‖ ^ 2 ≤ cx * ‖x‖ ^ 2 := by
           have hx_sq : 0 ≤ (‖x‖ ^ 2 : ℝ) := by
@@ -373,9 +373,9 @@ instance : AdjointSpace 𝕜 (X×Y) where
         simpa [inner, map_add, hnorm] using hle'
     · -- upper bound
       have hnorm_x : ‖x‖ ≤ ‖(x, y)‖ := by
-        simpa [Prod.norm_mk] using le_max_left ‖x‖ ‖y‖
+        simp [Prod.norm_mk]
       have hnorm_y : ‖y‖ ≤ ‖(x, y)‖ := by
-        simpa [Prod.norm_mk] using le_max_right ‖x‖ ‖y‖
+        simp [Prod.norm_mk]
       have hx_sq : ‖x‖ ^ 2 ≤ ‖(x, y)‖ ^ 2 := by
         simpa [pow_two] using
           mul_le_mul hnorm_x hnorm_x (norm_nonneg x) (norm_nonneg (x, y))
@@ -491,7 +491,7 @@ instance : AdjointSpace 𝕜 ((i : ι) → E i) where
           -- Rewrite `re (inner x x)` as a sum of real parts.
           have hre :
               re (∑ i : ι, ⟪x i, x i⟫_𝕜) = ∑ i : ι, re ⟪x i, x i⟫_𝕜 := by
-            simpa using (map_sum (RCLike.re : 𝕜 →+ ℝ) (fun i : ι => ⟪x i, x i⟫_𝕜) Finset.univ)
+            simp
           simpa [inner, smul_eq_mul, hre] using hmain
         · -- upper bound
           -- Bound each coordinate by `‖x‖` and sum.
@@ -517,7 +517,7 @@ instance : AdjointSpace 𝕜 ((i : ι) → E i) where
             simpa [Finset.sum_mul] using this
           have hre :
               re (∑ i : ι, ⟪x i, x i⟫_𝕜) = ∑ i : ι, re ⟪x i, x i⟫_𝕜 := by
-            simpa using (map_sum (RCLike.re : 𝕜 →+ ℝ) (fun i : ι => ⟪x i, x i⟫_𝕜) Finset.univ)
+            simp
           simpa [inner, smul_eq_mul, d0, hre] using hsum
     · -- Empty index set: everything is zero, so any positive constants work.
       refine ⟨1, 1, by positivity, by positivity, ?_⟩
@@ -532,8 +532,8 @@ instance : AdjointSpace 𝕜 ((i : ι) → E i) where
         exact hne this
       have hnorm : ‖x‖ = 0 := by
         -- For an empty index set, the `L^∞` norm is `0`.
-        simpa [Pi.norm_def, huniv]
-      constructor <;> simp [inner, smul_eq_mul, huniv, hnorm]
+        simp [Pi.norm_def, huniv]
+      constructor <;> simp [smul_eq_mul, huniv, hnorm]
   conj_symm := by simp
   add_left := by simp[inner_add_left,Finset.sum_add_distrib]
   smul_left := by simp[inner_smul_left,Finset.mul_sum]

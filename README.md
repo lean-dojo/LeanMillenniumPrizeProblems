@@ -105,7 +105,7 @@ been turned into Lean definitions/theorems (not whether the underlying conjectur
   - Fefferman’s hypotheses and statements (A)–(D), with a single entry point in
     `Problems/NavierStokes/Millennium.lean` and details split across:
     `Problems/NavierStokes/MillenniumRDomain.lean` (A,C) and
-    `Problems/NavierStokes/MillenniumBoundedDomain.lean` (B,D + disjunction).
+    `Problems/NavierStokes/MillenniumBoundedDomain.lean` (B,D + separated A--D targets).
   - A lightweight PDE scaffold (`Problems/NavierStokes/Navierstokes.lean`) for (global) smooth solutions.
 - Notable formalization choices:
   - Multi-indices are represented as lists of coordinate directions (slightly stronger than commutative multi-indices).

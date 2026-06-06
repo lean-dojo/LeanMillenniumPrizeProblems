@@ -35,14 +35,14 @@ noncomputable def standardBasis (i : Fin n) : Euc ℝ n :=
 
 @[simp] theorem standardBasis_apply (i j : Fin n) :
     (standardBasis (n := n) i) j = if j = i then 1 else 0 := by
-  simp [standardBasis, EuclideanSpace.single_apply, eq_comm]
+  simp [standardBasis, eq_comm]
 
 @[simp] theorem standardBasis_self (i : Fin n) : (standardBasis (n := n) i) i = 1 := by
-  simp [standardBasis, EuclideanSpace.single_apply]
+  simp [standardBasis]
 
 @[simp] theorem standardBasis_neq (i j : Fin n) (h : i ≠ j) :
     (standardBasis (n := n) i) j = 0 := by
-  simp [standardBasis, EuclideanSpace.single_apply, Ne.symm h]
+  simp [standardBasis, Ne.symm h]
 
 /-- Partial derivative `∂ᵢ f(x)` for `f : ℝⁿ → ℝ`, defined via `fderiv`. -/
 noncomputable def partialDeriv (i : Fin n) (f : Euc ℝ n → ℝ) (x : Euc ℝ n) : ℝ :=

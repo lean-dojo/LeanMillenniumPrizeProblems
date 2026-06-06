@@ -13,16 +13,30 @@ setting and (B,D) in the periodic setting. In this repository they are formalize
 - `MillenniumNS_BoundedDomain.FeffermanB` and `MillenniumNS_BoundedDomain.FeffermanD`
   (`Problems/NavierStokes/MillenniumBoundedDomain.lean`)
 
-The Clay Millennium problem asks for a proof of one of these four statements; the combined
-statement is `MillenniumNS_BoundedDomain.FeffermanMillenniumProblem`, which we also re-export as
-`MillenniumNavierStokes.NavierStokesMillenniumProblem` below.
+The Clay Millennium problem asks for a proof of one of these four statements. We expose the four
+formal targets separately below, rather than as a single disjunction.
 -/
 
 namespace MillenniumNavierStokes
 
-/-- Fefferman's Clay Millennium problem statement (A)–(D), as a single disjunction. -/
-abbrev NavierStokesMillenniumProblem : Prop :=
+/-- Fefferman's Clay Millennium problem statements (A)–(D), kept as separate targets. -/
+abbrev NavierStokesMillenniumProblem : MillenniumNS_BoundedDomain.FeffermanMillenniumProblems :=
   MillenniumNS_BoundedDomain.FeffermanMillenniumProblem
 
-end MillenniumNavierStokes
+/-- Fefferman's statement (A), existence and smoothness on `ℝ³` with zero force. -/
+abbrev FeffermanA : Prop :=
+  MillenniumNS_BoundedDomain.FeffermanMillenniumProblem.A
 
+/-- Fefferman's statement (B), existence and smoothness in the periodic setting with zero force. -/
+abbrev FeffermanB : Prop :=
+  MillenniumNS_BoundedDomain.FeffermanMillenniumProblem.B
+
+/-- Fefferman's statement (C), breakdown on `ℝ³` with forcing allowed. -/
+abbrev FeffermanC : Prop :=
+  MillenniumNS_BoundedDomain.FeffermanMillenniumProblem.C
+
+/-- Fefferman's statement (D), breakdown in the periodic setting with forcing allowed. -/
+abbrev FeffermanD : Prop :=
+  MillenniumNS_BoundedDomain.FeffermanMillenniumProblem.D
+
+end MillenniumNavierStokes
