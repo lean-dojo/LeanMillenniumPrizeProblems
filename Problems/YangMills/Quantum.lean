@@ -85,18 +85,14 @@ Index `0` represents time, and indices `1`, `2`, `3` represent spatial direction
 def minkowski_metric (x y : Spacetime) : ℝ :=
   x 0 * y 0 - x 1 * y 1 - x 2 * y 2 - x 3 * y 3
 
-/-- A set is normal when it is closed under conjugation by every group element. -/
-def IsNormalSubgroup {G : Type} [Group G] (H : Set G) : Prop :=
-  ∀ g : G, ∀ h ∈ H, g * h * g⁻¹ ∈ H
-
 /-- A simple Lie group: non-abelian, with no non-trivial nonempty connected normal subgroups. -/
 class IsSimpleLieGroup (G : Type) [Group G] [TopologicalSpace G] : Prop where
   /-- G is non-abelian --/
   non_abelian : ¬(∀ (g h : G), g * h = h * g)
   /-- G has no non-trivial nonempty connected normal subgroups. -/
   no_normal_subgroups :
-    ∀ (H : Set G), IsNormalSubgroup H → H.Nonempty → IsPreconnected H →
-      H = {1} ∨ H = Set.univ
+    ∀ H : Subgroup G, H.Normal → IsPreconnected (H : Set G) →
+      H = ⊥ ∨ H = ⊤
 
 /--
 A compact simple gauge group for the Yang--Mills statement.
@@ -108,19 +104,22 @@ dimensional real Lie algebra.  It also records that the group admits a genuine s
 class CompactSimpleGaugeGroup (G : Type) extends Group G, TopologicalSpace G where
   /-- The group operations are continuous for the topology on `G`. -/
   is_topological_group : IsTopologicalGroup G
+  /-- Clay's compact simple gauge groups are connected Lie groups. -/
+  connected : ConnectedSpace G
+  /-- The Lie algebra of the gauge group `G`. -/
+  lie_algebra : Type
+  /-- The Lie algebra has a normed additive group structure. -/
+  norm_struct : NormedAddCommGroup lie_algebra
+  /-- The Lie algebra is a normed vector space over `ℝ`. -/
+  space_struct : NormedSpace ℝ lie_algebra
+  /-- The Lie algebra is finite-dimensional. -/
+  finite_dim : FiniteDimensional ℝ lie_algebra
   /-- A smooth manifold model witnessing that `G` is a smooth real Lie group. -/
   smooth_lie_group_model :
     ∃ (M V : Type) (_ : TopologicalSpace M) (_ : NormedAddCommGroup V)
       (_ : NormedSpace ℝ V), ∃ (I : ModelWithCorners ℝ V M) (_ : ChartedSpace M G),
-        LieGroup I ∞ G ∧ FiniteDimensional ℝ V
-  /-- The Lie algebra of the gauge group G --/
-  lie_algebra : Type
-  /-- The Lie algebra has a normed additive group structure --/
-  norm_struct : NormedAddCommGroup lie_algebra
-  /-- The Lie algebra is a normed vector space over ℝ --/
-  space_struct : NormedSpace ℝ lie_algebra
-  /-- The Lie algebra is finite-dimensional --/
-  finite_dim : FiniteDimensional ℝ lie_algebra
+        LieGroup I ∞ G ∧ FiniteDimensional ℝ V ∧
+          Nonempty (lie_algebra ≃ₗ[ℝ] V)
   /-- G is compact --/
   compact : CompactSpace G
   /-- G is a simple Lie group --/
@@ -129,16 +128,32 @@ class CompactSimpleGaugeGroup (G : Type) extends Group G, TopologicalSpace G whe
 instance (G : Type) [CompactSimpleGaugeGroup G] : IsTopologicalGroup G :=
   CompactSimpleGaugeGroup.is_topological_group
 
+instance (G : Type) [CompactSimpleGaugeGroup G] : ConnectedSpace G :=
+  CompactSimpleGaugeGroup.connected
+
+instance (G : Type) [CompactSimpleGaugeGroup G] :
+    NormedAddCommGroup (CompactSimpleGaugeGroup.lie_algebra G) :=
+  CompactSimpleGaugeGroup.norm_struct
+
+instance (G : Type) [CompactSimpleGaugeGroup G] :
+    NormedSpace ℝ (CompactSimpleGaugeGroup.lie_algebra G) :=
+  CompactSimpleGaugeGroup.space_struct
+
+instance (G : Type) [CompactSimpleGaugeGroup G] :
+    FiniteDimensional ℝ (CompactSimpleGaugeGroup.lie_algebra G) :=
+  CompactSimpleGaugeGroup.finite_dim
+
 /-- The smooth Lie-group model recorded in the compact-simple gauge-group package. -/
 theorem CompactSimpleGaugeGroup.exists_smooth_model
     (G : Type) [CompactSimpleGaugeGroup G] :
     ∃ (M V : Type) (_ : TopologicalSpace M) (_ : NormedAddCommGroup V)
       (_ : NormedSpace ℝ V), ∃ (I : ModelWithCorners ℝ V M) (_ : ChartedSpace M G),
-        LieGroup I ∞ G ∧ FiniteDimensional ℝ V :=
+        LieGroup I ∞ G ∧ FiniteDimensional ℝ V ∧
+          Nonempty (CompactSimpleGaugeGroup.lie_algebra G ≃ₗ[ℝ] V) :=
   CompactSimpleGaugeGroup.smooth_lie_group_model (G := G)
 
 /-- The Lie algebra associated with a compact simple gauge group. -/
-def LieAlgebra (G : Type) [CompactSimpleGaugeGroup G] : Type :=
+abbrev LieAlgebra (G : Type) [CompactSimpleGaugeGroup G] : Type :=
   CompactSimpleGaugeGroup.lie_algebra G
 
 /--

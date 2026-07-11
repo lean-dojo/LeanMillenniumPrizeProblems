@@ -460,22 +460,6 @@ structure LSeriesData (W : WeierstrassCurve ℤ) (_hΔ : W.Δ ≠ 0) where
       (W.incomplete_lseries s)
   /-- Agreement with the Euler product in its region of convergence (Clay PDF: `Re(s) > 3/2`). -/
   agrees : ∀ s : ℂ, s.re > (3 / 2 : ℝ) → L s = W.incomplete_lseries s
-  /--
-  The finite analytic correction between Mathlib's full formal Hasse-Weil L-series and Clay's
-  incomplete Euler product, accounting for the local factors omitted at primes `p | 2Δ`.
-  -/
-  bad_prime_correction : ℂ → ℂ
-  /-- The correction factor is recorded as analytic; no canonical construction is assumed here. -/
-  bad_prime_correction_analytic : ∀ s : ℂ, AnalyticAt ℂ bad_prime_correction s
-  /--
-  Comparison with Mathlib's formal Hasse-Weil L-series in the same convergence region.
-
-  This is deliberately a correction-factor statement, not literal equality with the Clay
-  incomplete product, since Mathlib's formal series includes local bad-prime data.
-  -/
-  hasse_weil_eq_corrected :
-    ∀ s : ℂ, s.re > (3 / 2 : ℝ) →
-      W.hasse_weil_lseries s = bad_prime_correction s * W.incomplete_lseries s
 
 /--
 Holomorphic-continuation input for one nonsingular integral Weierstrass model: `L(C,s)` extends
@@ -562,27 +546,6 @@ theorem LSeriesData.analytic_order_eq {W : WeierstrassCurve ℤ} {hΔ : W.Δ ≠
   rw [LSeriesData.l_unique d₁ d₂]
 
 /--
-For a chosen analytic continuation, the formal Hasse-Weil L-series is related to the Clay
-incomplete Euler product by the recorded bad-prime correction factor.
--/
-theorem LSeriesData.hasse_weil_eq_corrected_incomplete
-    {W : WeierstrassCurve ℤ} {hΔ : W.Δ ≠ 0} (data : LSeriesData W hΔ)
-    {s : ℂ} (hs : s.re > (3 / 2 : ℝ)) :
-    W.hasse_weil_lseries s = data.bad_prime_correction s * W.incomplete_lseries s :=
-  data.hasse_weil_eq_corrected s hs
-
-/--
-In the convergence half-plane, the same Hasse-Weil comparison can be phrased using the analytic
-continuation `data.L`.
--/
-theorem LSeriesData.hasse_weil_eq_corrected_continuation
-    {W : WeierstrassCurve ℤ} {hΔ : W.Δ ≠ 0} (data : LSeriesData W hΔ)
-    {s : ℂ} (hs : s.re > (3 / 2 : ℝ)) :
-    W.hasse_weil_lseries s = data.bad_prime_correction s * data.L s := by
-  rw [data.agrees s hs]
-  exact data.hasse_weil_eq_corrected s hs
-
-/--
 Hasse-Weil L-series data for a fixed nonsingular integral Weierstrass model.
 
 The formal Hasse-Weil L-series is `W.hasse_weil_lseries`.  The Clay PDF uses the incomplete Euler
@@ -592,6 +555,14 @@ Hasse-Weil L-series to be nonzero at `s = 1`, so the order of vanishing at `1` i
 -/
 structure HasseWeilLSeriesData (W : WeierstrassCurve ℤ) (hΔ : W.Δ ≠ 0)
     extends LSeriesData W hΔ where
+  /-- Finite analytic correction for the local factors omitted at primes `p ∣ 2Δ`. -/
+  bad_prime_correction : ℂ → ℂ
+  /-- The correction is analytic. -/
+  bad_prime_correction_analytic : ∀ s : ℂ, AnalyticAt ℂ bad_prime_correction s
+  /-- Comparison with Mathlib's formal Hasse-Weil series in the convergence half-plane. -/
+  hasse_weil_eq_corrected :
+    ∀ s : ℂ, s.re > (3 / 2 : ℝ) →
+      W.hasse_weil_lseries s = bad_prime_correction s * W.incomplete_lseries s
   /-- The finite bad-prime correction factor does not change the order of vanishing at `s = 1`. -/
   bad_prime_correction_ne_zero_at_one : bad_prime_correction 1 ≠ 0
 
@@ -602,8 +573,9 @@ variable {W : WeierstrassCurve ℤ} {hΔ : W.Δ ≠ 0}
 /-- In the Euler-product half-plane, the corrected Clay continuation agrees with `W.hasse_weil_lseries`. -/
 theorem hasse_weil_lseries_agrees
     (data : HasseWeilLSeriesData W hΔ) {s : ℂ} (hs : s.re > (3 / 2 : ℝ)) :
-    data.bad_prime_correction s * data.L s = W.hasse_weil_lseries s :=
-  (data.toLSeriesData.hasse_weil_eq_corrected_continuation hs).symm
+    data.bad_prime_correction s * data.L s = W.hasse_weil_lseries s := by
+  rw [data.agrees s hs]
+  exact (data.hasse_weil_eq_corrected s hs).symm
 
 /--
 The finite bad-prime correction factor is analytic and nonzero at `s = 1`, so multiplying by it
@@ -2284,14 +2256,7 @@ proof when one is available.
 
 /-- Clay Millennium Prize target for Birch--Swinnerton-Dyer. -/
 theorem clay_prize_birch_swinnerton_dyer :
-    ∀ (W : WeierstrassCurve ℤ) (hΔ : W.Δ ≠ 0),
-      ∃ data : LSeriesData W hΔ,
-        ∃ r : ℕ, (r : ℕ∞) = WeierstrassCurve.rank (W.baseChange ℚ) ∧
-          ∃ c : ℂ, c ≠ 0 ∧
-            ∃ g : ℂ → ℂ,
-              AnalyticAt ℂ g 1 ∧ g 1 = c ∧
-                ∀ᶠ z in 𝓝 (1 : ℂ), data.L z = (z - 1) ^ r • g z :=
-  by
-    sorry
+    ClayBirchSwinnertonDyer := by
+  sorry
 
 end MillenniumBirchSwinnertonDyer

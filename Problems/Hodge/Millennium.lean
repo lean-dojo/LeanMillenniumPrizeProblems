@@ -273,24 +273,29 @@ structure HodgeTheoryAssignment where
   coherent : ∀ X : SmoothProjectiveVariety ℂ, HodgeDataCoherence (data X)
 
 /--
-Hodge-theory realization for all smooth projective complex varieties.
+A Hodge-theory realization intended to represent the canonical topology and Hodge decomposition
+attached to smooth projective complex varieties.
 
-This packages the same global data as `HodgeTheoryAssignment` under a geometry-facing name:
-singular cohomology, Hodge decomposition, cycle classes, and the coherence identities used below.
+Unlike a bare `HodgeTheoryAssignment`, a realization must record injectivity of rational
+complexification and that the Hodge summands span complex cohomology in every degree. This keeps
+the public Clay target from ranging over every arbitrary coherent test package in `Variety.lean`.
+The interface can be replaced by native singular-cohomology constructions when Mathlib provides
+them without changing the cycle-span statement.
 -/
 structure HodgeTheoryRealization where
-  /-- Hodge-theoretic data attached to each smooth projective complex variety. -/
-  data : ∀ X : SmoothProjectiveVariety ℂ, HodgeData.{u₁, u₂, u₃} X
-  /-- The data satisfies the degree and filtration identities used in the Clay formulation. -/
-  coherent : ∀ X : SmoothProjectiveVariety ℂ, HodgeDataCoherence (data X)
+  /-- The varietywise cohomology, Hodge, and cycle-class assignment. -/
+  assignment : HodgeTheoryAssignment.{u₁, u₂, u₃}
+  /-- Rational cohomology embeds into its complexification. -/
+  extension_injective :
+    ∀ (X : SmoothProjectiveVariety ℂ) (n : ℕ),
+      Function.Injective ((assignment.data X).extension_of_scalars_qc n)
+  /-- The Hodge summands of total degree `n` span `H^n(X,ℂ)`. -/
+  hodge_decomposition_spans :
+    ∀ (X : SmoothProjectiveVariety ℂ) (n : ℕ),
+      (⨆ p : ℕ, ⨆ q : ℕ, ⨆ (_hpq : p + q = n),
+        (assignment.data X).hodge_subspace n p q) = ⊤
 
 namespace HodgeTheoryRealization
-
-/-- The Hodge-theory assignment determined by a realization. -/
-def assignment (realization : HodgeTheoryRealization.{u₁, u₂, u₃}) :
-    HodgeTheoryAssignment.{u₁, u₂, u₃} :=
-  { data := realization.data
-    coherent := realization.coherent }
 
 end HodgeTheoryRealization
 
@@ -787,16 +792,12 @@ def HodgeTheoryRealization.ClayStatement
   HodgeTheoryAssignment.ClayStatement realization.assignment
 
 /--
-Global Hodge statement used by this repository: every coherent Hodge-theoretic data package for
-every smooth projective complex variety satisfies the Clay cycle-class statement.
-
-The assignment-specific declaration `HodgeTheoryAssignment.ClayStatement assignment` remains available for a fixed
-realization, while this statement quantifies over all coherent realizations.  This is stronger
-than a future native formalization that quantifies only over the canonical Hodge theory attached to
-each variety.
+Global Hodge statement used by this repository: every canonical Hodge-theory realization satisfies
+the Clay cycle-class statement. Bare coherent synthetic assignments are deliberately not quantified
+over by this public proposition.
 -/
 def ClayHodge : Prop :=
-  ClayHodge.Formulations.AllCoherentConjectures.{u₁, u₂, u₃}
+  ∀ realization : HodgeTheoryRealization.{u₁, u₂, u₃}, realization.ClayStatement
 
 /-- The realization form is exactly the statement for its Hodge-theory assignment. -/
 theorem HodgeTheoryRealization.ClayStatement.iff_assignment
@@ -812,8 +813,9 @@ theorem HodgeTheoryAssignment.ClayStatement.iff_cycle_span
   Iff.rfl
 
 /--
-The global Hodge statement is equivalent to quantifying the assignment-indexed Clay statement
-over every coherent Hodge-theory assignment.
+The auxiliary all-coherent-data formulation is equivalent to quantifying the assignment-indexed
+Clay statement over every bare coherent assignment. This theorem describes that deliberately
+strong test formulation; it is not the public `ClayHodge` target.
 -/
 theorem ClayHodge.Formulations.AllCoherentConjectures.iff_clay :
     ClayHodge.Formulations.AllCoherentConjectures.{u₁, u₂, u₃} ↔
@@ -825,6 +827,13 @@ theorem ClayHodge.Formulations.AllCoherentConjectures.iff_clay :
       exact (HodgeTheoryAssignment.ClayStatement.iff_cycle_span assignment).2 (h assignment)
     · intro h assignment
       exact (HodgeTheoryAssignment.ClayStatement.iff_cycle_span assignment).1 (h assignment)
+
+/-- The public Hodge target specializes to every supplied canonical realization. -/
+theorem ClayHodge.for_realization
+    (h : ClayHodge.{u₁, u₂, u₃})
+    (realization : HodgeTheoryRealization.{u₁, u₂, u₃}) :
+    realization.ClayStatement :=
+  h realization
 
 /--
 `HodgeTheoryAssignment.ClayStatement assignment` is equivalent to the subspace formulation:
@@ -1189,19 +1198,13 @@ theorem FiniteRationalHodgeData.basis_class_algebraic
 /-!
 ## Main theorem
 
-This final theorem records the Hodge Conjecture target directly in the repository's coherent-data
-interface. Replace the placeholder proof when one is available.
+This final theorem records the Hodge Conjecture target for the canonical-realization interface.
+Replace the placeholder proof when one is available.
 -/
 
 /-- Clay Millennium Prize target for the Hodge Conjecture. -/
 theorem clay_prize_hodge_conjecture :
-    ∀ (X : SmoothProjectiveVariety ℂ) (data : HodgeData.{u₁, u₂, u₃} X),
-      HodgeDataCoherence data →
-        ∀ (p : ℕ) (x : data.cohomology_q (2 * p)),
-          x ∈ data.hodge_class p →
-            ∃ coefficients : data.algebraic_cycle p →₀ ℚ,
-              data.cycle_class_combination p coefficients = x :=
-  by
-    sorry
+    ClayHodge.{u₁, u₂, u₃} := by
+  sorry
 
 end MillenniumHodge

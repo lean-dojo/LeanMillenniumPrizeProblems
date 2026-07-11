@@ -610,15 +610,17 @@ def HamiltonianSpectralData.of_quantum_theory (G : Type) [CompactSimpleGaugeGrou
 /--
 Hamiltonian spectral data used for the Clay PDF statement.
 
-This is the primary spectral package for the Millennium statement in this file.  It does **not**
-identify the physical Hamiltonian spectrum with Mathlib's bounded-operator spectrum.  Instead it
-records the spectral set, positive energy, zero vacuum energy, and the Wightman Hamiltonian facts
-used in the current formalization.
+This is the primary spectral package for the Millennium statement in this file.  Its spectral set
+is required to equal Mathlib's spectrum of the Hamiltonian carried by the theory, preventing an
+unrelated set from serving as a mass-gap witness.  The companion physical-Hamiltonian module adds
+an unbounded self-adjoint realization.
 -/
 structure ClayHamiltonianSpectralData (G : Type) [CompactSimpleGaugeGroup G]
     (theory : QuantumYangMillsTheory G) where
   /-- The spectral set of the physical Hamiltonian in the Clay statement. -/
   spectrum_set : Set ℝ
+  /-- The spectral set is the spectrum of the Hamiltonian carried by the theory. -/
+  spectrum_eq_hamiltonian : spectrum_set = spectrum ℝ theory.wightman.hamiltonian
   /-- Positive-energy condition for the physical spectrum. -/
   positive_energy : ∀ E : ℝ, E ∈ spectrum_set → 0 ≤ E
   /-- The vacuum energy `0` belongs to the physical spectrum. -/
@@ -637,6 +639,7 @@ def HamiltonianSpectralData.spectral_data {G : Type} [CompactSimpleGaugeGroup G]
     {theory : QuantumYangMillsTheory G} (spectralData : HamiltonianSpectralData G theory) :
     ClayHamiltonianSpectralData G theory :=
   { spectrum_set := spectralData.spectrum_set
+    spectrum_eq_hamiltonian := spectralData.spectrum_eq
     positive_energy := spectralData.positive_energy
     vacuum_energy_zero := spectralData.vacuum_energy_zero
     vacuum_zero_energy := theory.wightman.is_vacuum
@@ -1372,9 +1375,9 @@ def MassGapImpliesClustering (G : Type) [CompactSimpleGaugeGroup G]
 /--
 Bounded-spectrum comparison version of Yang--Mills existence and mass gap.
 
-This statement identifies the Hamiltonian spectrum with Mathlib's bounded-operator spectrum.
-The Clay statement below instead uses `ClayHamiltonianSpectralData`, leaving the physical spectrum
-as an explicit field of the Yang--Mills theory package.
+This statement uses Mathlib's bounded-operator spectrum directly.  The Clay statement below uses
+the equivalent explicit `ClayHamiltonianSpectralData` package, while the companion physical module
+adds an unbounded self-adjoint Hamiltonian.
 -/
 def ClayYangMills.Formulations.BoundedSpectrum (G : Type) [CompactSimpleGaugeGroup G] : Prop :=
   ∃ (theory : QuantumYangMillsTheory G) (Δ : ℝ),
@@ -1417,9 +1420,7 @@ def ClayYangMills.Formulations.VacuumGap
 Yang--Mills existence and mass gap in the official explicit “on `ℝ⁴`” wording.
 -/
 def ClayYangMills.Formulations.OnFourDimensionalSpacetime (G : Type) [CompactSimpleGaugeGroup G] : Prop :=
-  ∃ (theory : ClayQuantumYangMillsTheoryOnFourDimensionalSpacetime G) (Δ : ℝ)
-    (spectralData : ClayHamiltonianSpectralData G theory),
-    ClayExistence theory ∧ HasClayMassGap spectralData Δ ∧ FiniteClayMass spectralData
+  ClayYangMills.Formulations.FixedGroup G
 
 /--
 Fixed-group statement with the official “on `ℝ⁴`” and positive mass gap `Δ > 0` wording visible
@@ -1736,8 +1737,9 @@ def ClayYangMills.Formulations.Global.HamiltonianGap : Prop :=
 for any compact simple gauge group, construct a non-trivial quantum Yang--Mills theory on `ℝ⁴`
 with a positive finite mass gap.
 
-The repository registry uses the physical-Hamiltonian strengthening in
-`Problems.YangMills.HamiltonianSpectrum`; that formulation includes this mass-gap statement.
+The repository registry uses this canonical mass-gap statement.  The companion
+`Problems.YangMills.HamiltonianSpectrum` module records a stronger unbounded
+physical-Hamiltonian formulation and proves that it implies this target.
 -/
 def ClayYangMills : Prop :=
   ClayYangMills.Formulations.Global.MassGap

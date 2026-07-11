@@ -110,7 +110,7 @@ def FundamentalGroupAt (M : Type u) [TopologicalSpace M] (x : M) : Type _ :=
 Clay's equivalent modern wording that the fundamental group is trivial, represented by
 Mathlib's simply-connected-space hypothesis.
 -/
-def TrivialFundamentalGroup (M : Type u) [TopologicalSpace M] : Prop :=
+abbrev TrivialFundamentalGroup (M : Type u) [TopologicalSpace M] : Prop :=
   SimplyConnectedSpace M
 
 /-- A `TrivialFundamentalGroup` hypothesis gives a subsingleton fundamental group. -/
@@ -196,15 +196,7 @@ known, but this file still treats the formal Lean proof as future work.
 
 /-- Clay Millennium Prize target for the Poincare Conjecture. -/
 theorem clay_prize_poincare_conjecture :
-    ∀ (M : Type u)
-      [TopologicalSpace M]
-      [T2Space M]
-      [SecondCountableTopology M]
-      [ChartedSpace EuclideanThreeSpace M]
-      [SimplyConnectedSpace M]
-      [CompactSpace M],
-        Nonempty (Homeomorph M ThreeSphere) :=
-  by
-    sorry
+    ClayPoincareConjecture.{u} := by
+  sorry
 
 end MillenniumPoincare

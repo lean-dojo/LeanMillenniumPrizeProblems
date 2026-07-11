@@ -63,7 +63,11 @@ structure ClayProblem where
   statement : Prop
   /-- Fully qualified Lean declaration for `statement`. -/
   statement_declaration : String
-  /-- Fully qualified Lean declaration for the final theorem whose body future work should replace. -/
+  /-- Optional mutually exclusive alternative outcome, used for decision problems. -/
+  alternative_statement : Option Prop := none
+  /-- Fully qualified Lean declaration for the optional alternative outcome. -/
+  alternative_statement_declaration : Option String := none
+  /-- Fully qualified final declaration whose placeholder body future work should replace. -/
   prize_theorem_declaration : String
   /-- Whether the problem is mathematically open or solved. -/
   status : ProblemStatus

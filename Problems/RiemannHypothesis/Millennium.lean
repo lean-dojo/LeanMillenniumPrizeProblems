@@ -593,12 +593,7 @@ when one is available.
 
 /-- Clay Millennium Prize target for the Riemann Hypothesis. -/
 theorem clay_prize_riemann_hypothesis :
-    ∀ s : ℂ,
-      riemannZeta s = 0 →
-        ¬ (∃ n : ℕ, s = -2 * (n + 1)) →
-          s ≠ 1 →
-            s.re = 1 / 2 :=
-  by
-    sorry
+    ClayRiemannHypothesis := by
+  sorry
 
 end Millennium

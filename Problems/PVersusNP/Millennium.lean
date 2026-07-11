@@ -1360,9 +1360,8 @@ def ClayPVersusNP.Formulations.HardDirection : Prop :=
 Cook's deterministic-simulation wording: nondeterministic polynomial-time acceptance can be
 simulated by deterministic polynomial-time decision.
 -/
-def ClayPVersusNP.Formulations.DeterministicSimulation : Prop :=
-  ∀ (alphabet : Type) [Fintype alphabet] [Nontrivial alphabet] (L : Language (List alphabet)),
-    InNondeterministicPolynomialTime (fin_encoding_string alphabet) L → InPolynomialTime (fin_encoding_string alphabet) L
+abbrev ClayPVersusNP.Formulations.DeterministicSimulation : Prop :=
+  ClayPVersusNP.Formulations.HardDirection
 
 /-- The deterministic-simulation wording specialized to one fixed finite alphabet. -/
 theorem ClayPVersusNP.Formulations.DeterministicSimulation.for_alphabet
@@ -1522,8 +1521,7 @@ that proposition is already provable by excluded middle and would not encode the
 challenge.
 -/
 def ClayPVersusNP : Prop :=
-  ∀ (alphabet : Type) [Fintype alphabet] [Nontrivial alphabet] (L : Language (List alphabet)),
-    InPolynomialTime (fin_encoding_string alphabet) L ↔ InNondeterministicPolynomialTime (fin_encoding_string alphabet) L
+  ClayPVersusNP.Formulations.ClassEquality
 
 /-- The checked positive-branch statement specialized to one fixed finite alphabet. -/
 theorem ClayPVersusNP.for_alphabet
@@ -1830,27 +1828,57 @@ theorem NondeterministicPolynomialTimeComplete.reduces {α β : Type} {ea : FinE
   intro h hL'
   exact h.2 eb L' hL'
 
+/-- Positive outcome of Cook's decision problem: the finite-alphabet classes `P` and `NP` agree. -/
+abbrev ClayPVersusNP.Formulations.PositiveBranch : Prop :=
+  ClayPVersusNP
+
 /-- Negative outcome of Cook's decision problem: the finite-alphabet classes `P` and `NP` differ. -/
 def ClayPVersusNP.Formulations.NegativeBranch : Prop :=
   ¬ ClayPVersusNP
 
+/--
+An explicit resolution of Cook's question.
+
+This lives in `Type`, rather than being the proposition
+`ClayPVersusNP ∨ ¬ ClayPVersusNP`: the latter is an immediate consequence of classical excluded
+middle and therefore is not an adequate prize target. A genuine resolution should construct one
+of these two constructors with the corresponding mathematical proof.
+-/
+inductive ClayPVersusNPResolution : Type where
+  /-- Positive resolution: `P = NP`. -/
+  | equal (proof : ClayPVersusNP.Formulations.PositiveBranch)
+  /-- Negative resolution: `P ≠ NP`. -/
+  | notEqual (proof : ClayPVersusNP.Formulations.NegativeBranch)
+
+namespace ClayPVersusNPResolution
+
+/-- The proposition selected by an explicit P-versus-NP resolution. -/
+def SelectedStatement : ClayPVersusNPResolution → Prop
+  | .equal _ => ClayPVersusNP.Formulations.PositiveBranch
+  | .notEqual _ => ClayPVersusNP.Formulations.NegativeBranch
+
+/-- Every explicit resolution carries a proof of the branch it selects. -/
+theorem selectedProof (resolution : ClayPVersusNPResolution) :
+    resolution.SelectedStatement := by
+  cases resolution with
+  | equal proof => exact proof
+  | notEqual proof => exact proof
+
+end ClayPVersusNPResolution
+
 /-!
 ## Main theorem
 
-This final theorem records the checked positive branch directly. Replace the placeholder proof if
-the positive resolution is available.
+This final declaration accepts either mathematical outcome. Replace the placeholder with
+`ClayPVersusNPResolution.equal proofOfPEqualsNP` or
+`ClayPVersusNPResolution.notEqual proofOfPNotEqualsNP`.
 -/
 
 /--
-Clay Millennium Prize target for the positive P versus NP outcome.
-
-If the final resolution is negative, prove `ClayPVersusNP.Formulations.NegativeBranch` instead and update the registry entry to
-make the negative outcome the public prize target.
+Clay Millennium Prize resolution target for P versus NP, with both outcomes represented.
 -/
-theorem clay_prize_p_versus_np :
-    ∀ (alphabet : Type) [Fintype alphabet] [Nontrivial alphabet] (L : Language (List alphabet)),
-      InPolynomialTime (fin_encoding_string alphabet) L ↔ InNondeterministicPolynomialTime (fin_encoding_string alphabet) L :=
-  by
-    sorry
+def clay_prize_p_versus_np :
+    ClayPVersusNPResolution := by
+  sorry
 
 end Millennium

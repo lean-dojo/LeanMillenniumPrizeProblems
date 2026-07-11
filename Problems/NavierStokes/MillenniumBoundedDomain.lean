@@ -32,13 +32,13 @@ theorem IsPeriodic.torus_lift {α : Type} (F : ThreeTorus → α) :
 
 /-- Spatial periodicity (in the `ℝ³` directions) for a spacetime function `ℝ⁴ → _`. -/
 def IsSpatiallyPeriodicForce (f : ForceField 3) : Prop :=
-  ∀ (x : Spacetime3) (i : Fin 3) (n : ℤ),
+  ∀ (x : Spacetime3), 0 ≤ x 0 → ∀ (i : Fin 3) (n : ℤ),
     let e_i : Spacetime3 := standard_basis (n := 4) i.succ
     f (x + n • e_i) = f x
 
 /-- Spatial periodicity (in the `ℝ³` directions) for a pressure field `ℝ⁴ → ℝ`. -/
 def IsSpatiallyPeriodicPressure (p : PressureField 3) : Prop :=
-  ∀ (x : Spacetime3) (i : Fin 3) (n : ℤ),
+  ∀ (x : Spacetime3), 0 ≤ x 0 → ∀ (i : Fin 3) (n : ℤ),
     let e_i : Spacetime3 := standard_basis (n := 4) i.succ
     p (x + n • e_i) = p x
 
@@ -57,7 +57,7 @@ def PeriodicForce (f : ForceField 3) : Prop :=
 /-- The zero force is spatially periodic. -/
 theorem zero_force_periodic :
     PeriodicForce (fun _ : Spacetime3 => (0 : Space3)) := by
-  intro x i n
+  intro x _hx i n
   rfl
 
 /--

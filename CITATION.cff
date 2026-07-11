@@ -3,12 +3,12 @@ message: "If you use this software, please cite it as below."
 authors:
   - family-names: George
     given-names: Robert Joseph
-title: "Formalization of the Millennium Prize Problems in Lean4"
-version: 1.0.0
-date-released: 2025-03-16
+title: "Formalization of the Millennium Prize Problem Statements in Lean 4"
+version: 2.0.0
+date-released: 2026-07-11
 abstract: >-
-  A formalization of the seven Millennium Prize Problems in the Lean4 theorem prover.
-  This project aims to precisely represent these famous mathematical problems in a
+  A formalization of the seven Millennium Prize Problem statements in the Lean 4 theorem prover.
+  This project aims to represent these famous mathematical statements in a
   machine-checkable format, including the Hodge Conjecture, Navier-Stokes Equations,
   P vs NP Problem, Riemann Hypothesis, Yang-Mills Existence and Mass Gap,
   Birch and Swinnerton-Dyer Conjecture, and Poincaré Conjecture.
@@ -19,4 +19,4 @@ keywords:
   - millennium problems
   - mathematics
   - formalization
-license: MIT
+license: Apache-2.0

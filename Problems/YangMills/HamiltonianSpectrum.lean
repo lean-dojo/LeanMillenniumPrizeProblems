@@ -54,6 +54,11 @@ structure PhysicalHamiltonianSpectralData (G : Type) [CompactSimpleGaugeGroup G]
   /-- Agreement between the real physical spectrum and the complex operator spectrum. -/
   spectrum_eq_operator :
     spectrum_set = {E : ℝ | (E : ℂ) ∈ LinearPMap.spectrum hamiltonian}
+  /-- Agreement with the Hamiltonian spectrum carried by the Wightman realization.
+
+  This compatibility prevents the physical spectrum from being an unrelated set chosen only to
+  satisfy a gap predicate. -/
+  spectrum_eq_wightman : spectrum_set = spectrum ℝ theory.wightman.hamiltonian
   /-- Positive-energy condition for the physical spectrum. -/
   positive_energy : ∀ E : ℝ, E ∈ spectrum_set → 0 ≤ E
   /-- The vacuum energy `0` belongs to the physical spectrum. -/
@@ -102,6 +107,7 @@ Yang--Mills statement in `Problems.YangMills.Millennium`.
 def spectral_data (spectralData : PhysicalHamiltonianSpectralData G theory) :
     ClayHamiltonianSpectralData G theory :=
   { spectrum_set := spectralData.spectrum_set
+    spectrum_eq_hamiltonian := spectralData.spectrum_eq_wightman
     positive_energy := spectralData.positive_energy
     vacuum_energy_zero := spectralData.vacuum_energy_zero
     vacuum_zero_energy := theory.wightman.is_vacuum
@@ -278,69 +284,7 @@ placeholder proof when a formal Lean construction is available.
 
 /-- Clay Millennium Prize target for Yang--Mills existence and mass gap. -/
 theorem clay_prize_yang_mills :
-    ∀ (G : Type) [CompactSimpleGaugeGroup G],
-      ∃ (theory : QuantumYangMillsTheory G) (Δ : ℝ)
-        (spectralData : PhysicalHamiltonianSpectralData G theory),
-          (∀ g f, theory.field_operators (theory.wightman.action_on_tests g f) =
-            conjugate_operator (theory.wightman.unitary_rep g) (theory.field_operators f)) ∧
-          (∀ (f g : SchwartzMap Spacetime ℝ),
-            (∀ (x y : Spacetime),
-              minkowski_metric (x - y) (x - y) < 0 → f x = 0 ∨ g y = 0) →
-            theory.field_operators f ∘L theory.field_operators g =
-              theory.field_operators g ∘L theory.field_operators f) ∧
-          theory.wightman.hamiltonian.IsPositive ∧
-          (∀ E, E ∈ spectrum ℝ theory.wightman.hamiltonian → 0 ≤ E) ∧
-          (∀ Ω' : theory.hilbert_space,
-            IsVacuum Ω' theory.wightman.hamiltonian →
-              (∀ g, theory.wightman.unitary_rep g Ω' = Ω') →
-                ‖Ω'‖ = 1 →
-                  Ω' = theory.wightman.vacuum) ∧
-          (∀ fs : List SchwartzSpace,
-            0 ≤ theory.osterwalder_schrader.schwinger_function
-              (fs.map theory.osterwalder_schrader.time_reflection ++ fs)) ∧
-          (∀ fs : List SchwartzSpace,
-            theory.osterwalder_schrader.schwinger_function fs =
-              correlation theory.field_operators theory.wightman.vacuum fs) ∧
-          Function.Injective theory.local_operators.op ∧
-          (∀ g p f,
-            (theory.local_operators.op p) (theory.wightman.action_on_tests g f) =
-              conjugate_operator (theory.wightman.unitary_rep g) ((theory.local_operators.op p) f)) ∧
-          (∀ (p q : GaugeInvariantLocalPolynomial G) (f g : SchwartzMap Spacetime ℝ),
-            (∀ (x y : Spacetime),
-              minkowski_metric (x - y) (x - y) < 0 → f x = 0 ∨ g y = 0) →
-            (theory.local_operators.op p f) ∘L (theory.local_operators.op q g) =
-              (theory.local_operators.op q g) ∘L (theory.local_operators.op p f)) ∧
-          (∀ fs : List SchwartzSpace,
-            Filter.Tendsto
-              (fun ε : ℝ =>
-                correlation theory.field_operators theory.wightman.vacuum
-                    (fs.map (theory.short_distance.scale ε)) -
-                  theory.short_distance.prediction ε fs)
-              (nhdsWithin (0 : ℝ) {ε : ℝ | 0 < ε})
-              (nhds 0)) ∧
-          (∀ ν f,
-            (Finset.univ.sum fun μ : Fin 4 =>
-              theory.stress_tensor.T μ ν (theory.stress_tensor.test_deriv μ f)) = 0) ∧
-          (∀ A B,
-            Set.Finite
-              {C : GaugeInvariantLocalPolynomial G |
-                theory.operator_product_expansion.coefficient A B C ≠ 0}) ∧
-          Nontrivial theory.hilbert_space ∧
-          ‖theory.wightman.vacuum‖ = 1 ∧
-          (∃ f : SchwartzSpace,
-            theory.local_operators.op
-              (GaugeInvariantLocalPolynomial.curvature : GaugeInvariantLocalPolynomial G) f ≠ 0) ∧
-          IsSelfAdjoint spectralData.hamiltonian ∧
-          spectralData.spectrum_set = {E : ℝ | (E : ℂ) ∈ LinearPMap.spectrum spectralData.hamiltonian} ∧
-          LinearPMap.spectrum spectralData.hamiltonian ⊆ Set.range Complex.ofReal ∧
-          spectralData.physical_vacuum ∈ spectralData.hamiltonian.domain ∧
-          spectralData.hamiltonian ⟨spectralData.physical_vacuum, spectralData.physical_vacuum_mem_domain⟩ = 0 ∧
-          (∀ E : ℝ, E ∈ spectralData.spectrum_set → 0 ≤ E) ∧
-          0 ∈ spectralData.spectrum_set ∧
-          0 < Δ ∧
-          Disjoint spectralData.spectrum_set (Set.Ioo 0 Δ) ∧
-          ∃ m : ℝ, m > 0 ∧ ∀ Δ' : ℝ, HasPhysicalMassGap spectralData Δ' → Δ' ≤ m :=
-  by
-    sorry
+    ClayYangMills := by
+  sorry
 
 end MillenniumYangMills

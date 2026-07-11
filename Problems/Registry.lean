@@ -13,17 +13,19 @@ import Problems.Poincare.Millennium
 
 This module records the repository's statement-first style in Lean.
 
-The problem modules define the Clay problem statements as `Prop`s.  This registry records, as
-checked Lean metadata, what kind of mathematical resolution each statement calls for and which
-formalization choices are worth knowing.
+The problem modules define the Clay mathematical outcomes as `Prop`s. This registry records, as
+checked Lean metadata, what kind of resolution each problem calls for and which formalization
+choices are worth knowing. P versus NP records two mutually exclusive outcome propositions and a
+separate explicit resolution type.
 
-If one of the open problems is solved in Lean later, the existing `statement` field should stay
-stable and the proof should appear as a separate theorem whose type is that proposition.  The
-registry can then change `status` without changing the proposition being tracked.
+If one of the open problems is solved in Lean later, its outcome proposition should stay stable and
+the final placeholder should be replaced. The registry can then change `status` without changing
+the mathematical outcome being tracked.
 
 The design point is intentional:
-* `statement` is the stable mathematical proposition.
-* `prize_theorem_declaration` names the final theorem body future work should replace.
+* `statement` is the primary mathematical proposition; `alternative_statement` records a second
+  decision outcome when needed.
+* `prize_theorem_declaration` names the final placeholder body future work should replace.
 * `resolution_shape` says what a future solution would have to do.
 * `formalization_note` records ordinary modeling choices without changing the proposition.
 -/
@@ -38,14 +40,19 @@ def p_versus_np : ClayProblem where
   title := "P versus NP"
   statement := Millennium.ClayPVersusNP
   statement_declaration := "Millennium.ClayPVersusNP"
+  alternative_statement := some Millennium.ClayPVersusNP.Formulations.NegativeBranch
+  alternative_statement_declaration :=
+    some "Millennium.ClayPVersusNP.Formulations.NegativeBranch"
   prize_theorem_declaration := "Millennium.clay_prize_p_versus_np"
   status := ProblemStatus.open_problem
   resolution_shape := ResolutionShape.decide
   resolution_note :=
-    "Clay's question is to settle whether P equals NP.  The checked positive statement is P = NP; the negative outcome is recorded separately as ClayPVersusNP.Formulations.NegativeBranch."
+    "Clay's question is to settle whether P equals NP. Both P = NP and P != NP are checked outcomes, and the final resolution type accepts a proof of either one."
   formalization_note :=
-    "Uses Cook's verifier definition and the positive question Does P = NP?, with an explicit finite-alphabet machine model."
+    "Uses Cook's verifier definition and an explicit finite-alphabet machine model. The resolution is a two-constructor Type rather than the excluded-middle proposition P = NP or P != NP."
   related_declarations := [
+    "Millennium.ClayPVersusNPResolution",
+    "Millennium.ClayPVersusNP.Formulations.PositiveBranch",
     "Millennium.ClayPVersusNP.Formulations.ClassEquality",
     "Millennium.ClayPVersusNP.Formulations.NegativeBranch",
     "Millennium.ClayPVersusNP.Formulations.DeterministicSimulation"
@@ -56,8 +63,9 @@ P vs NP is deliberately marked as `decide`.
 
 The proposition `ClayPVersusNP.Formulations.ClassEquality ∨
 ¬ ClayPVersusNP.Formulations.ClassEquality` would not represent the prize problem in classical Lean:
-it is an instance of excluded middle.  The registry therefore points to the positive checked
-statement while also listing the negative outcome declaration.
+it is an instance of excluded middle. The final declaration instead returns the explicit
+`ClayPVersusNPResolution` type, whose constructors expose which outcome was proved. The registry
+records both outcome propositions.
 -/
 
 /-- Registry entry for the Riemann Hypothesis. -/
@@ -115,12 +123,13 @@ def hodge_conjecture : ClayProblem where
   status := ProblemStatus.open_problem
   resolution_shape := ResolutionShape.prove
   resolution_note :=
-    "The all-coherent-data statement says that every coherent Hodge-theory realization satisfies the Clay cycle-class statement.  This is a stronger abstract-data envelope around the canonical Clay statement; assignment-specific formulations remain available."
+    "Every canonical Hodge-theory realization must satisfy the Clay cycle-class statement; bare coherent synthetic test packages are excluded from the public target."
   formalization_note :=
-    "The cycle-class sentence matches the Clay wording, but Hodge theory is represented by explicit coherent data rather than native singular/Hodge cohomology and cycle-class constructions.  Quantifying over all such data is stronger than quantifying only over the canonical Hodge theory attached to each variety."
+    "The cycle-class sentence matches the Clay wording. Until native singular/Hodge cohomology is available, canonical realizations explicitly require injective complexification and a spanning Hodge decomposition."
   related_declarations := [
     "MillenniumHodge.HodgeTheoryAssignment.ClayStatement",
-    "MillenniumHodge.HodgeTheoryAssignment",
+    "MillenniumHodge.HodgeTheoryRealization",
+    "MillenniumHodge.ClayHodge.Formulations.AllCoherentConjectures",
     "MillenniumHodge.HodgeConjecture.Formulations.FixedCycleSpan"
   ]
 
@@ -144,7 +153,7 @@ def birch_swinnerton_dyer : ClayProblem where
   resolution_note :=
     "The statement is the Taylor/rank formulation for elliptic curves over Q, with L-series data explicit."
   formalization_note :=
-    "The Taylor rank/order statement follows the PDF's integral Weierstrass-model presentation; analytic continuation and bad-prime correction data are carried by the explicit LSeriesData package."
+    "The ordinary LSeriesData contains only the Clay continuation and Euler-product agreement; optional bad-prime comparison data lives in HasseWeilLSeriesData."
   related_declarations := [
     "MillenniumBirchSwinnertonDyer.ClayBirchSwinnertonDyer.Formulations.Taylor.Integral",
     "MillenniumBirchSwinnertonDyer.ClayBirchSwinnertonDyer.Formulations.Rank.HasseWeil"
@@ -160,9 +169,9 @@ def yang_mills : ClayProblem where
   status := ProblemStatus.open_problem
   resolution_shape := ResolutionShape.construct_object
   resolution_note :=
-    "The statement is an existence theorem: for each compact simple gauge group, construct a nontrivial quantum Yang-Mills theory on R^4 whose physical Hamiltonian has a positive finite mass gap."
+    "The statement is an existence theorem: for each connected compact simple Lie gauge group, construct a nontrivial quantum Yang-Mills theory on R4 whose Hamiltonian spectrum has a positive finite mass gap."
   formalization_note :=
-    "The canonical statement is the Clay compact-simple-gauge-group mass-gap formulation; physical-Hamiltonian and Lorentz-covariant strengthenings live under ClayYangMills.Formulations."
+    "The gauge group is connected and its Lie algebra is identified with the smooth model space. The canonical spectral set equals the theory Hamiltonian spectrum; unbounded and Lorentz-covariant strengthenings remain related declarations."
   related_declarations := [
     "MillenniumYangMills.ClayYangMills.Formulations.FixedGroup",
     "MillenniumYangMills.ClayYangMills.Formulations.PhysicalHamiltonian.Statement",

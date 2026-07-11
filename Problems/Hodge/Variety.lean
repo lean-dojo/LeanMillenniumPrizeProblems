@@ -10,6 +10,7 @@ import Mathlib.Algebra.Module.Submodule.Map
 import Mathlib.Algebra.Module.Submodule.RestrictScalars
 import Mathlib.LinearAlgebra.Finsupp.LinearCombination
 import Mathlib.LinearAlgebra.Span.Defs
+import Mathlib.LinearAlgebra.Projectivization.Basic
 
 namespace VarietyDefinition
 
@@ -30,18 +31,19 @@ algebraic cycles, closed analytic subspaces, Chow comparison, and cycle classes.
 -/
 
 /--
-Projective coordinates for the complex points of a variety.
+Projective coordinates for the `K`-points of a variety.
 
 Projectivity is represented by an explicit homogeneous-coordinate embedding witness: every point
 receives nonzero homogeneous coordinates in some finite projective space.
 -/
-structure ProjectiveEmbedding (points : Type*) where
-  /-- The ambient projective space is `ℙ^ambient_dimension(ℂ)`. -/
+structure ProjectiveEmbedding (K : Type*) [Field K] (points : Type*) where
+  /-- The ambient projective space is `ℙ^ambient_dimension(K)`. -/
   ambient_dimension : ℕ
-  /-- Homogeneous coordinates of a point in `ℂ^(N+1)`. -/
-  homogeneous_coord : points → Fin (ambient_dimension + 1) → ℂ
-  /-- Homogeneous coordinates are not all zero. -/
-  nonzero : ∀ x : points, ∃ i : Fin (ambient_dimension + 1), homogeneous_coord x i ≠ 0
+  /-- A point of projective space, i.e. nonzero homogeneous coordinates modulo scalar rescaling. -/
+  projective_coord :
+    points → Projectivization K (Fin (ambient_dimension + 1) → K)
+  /-- Distinct points have distinct projective images. -/
+  injective : Function.Injective projective_coord
 
 /--
 Analytic/geometric realization of a nonsingular complex algebraic variety.
@@ -50,22 +52,28 @@ The Clay PDF uses the complex analytic manifold attached to a projective nonsing
 variety.  This bundle records the data the Hodge statement uses: complex points, their topology,
 complex dimension, and a projective embedding.
 -/
-structure SmoothProjectiveRealization (X : Scheme) where
-  /-- Complex points of the variety. -/
+structure SmoothProjectiveRealization (K : Type*) [Field K]
+    (X : Scheme) (structure_map : X ⟶ Spec (.of K)) where
+  /-- Chosen presentation of the `K`-valued points of the variety. -/
   points : Type*
-  /-- Topology on the complex points. -/
+  /-- The chosen points are exactly scheme morphisms `Spec K ⟶ X`. -/
+  points_equiv_scheme_points :
+    points ≃ (Spec (.of K) ⟶ X)
+  /-- Topology on the points. -/
   topology : TopologicalSpace points
   /-- Complex dimension of the nonsingular variety. -/
   complex_dimension : ℕ
   /-- A finite projective embedding of the complex points. -/
-  projective_embedding : ProjectiveEmbedding points
+  projective_embedding : ProjectiveEmbedding K points
   /-- Projective complex varieties are compact in the analytic topology. -/
   compact : CompactSpace points
 
 namespace SmoothProjectiveRealization
 
 /-- The complex points as a `TopCat` object for singular homology constructions. -/
-noncomputable def top_cat {X : Scheme} (R : SmoothProjectiveRealization X) : TopCat :=
+noncomputable def top_cat {K : Type*} [Field K] {X : Scheme}
+    {structure_map : X ⟶ Spec (.of K)}
+    (R : SmoothProjectiveRealization K X structure_map) : TopCat :=
   letI : TopologicalSpace R.points := R.topology
   TopCat.of R.points
 
@@ -84,10 +92,13 @@ structure SmoothProjectiveVariety (K : Type*) [Field K] where
   structure_map : X ⟶ Spec (.of K)
   /-- Non-singularity over `K`, using Mathlib's smooth morphism predicate. -/
   smooth : Smooth structure_map
+  /-- Projective varieties are proper over the base field. -/
+  proper : IsProper structure_map
   /-- The complex analytic/projective realization used by the Hodge statement. -/
-  realization : SmoothProjectiveRealization X
+  realization : SmoothProjectiveRealization K X structure_map
 
 attribute [instance] SmoothProjectiveVariety.smooth
+attribute [instance] SmoothProjectiveVariety.proper
 
 /--
 The cohomology, Hodge decomposition, and cycle-class structures used for a fixed variety `X`.
@@ -595,10 +606,10 @@ They are small internal examples used to test the `HodgeData` interface: the cyc
 filtration agreement, Chow comparison, and algebraic-span lemmas should behave correctly in
 degenerate and finite-dimensional examples.
 
-The Hodge Millennium statement in `Problems.Hodge.Millennium` quantifies over all coherent
-Hodge-theory data packages.  That is a stronger abstract-data envelope around the canonical Clay
-statement.  The models below should therefore be read only as consistency checks for the formal
-interface, not as witnesses for the Millennium problem.
+The public Hodge Millennium statement in `Problems.Hodge.Millennium` quantifies over canonical
+`HodgeTheoryRealization` packages, not over every coherent assignment below. The models in this
+section are consistency checks for the lower-level interface and do not automatically become
+witnesses for the Millennium problem.
 
 ### One-dimensional model
 
