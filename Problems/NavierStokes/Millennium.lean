@@ -3,40 +3,90 @@ import Problems.NavierStokes.MillenniumBoundedDomain
 /-!
 # Navier–Stokes Millennium problem (Fefferman)
 
-Single entry point for the Clay Navier–Stokes problem statement, following:
+Top-level statement for Clay Navier--Stokes, following:
 `Problems/NavierStokes/references/clay/navierstokes.pdf`.
 
-The Clay write-up (Fefferman) gives four related statements (A)–(D), with (A,C) in the `ℝ³`
-setting and (B,D) in the periodic setting. In this repository they are formalized as:
-- `MillenniumNSRDomain.FeffermanA` and `MillenniumNSRDomain.FeffermanC`
-  (`Problems/NavierStokes/MillenniumRDomain.lean`)
-- `MillenniumNS_BoundedDomain.FeffermanB` and `MillenniumNS_BoundedDomain.FeffermanD`
-  (`Problems/NavierStokes/MillenniumBoundedDomain.lean`)
+Fefferman's accepted Clay cases are formalized directly as:
+- `NavierStokesOnR3.SmoothExistence`
+- `NavierStokesPeriodic.SmoothExistence`
+- `NavierStokesOnR3.Breakdown`
+- `NavierStokesPeriodic.Breakdown`
 
-The Clay Millennium problem asks for a proof of one of these four statements. We expose the four
-formal targets separately below, rather than as a single disjunction.
+This file just packages those four cases into the single public Clay proposition.
 -/
 
 namespace MillenniumNavierStokes
 
-/-- Fefferman's Clay Millennium problem statements (A)–(D), kept as separate targets. -/
-abbrev NavierStokesMillenniumProblem : MillenniumNS_BoundedDomain.FeffermanMillenniumProblems :=
-  MillenniumNS_BoundedDomain.FeffermanMillenniumProblem
+/-- Clay's Navier--Stokes statement: prove one of Fefferman's cases (A)--(D). -/
+def ClayNavierStokes : Prop :=
+  NavierStokesOnR3.SmoothExistence ∨ NavierStokesPeriodic.SmoothExistence ∨
+    NavierStokesOnR3.Breakdown ∨ NavierStokesPeriodic.Breakdown
 
-/-- Fefferman's statement (A), existence and smoothness on `ℝ³` with zero force. -/
-abbrev FeffermanA : Prop :=
-  MillenniumNS_BoundedDomain.FeffermanMillenniumProblem.A
+/-- `ClayNavierStokes` is exactly the disjunction of Fefferman's four accepted cases. -/
+theorem ClayNavierStokes.iff_cases :
+    ClayNavierStokes ↔
+      NavierStokesOnR3.SmoothExistence ∨ NavierStokesPeriodic.SmoothExistence ∨
+        NavierStokesOnR3.Breakdown ∨ NavierStokesPeriodic.Breakdown :=
+  Iff.rfl
 
-/-- Fefferman's statement (B), existence and smoothness in the periodic setting with zero force. -/
-abbrev FeffermanB : Prop :=
-  MillenniumNS_BoundedDomain.FeffermanMillenniumProblem.B
+/-- Whole-space smooth existence proves the Clay statement. -/
+theorem ClayNavierStokes.of_whole_space_smooth_existence
+    (h : NavierStokesOnR3.SmoothExistence) :
+    ClayNavierStokes :=
+  Or.inl h
 
-/-- Fefferman's statement (C), breakdown on `ℝ³` with forcing allowed. -/
-abbrev FeffermanC : Prop :=
-  MillenniumNS_BoundedDomain.FeffermanMillenniumProblem.C
+/-- Periodic smooth existence proves the Clay statement. -/
+theorem ClayNavierStokes.of_periodic_smooth_existence
+    (h : NavierStokesPeriodic.SmoothExistence) :
+    ClayNavierStokes :=
+  Or.inr (Or.inl h)
 
-/-- Fefferman's statement (D), breakdown in the periodic setting with forcing allowed. -/
-abbrev FeffermanD : Prop :=
-  MillenniumNS_BoundedDomain.FeffermanMillenniumProblem.D
+/-- Whole-space breakdown proves the Clay statement. -/
+theorem ClayNavierStokes.of_whole_space_breakdown
+    (h : NavierStokesOnR3.Breakdown) :
+    ClayNavierStokes :=
+  Or.inr (Or.inr (Or.inl h))
+
+/-- Periodic breakdown proves the Clay statement. -/
+theorem ClayNavierStokes.of_periodic_breakdown
+    (h : NavierStokesPeriodic.Breakdown) :
+    ClayNavierStokes :=
+  Or.inr (Or.inr (Or.inr h))
+
+/-- Case analysis on `ClayNavierStokes` using the four accepted Fefferman cases directly. -/
+theorem ClayNavierStokes.elim
+    {P : Prop} (h : ClayNavierStokes)
+    (hA : NavierStokesOnR3.SmoothExistence → P)
+    (hB : NavierStokesPeriodic.SmoothExistence → P)
+    (hC : NavierStokesOnR3.Breakdown → P)
+    (hD : NavierStokesPeriodic.Breakdown → P) :
+    P := by
+  rcases h with hA' | hBCD
+  · exact hA hA'
+  rcases hBCD with hB' | hCD
+  · exact hB hB'
+  rcases hCD with hC' | hD'
+  · exact hC hC'
+  · exact hD hD'
+
+/-!
+## Main theorem
+
+This final theorem records the Navier--Stokes alternatives directly. Replace the placeholder proof
+with a proof of any one accepted Clay case.
+-/
+
+/--
+Clay Millennium Prize target for Navier--Stokes.
+
+Prove one accepted Clay case, then finish via
+`ClayNavierStokes.of_whole_space_smooth_existence`,
+`ClayNavierStokes.of_periodic_smooth_existence`,
+`ClayNavierStokes.of_whole_space_breakdown`, or
+`ClayNavierStokes.of_periodic_breakdown`.
+-/
+theorem clay_prize_navier_stokes :
+    ClayNavierStokes := by
+  sorry
 
 end MillenniumNavierStokes

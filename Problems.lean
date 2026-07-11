@@ -1,18 +1,18 @@
-import Problems.NavierStokes.AdjointSpace
-import Problems.NavierStokes.Definitions
+import Problems.Common
 import Problems.NavierStokes.Millennium
-import Problems.NavierStokes.Imports
 import Problems.RiemannHypothesis.Millennium
-import Problems.PvsNP.Millennium
-import Problems.Hodge.Millennium
+import Problems.PVersusNP.Millennium
+import Problems.PVersusNP.PolynomialHierarchy
 import Problems.Hodge.Variety
+import Problems.Hodge.Millennium
 import Problems.Poincare.Millennium
+import Problems.BirchSwinnertonDyer.RankSupport
 import Problems.BirchSwinnertonDyer.Millennium
-import Problems.BirchSwinnertonDyer.Mordellweil
-import Problems.YangMills.Millennium
 import Problems.YangMills.Quantum
-import Problems.PvsNP.PolynomialHierarchy
-import Problems.BirchSwinnertonDyer.BSD_specific
+import Problems.YangMills.Millennium
+import Problems.YangMills.HamiltonianSpectrum
+import Problems.YangMills.LorentzCovariance
+import Problems.Registry
 
 /-!
 # Millennium Prize Problems (index)

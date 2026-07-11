@@ -9,7 +9,12 @@ relaxedAutoImplicit = false
 [[require]]
 name = "mathlib"
 git = "https://github.com/leanprover-community/mathlib4"
-rev = "v4.30.0"
+rev = "v4.31.0"
+
+[[require]]
+name = "Physlib"
+git = "https://github.com/HEPLean/PhysLean"
+rev = "3dddd61e231b2f8936dbaa1460dc60df71bc434d"
 
 [[lean_lib]]
 name = "Problems"

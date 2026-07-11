@@ -25,7 +25,7 @@ def _download(url: str, out_path: Path) -> None:
         w.write(r.read())
 
 
-def _spec() -> dict[str, list[ClayPdf]]:
+def _pdf_specification() -> dict[str, list[ClayPdf]]:
     root = _repo_root()
     return {
         "BirchSwinnertonDyer": [
@@ -46,10 +46,10 @@ def _spec() -> dict[str, list[ClayPdf]]:
                 out_path=root / "Problems/NavierStokes/references/clay/navierstokes.pdf",
             )
         ],
-        "PvsNP": [
+        "PVersusNP": [
             ClayPdf(
                 url="https://www.claymath.org/wp-content/uploads/2022/06/pvsnp.pdf",
-                out_path=root / "Problems/PvsNP/references/clay/pvsnp.pdf",
+                out_path=root / "Problems/PVersusNP/references/clay/pvsnp.pdf",
             )
         ],
         "Poincare": [
@@ -86,20 +86,20 @@ def _spec() -> dict[str, list[ClayPdf]]:
 
 
 def _iter_pdfs(problem: str | None) -> Iterable[ClayPdf]:
-    spec = _spec()
+    pdf_specification = _pdf_specification()
     if problem is None:
-        for pdfs in spec.values():
+        for pdfs in pdf_specification.values():
             yield from pdfs
         return
-    if problem not in spec:
-        raise SystemExit(f"Unknown problem '{problem}'. Known: {', '.join(sorted(spec.keys()))}")
-    yield from spec[problem]
+    if problem not in pdf_specification:
+        raise SystemExit(f"Unknown problem '{problem}'. Known: {', '.join(sorted(pdf_specification.keys()))}")
+    yield from pdf_specification[problem]
 
 
 def cmd_list() -> int:
-    spec = _spec()
+    pdf_specification = _pdf_specification()
     out = {
-        k: [{"url": p.url, "out_path": str(p.out_path)} for p in v] for k, v in sorted(spec.items())
+        k: [{"url": p.url, "out_path": str(p.out_path)} for p in v] for k, v in sorted(pdf_specification.items())
     }
     print(json.dumps(out, indent=2, sort_keys=True))
     return 0
@@ -131,7 +131,7 @@ def main() -> int:
             "`Problems/**/references/clay/`."
         )
     )
-    parser.add_argument("--problem", default=None, help="One of: BirchSwinnertonDyer, Hodge, NavierStokes, PvsNP, Poincare, RiemannHypothesis, YangMills")
+    parser.add_argument("--problem", default=None, help="One of: BirchSwinnertonDyer, Hodge, NavierStokes, PVersusNP, Poincare, RiemannHypothesis, YangMills")
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("list", help="Print the PDF URL → local path mapping as JSON.")
     p_dl = sub.add_parser("download", help="Download PDFs into the repo.")

@@ -1,4 +1,4 @@
-# Clay Mathematics Institute (BSD)
+# Clay Mathematics Institute (Birch--Swinnerton-Dyer)
 
 This folder contains the official Clay Mathematics Institute problem description PDF.
 

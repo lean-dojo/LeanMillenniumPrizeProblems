@@ -6,5 +6,5 @@ Files:
 - `pvsnp.pdf`
 
 To refresh or verify:
-- `python3 scripts/clay_refs.py download --problem PvsNP --force`
-- `python3 scripts/clay_refs.py verify --problem PvsNP`
+- `python3 scripts/clay_refs.py download --problem PVersusNP --force`
+- `python3 scripts/clay_refs.py verify --problem PVersusNP`

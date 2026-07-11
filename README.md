@@ -1,8 +1,8 @@
-# Lean Millennium Prize Problem statements
+# Lean Millennium Prize Problem Statements
 
-This repository focuses on **formalizing the official Clay Mathematics Institute Millennium Prize
-Problem statements** in Lean 4 (Mathlib). It is *not* a repository of solutions; the goal is to
-make each problem statement precise and machine-checkable.
+This repository formalizes the official Clay Mathematics Institute Millennium Prize Problem
+statements in Lean 4. It is not a repository of solutions. The goal is to make each statement
+precise, reviewable, machine-checkable, and clear about the formalization choices involved.
 
 <center>
 <img src="millennium_problems.png" >
@@ -11,165 +11,114 @@ make each problem statement precise and machine-checkable.
 ## Quick Start
 
 - Build everything: `lake build`
-- Problem statements live in: `Problems/<Problem>/Millennium.lean`
-- Official Clay PDFs live in: `Problems/<Problem>/references/clay/`
+- Verify local Clay PDFs: `python3 scripts/clay_refs.py verify`
+- Problem statements and proof stubs: see the table below
+- Checked registry: `Problems/Registry.lean`
 
-To (re)download or verify that the PDFs exist locally, use `scripts/clay_refs.py`
-(see `scripts/README.md`).
+The Clay PDFs are stored under `Problems/<Problem>/references/clay/`.
 
-## Design Goals
+## What This Repo Provides
 
-- Keep the repository **`sorry`-free** and **free of user `axiom`s**.
-- When Mathlib does not yet provide enough foundations (common in analysis/QFT), we avoid “fake”
-  placeholders by **parameterizing** statements over explicit *data packages* that record the
-  required objects/properties.
-- Prefer statements that match the wording of the Clay PDFs, with the PDF stored alongside the
-  formalization for easy review.
+The main Lean artifacts are statement declarations and final prize theorems:
 
-## Safety Checks
+```lean
+def ClayRiemannHypothesis : Prop := ...
+```
 
-This branch has been checked with [SafeVerify](https://github.com/GasStationManager/SafeVerify) on the compiled
-`.olean` files for all modules under `Problems/**` (self-check), replaying declarations in the kernel and
-enforcing SafeVerify’s restrictions (no `unsafe`/`partial` declarations and no axioms beyond `propext`,
-`Quot.sound`, `Classical.choice`).
+A `Prop` is the checked mathematical target. It is not a proof and not a claim that the problem is
+solved. Each problem module ends with one intentional theorem named `clay_prize_*`. That theorem
+spells out the target proposition directly and its body is the exact place to replace `sorry` if
+someone formalizes a solution:
 
-## What’s Implemented
+```lean
+theorem clay_prize_riemann_hypothesis :
+    ∀ s : ℂ,
+      riemannZeta s = 0 →
+        ¬ (∃ n : ℕ, s = -2 * (n + 1)) →
+          s ≠ 1 →
+            s.re = 1 / 2 := by
+  sorry
+```
 
-Each problem folder contains a `Millennium.lean` that states the Clay problem precisely, plus
-supporting files with definitions/lemmas needed to express that statement.
+The seven final theorem `sorry`s are intentional. They are not claims that the open problems are
+solved. `Problems/Registry.lean` records the statement declaration, the final theorem, status,
+resolution shape, and short formalization notes as checked metadata.
 
-Some “narrative” examples mentioned in the PDFs (e.g. AKS: `PRIME ∈ P`, Cook–Levin: `SAT` is
-NP-complete) are not currently formalized as Lean theorems; formalizing them would require major
-additional developments in complexity theory within Mathlib.
+This gives the repository a stable lifecycle:
 
-## Status (per problem)
+- before a proof exists, the tracked object is the statement `Prop`;
+- when a proof exists, replace the body of the matching final `clay_prize_*` theorem;
+- if the formalization improves, update the registry note without changing the public statement or
+  final theorem names that downstream files import.
 
-This repo focuses on *problem statements*, so “status” below refers to how fully each Clay PDF has
-been turned into Lean definitions/theorems (not whether the underlying conjecture is proved).
+## Final Prize Theorems
 
-**Legend**
-- Status:
-  - **Statement**: the Clay statement is expressed as a Lean `Prop` with supporting definitions.
-  - **Parameterized**: the statement is expressed, but depends on an explicit “data package” that
-    stands in for missing Mathlib foundations (keeps the repo `axiom`-free).
-  - **Mathlib**: the statement is already in Mathlib (and may be proved there); this repo restates it.
-- Clay fidelity:
-  - **Direct**: close translation of the Clay PDF statement (modulo routine formalization choices).
-  - **Parameterized**: same mathematical shape as the PDF, but some objects/maps are parameters.
-  - **Modeled**: uses a Lean-level proxy for a PDF concept that is not yet formalized (e.g. spectra
-    of unbounded operators).
+Each theorem below is placed at the end of its module under `## Main theorem`.
 
-| Problem | Main Lean statement | Location | Status | Clay fidelity |
-|---|---|---|---|---|
-| P vs NP | `Millennium.PEqualsNP` | `Problems/PvsNP/Millennium.lean` | Statement | Direct |
-| Riemann Hypothesis | `Millennium.RiemannHypothesis` | `Problems/RiemannHypothesis/Millennium.lean` | Statement | Direct |
-| Navier–Stokes | `MillenniumNavierStokes.NavierStokesMillenniumProblem` | `Problems/NavierStokes/Millennium.lean` | Statement | Direct |
-| Hodge Conjecture | `MillenniumHodge.HodgeConjecture` | `Problems/Hodge/Millennium.lean` | Parameterized | Parameterized |
-| Birch–Swinnerton–Dyer | `MillenniumBirchSwinnertonDyer.BirchSwinnertonDyerConjecture` | `Problems/BirchSwinnertonDyer/Millennium.lean` | Parameterized | Parameterized |
-| Yang–Mills mass gap | `MillenniumYangMills.YangMillsExistenceAndMassGap` | `Problems/YangMills/Millennium.lean` | Parameterized | Modeled |
-| Poincaré Conjecture | `MillenniumPoincare.PoincareConjecture3` | `Problems/Poincare/Millennium.lean` | Mathlib | Direct |
+| Problem | File | Statement | Replace this final theorem body |
+|---|---|---|---|
+| P vs NP | `Problems/PVersusNP/Millennium.lean` | `Millennium.ClayPVersusNP` | `Millennium.clay_prize_p_versus_np` |
+| Riemann Hypothesis | `Problems/RiemannHypothesis/Millennium.lean` | `Millennium.ClayRiemannHypothesis` | `Millennium.clay_prize_riemann_hypothesis` |
+| Navier-Stokes | `Problems/NavierStokes/Millennium.lean` | `MillenniumNavierStokes.ClayNavierStokes` | `MillenniumNavierStokes.clay_prize_navier_stokes` |
+| Hodge Conjecture | `Problems/Hodge/Millennium.lean` | `MillenniumHodge.ClayHodge` | `MillenniumHodge.clay_prize_hodge_conjecture` |
+| Birch-Swinnerton-Dyer | `Problems/BirchSwinnertonDyer/Millennium.lean` | `MillenniumBirchSwinnertonDyer.ClayBirchSwinnertonDyer` | `MillenniumBirchSwinnertonDyer.clay_prize_birch_swinnerton_dyer` |
+| Yang-Mills mass gap | `Problems/YangMills/HamiltonianSpectrum.lean` | `MillenniumYangMills.ClayYangMills` | `MillenniumYangMills.clay_prize_yang_mills` |
+| Poincare Conjecture | `Problems/Poincare/Millennium.lean` | `MillenniumPoincare.ClayPoincareConjecture` | `MillenniumPoincare.clay_prize_poincare_conjecture` |
 
-<details>
-<summary>P vs NP: what’s in Lean vs. still missing</summary>
+For P vs NP, the current public statement is the positive outcome `P = NP`. If the final resolution
+is `P ≠ NP`, prove `Millennium.ClayPVersusNP.Formulations.NegativeBranch` and update the registry so the public proof target
+points at the negative outcome.
 
-- Clay PDF: `Problems/PvsNP/references/clay/pvsnp.pdf`
-- What’s formalized:
-  - `P`/`NP` as languages over finite alphabets (`List alphabet`), using Cook’s verifier-based `NP`
-    definition (`Millennium.InNP`) and deterministic polynomial-time TM2 computability (`Millennium.InP`).
-  - Polynomial-time many-one reductions (`Millennium.PolyTimeReducible`) and `NP`-completeness (`Millennium.NPComplete`).
-  - Several basic “Cook Proposition 1” implications (closure under reduction, etc.).
-- What’s still narrative / external:
-  - Concrete `NP`-complete problems (`SAT`, `3SAT`, …) and the Cook–Levin theorem.
-  - Worked examples mentioned in the PDF (AKS primality, etc.).
-  - Equivalences between different complexity models (e.g. nondeterministic TM vs verifier definition).
-</details>
+## Status And Resolution
 
-<details>
-<summary>Riemann Hypothesis: what’s in Lean vs. still missing</summary>
+The status column is mathematical status. The resolution shape says what a future proof would need
+to do with the checked statement.
 
-- Clay PDF: `Problems/RiemannHypothesis/references/clay/riemann.pdf`
-- What’s formalized:
-  - The Clay statement as `Millennium.RiemannHypothesis`, with an equivalence lemma to Mathlib’s
-    `_root_.RiemannHypothesis`.
-  - Several standard narrative facts reused from Mathlib (Dirichlet series/Euler product on `Re(s) > 1`,
-    residue at `s = 1`, completed zeta functional equation, Chebyshev functions, …).
-- What’s still narrative / external:
-  - Most of the “equivalent formulations” and prime-number-theory consequences discussed in the PDF.
-</details>
+| Problem | Headline Lean statement | Status | Resolution shape |
+|---|---|---|---|
+| P vs NP | `Millennium.ClayPVersusNP` | Open | Decide between alternatives |
+| Riemann Hypothesis | `Millennium.ClayRiemannHypothesis` | Open | Prove statement |
+| Navier-Stokes | `MillenniumNavierStokes.ClayNavierStokes` | Open | Prove one alternative |
+| Hodge Conjecture | `MillenniumHodge.ClayHodge` | Open | Prove statement |
+| Birch-Swinnerton-Dyer | `MillenniumBirchSwinnertonDyer.ClayBirchSwinnertonDyer` | Open | Prove statement |
+| Yang-Mills mass gap | `MillenniumYangMills.ClayYangMills` | Open | Construct object |
+| Poincare Conjecture | `MillenniumPoincare.ClayPoincareConjecture` | Solved | Prove statement |
 
-<details>
-<summary>Navier–Stokes: what’s in Lean vs. still missing</summary>
+## Formalization Notes
 
-- Clay PDF: `Problems/NavierStokes/references/clay/navierstokes.pdf`
-- What’s formalized:
-  - Fefferman’s hypotheses and statements (A)–(D), with a single entry point in
-    `Problems/NavierStokes/Millennium.lean` and details split across:
-    `Problems/NavierStokes/MillenniumRDomain.lean` (A,C) and
-    `Problems/NavierStokes/MillenniumBoundedDomain.lean` (B,D + separated A--D targets).
-  - A lightweight PDE scaffold (`Problems/NavierStokes/Navierstokes.lean`) for (global) smooth solutions.
-- Notable formalization choices:
-  - Multi-indices are represented as lists of coordinate directions (slightly stronger than commutative multi-indices).
-  - “Smooth” is `ContDiff ℝ ⊤`.
-- What’s still narrative / external:
-  - The analytic existence/uniqueness/regularity theory itself (this repo only states the problem).
-</details>
+| Problem | Current read |
+|---|---|
+| P vs NP | Cook verifier/class-equality statement over the repository's finite-alphabet computation model. |
+| Riemann Hypothesis | Zeta critical-line statement; xi-zero material records the equivalent `ξ`-function view. |
+| Navier-Stokes | Fefferman alternatives (A)-(D), with solution and forcing smoothness stated on `R^3 x [0, infinity)` and pressure periodicity included. |
+| Hodge Conjecture | The cycle-class sentence matches the PDF, with assignment-specific and all-coherent-data variants under `Formulations`. |
+| Birch-Swinnerton-Dyer | The Taylor rank/order statement follows the PDF's integral Weierstrass model presentation; analytic L-series data is explicit. |
+| Yang-Mills mass gap | The canonical Clay target includes a positive finite mass gap; physical-Hamiltonian and Lorentz-covariant strengthenings live under `ClayYangMills.Formulations`. |
+| Poincare Conjecture | Closed simply connected 3-manifold statement, with closed-curve and `π₁` forms proved equivalent. |
 
-<details>
-<summary>Hodge Conjecture: what’s in Lean vs. still missing</summary>
+## Repository Layout
 
-- Clay PDF: `Problems/Hodge/references/clay/hodge.pdf`
-- What’s formalized:
-  - The conjecture statement `MillenniumHodge.HodgeConjecture`, parameterized by `HodgeData`
-    (`Problems/Hodge/Variety.lean`) bundling the cycle class map / Hodge decomposition interfaces.
-- What’s still missing in Mathlib (hence parameterized here):
-  - Construction of singular cohomology for complex varieties, the cycle class map, and the Hodge decomposition
-    in the generality used by the Clay write-up.
-</details>
+| Path | Purpose |
+|---|---|
+| `Problems/` | Lean statements, proof stubs, and supporting formalizations. |
+| `Problems/Common/` | Shared infrastructure reused across problem files, such as Euclidean coordinate helpers and registry metadata. |
+| `Problems/Registry.lean` | Checked registry of status, resolution shape, and formalization notes. |
+| `Problems/*/references/clay/` | Local copies of the official Clay PDFs. |
+| `scripts/clay_refs.py` | Clay PDF download and verification helper. |
 
-<details>
-<summary>Birch–Swinnerton–Dyer: what’s in Lean vs. still missing</summary>
+## Release Checks
 
-- Clay PDF: `Problems/BirchSwinnertonDyer/references/clay/birchswin.pdf`
-- What’s formalized:
-  - The rank part as `MillenniumBirchSwinnertonDyer.BirchSwinnertonDyerConjecture`, phrased via
-    `analyticOrderAt` at `s = 1`.
-  - A refined-formula variant as `MillenniumBirchSwinnertonDyer.RefinedBirchSwinnertonDyerConjecture`
-    (still “data-only” for the arithmetic invariants).
-- What’s still missing in Mathlib (hence parameterized here):
-  - Construction/analytic continuation of the Hasse–Weil `L`-function for elliptic curves; this is abstracted
-    as `MillenniumBirchSwinnertonDyer.ClayLSeriesData`.
-</details>
+Before publishing a release, run:
 
-<details>
-<summary>Yang–Mills: what’s in Lean vs. still missing</summary>
+```bash
+python3 scripts/clay_refs.py verify
+lake build
+rg -n "\b(admit)\b|^\s*(axiom|unsafe)\b" Problems -g '*.lean'
+rg -n "\bsorry\b" Problems -g '*.lean'
+```
 
-- Clay PDF: `Problems/YangMills/references/clay/yangmills.pdf`
-- What’s formalized:
-  - A Lean formulation `MillenniumYangMills.YangMillsExistenceAndMassGap` in terms of a bundled
-    `QuantumYangMillsTheory` satisfying Wightman-style axioms (`Problems/YangMills/Quantum.lean`).
-- Notable formalization choices (modeling gaps):
-  - The Clay “mass gap” is phrased using Mathlib’s `spectrum` of a (bounded) Hamiltonian operator, which is
-    a stand-in for the unbounded spectral theory used in physics.
-- What’s still narrative / external:
-  - Constructing any non-trivial 4D QFT meeting these axioms, and proving the (modeled) mass gap.
-</details>
-
-<details>
-<summary>Poincaré Conjecture: what’s in Lean vs. still missing</summary>
-
-- Clay PDF: `Problems/Poincare/references/clay/poincare.pdf`
-- What’s formalized:
-  - The (topological) 3D statement as `MillenniumPoincare.PoincareConjecture3`.
-  - Mathlib already contains a proof; this repo mainly provides a Clay-aligned entry point and references.
-</details>
-
-## Installation
-
-To install Lean, follow the instructions at [the Lean website](https://leanprover.github.io/).
-
-## Folder Structure
-
-The main code is under `Problems/`. Each subfolder corresponds to one Millennium Prize Problem.
+The first `rg` command should report no `admit`, `axiom`, or `unsafe` declarations. The second
+should report exactly the seven intentional final theorem `sorry`s listed above.
 
 ## References
 
@@ -179,5 +128,5 @@ The main code is under `Problems/`. Each subfolder corresponds to one Millennium
 
 ## Contributing
 
-Contributions are welcome — especially improvements that make the formal statements closer to the
-Clay PDFs, or that replace “external results” with genuine Lean developments and proofs.
+Contributions are welcome, especially changes that replace explicit background interfaces with
+mature Lean developments or keep the checked registry aligned with the statement files.

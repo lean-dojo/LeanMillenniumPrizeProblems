@@ -10,8 +10,5 @@ import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.MeasureTheory.Integral.Lebesgue.Basic
-import Mathlib.Analysis.Calculus.FDeriv.Basic
-import Mathlib.Analysis.InnerProductSpace.PiL2
 import Init.Prelude
 import Mathlib.Analysis.Normed.Module.Basic
-import Mathlib.Analysis.InnerProductSpace.Basic
