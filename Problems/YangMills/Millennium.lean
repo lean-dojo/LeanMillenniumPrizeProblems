@@ -1148,10 +1148,9 @@ theorem spectral_mass.pos_of_finite_bound
 In this development, these are fields and laws inside `QuantumYangMillsTheory`:
 - Wightman-style properties (`theory.wightman`)
 - Osterwalder--Schrader-strength Euclidean data (`theory.osterwalder_schrader`)
+- constructive Schwinger functions weighted by the classical Yang--Mills action
 - Local-operator correspondence (`theory.local_operators`)
-- Short-distance agreement (`theory.short_distance`)
 - Stress tensor (`theory.stress_tensor`)
-- Operator product expansion (`theory.operator_product_expansion`)
 
 The `QuantumYangMillsTheory` data already stores these fields. The Clay existence predicate below
 re-exposes the extra non-vacuity and vacuum requirements that are easy to lose if existence is
@@ -1206,31 +1205,15 @@ structure ClayQuantumFieldTheoryAxioms {G : Type} [CompactSimpleGaugeGroup G]
         (minkowski_metric (x - y) (x - y) < 0) → f x = 0 ∨ g y = 0) →
       (theory.local_operators.op p f) ∘L (theory.local_operators.op q g) =
         (theory.local_operators.op q g) ∘L (theory.local_operators.op p f)
-  /-- Short-distance agreement with perturbative/asymptotic-freedom predictions. -/
-  short_distance_agreement :
-    ∀ fs : List SchwartzSpace,
-      Filter.Tendsto
-        (fun ε : ℝ =>
-          correlation theory.field_operators theory.wightman.vacuum
-              (fs.map (theory.short_distance.scale ε)) -
-            theory.short_distance.prediction ε fs)
-        (nhdsWithin (0 : ℝ) {ε : ℝ | 0 < ε})
-        (nhds 0)
   /-- Distributional conservation law for the stress-energy tensor. -/
   stress_tensor_conserved :
     ∀ ν f,
       (Finset.univ.sum fun μ : Fin 4 =>
         theory.stress_tensor.T μ ν (theory.stress_tensor.test_deriv μ f)) = 0
-  /-- Local finiteness for the operator product expansion. -/
-  operator_product_finite :
-    ∀ A B,
-      Set.Finite
-        {C : GaugeInvariantLocalPolynomial G |
-          theory.operator_product_expansion.coefficient A B C ≠ 0}
 
 /--
-The `QuantumYangMillsTheory` fields supply the Clay-required Wightman, OS, short-distance,
-stress-tensor, local-operator, and OPE properties.
+The `QuantumYangMillsTheory` fields supply the Wightman, OS, stress-tensor, local-operator, and
+classical-action construction properties used by the Clay target.
 -/
 theorem ClayQuantumFieldTheoryAxioms.of_quantum_theory
     {G : Type} [CompactSimpleGaugeGroup G] (theory : QuantumYangMillsTheory G) :
@@ -1245,9 +1228,7 @@ theorem ClayQuantumFieldTheoryAxioms.of_quantum_theory
     local_operator_correspondence := theory.local_operators.injective
     local_operator_covariance := theory.local_operators_covariant
     local_operator_locality := theory.local_operators_locality
-    short_distance_agreement := theory.short_distance.agrees
-    stress_tensor_conserved := theory.stress_tensor.conserved
-    operator_product_finite := theory.operator_product_expansion.finite_support }
+    stress_tensor_conserved := theory.stress_tensor.conserved }
 
 /--
 Clay non-trivial existence package for a fixed Yang--Mills quantum field theory.

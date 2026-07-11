@@ -18,6 +18,8 @@ import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Algebra.Algebra.Spectrum.Basic
 import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.Analysis.SpecialFunctions.Exponential
 import Mathlib.Topology.Basic
 import Mathlib.Topology.Algebra.Group.Basic
 import Mathlib.Topology.Connected.Basic
@@ -26,6 +28,7 @@ import Mathlib.Logic.Function.Basic
 namespace MillenniumYangMillsDefs
 
 open LieGroup
+open MeasureTheory
 open scoped BigOperators Manifold ContDiff
 /-!
 # Yang-Mills Existence and Mass Gap Problem
@@ -156,23 +159,35 @@ theorem CompactSimpleGaugeGroup.exists_smooth_model
 abbrev LieAlgebra (G : Type) [CompactSimpleGaugeGroup G] : Type :=
   CompactSimpleGaugeGroup.lie_algebra G
 
-/--
-A classical gauge field on spacetime, containing a connection, its field strength, and an action
-value.
--/
+/-- A classical gauge field on spacetime, containing a connection and its curvature components. -/
 structure GaugeField (G : Type) [CompactSimpleGaugeGroup G] where
-  connection : Spacetime → LieAlgebra G → LieAlgebra G
-  field_strength : Spacetime → Spacetime → LieAlgebra G → LieAlgebra G
-  action : ℝ
+  /-- Lie-algebra-valued connection components `A_μ(x)`. -/
+  connection : Spacetime → SpacetimeDirection → LieAlgebra G
+  /-- Lie-algebra-valued curvature components `F_{μν}(x)`. -/
+  field_strength : Spacetime → SpacetimeDirection → SpacetimeDirection → LieAlgebra G
 
 /-- The field-strength tensor, i.e. the curvature data of a gauge field. -/
 def field_strength (G : Type) [CompactSimpleGaugeGroup G] (A : GaugeField G) :
-  Spacetime → Spacetime → LieAlgebra G → LieAlgebra G :=
+  Spacetime → SpacetimeDirection → SpacetimeDirection → LieAlgebra G :=
   A.field_strength
 
-/-- The Yang--Mills action value attached to a gauge field. -/
-def yang_mills_action (G : Type) [CompactSimpleGaugeGroup G] (A : GaugeField G) : ℝ :=
-  A.action
+/-- Pointwise squared norm `∑_{μ,ν} ‖F_{μν}(x)‖²` of the curvature. -/
+noncomputable def curvature_norm_sq
+    (G : Type) [CompactSimpleGaugeGroup G] (A : GaugeField G) (x : Spacetime) : ℝ :=
+  ∑ μ : SpacetimeDirection, ∑ ν : SpacetimeDirection, ‖A.field_strength x μ ν‖ ^ 2
+
+/-- The Euclidean Yang--Mills action `∫_{ℝ⁴} ∑_{μ,ν} ‖F_{μν}(x)‖² dx`. -/
+noncomputable def yang_mills_action
+    (G : Type) [CompactSimpleGaugeGroup G] (A : GaugeField G) : ℝ :=
+  ∫ x : Spacetime, curvature_norm_sq G A x
+
+/-- The bare Euclidean Yang--Mills action is nonnegative. -/
+theorem yang_mills_action_nonneg
+    (G : Type) [CompactSimpleGaugeGroup G] (A : GaugeField G) :
+    0 ≤ yang_mills_action G A := by
+  apply integral_nonneg
+  intro x
+  exact Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => sq_nonneg _
 
 /--
 The positive coupling constant `g` appearing in the classical Yang--Mills Lagrangian.
@@ -222,10 +237,9 @@ noncomputable def coupled_yang_mills_action
 
 /-- Nonnegative bare action gives nonnegative coupled classical Yang--Mills action. -/
 theorem coupled_yang_mills_action_nonneg
-    (G : Type) [CompactSimpleGaugeGroup G] (g : YangMillsCoupling) (A : GaugeField G)
-    (hA : 0 ≤ yang_mills_action G A) :
+    (G : Type) [CompactSimpleGaugeGroup G] (g : YangMillsCoupling) (A : GaugeField G) :
     0 ≤ coupled_yang_mills_action G g A :=
-  mul_nonneg (le_of_lt g.action_scale_pos) hA
+  mul_nonneg (le_of_lt g.action_scale_pos) (yang_mills_action_nonneg G A)
 
 /-!
 ## A finite-dimensional classical Yang--Mills model
@@ -857,6 +871,16 @@ end MatrixConnection
 @[reducible]
 def SchwartzSpace := SchwartzMap Spacetime ℝ
 
+/-- A smeared classical curvature observable `∫ f(x) ‖F_A(x)‖² dx`. -/
+noncomputable def classical_curvature_observable
+    (G : Type) [CompactSimpleGaugeGroup G] (f : SchwartzSpace) (A : GaugeField G) : ℝ :=
+  ∫ x : Spacetime, f x * curvature_norm_sq G A x
+
+/-- Product of the classical curvature observables corresponding to a list of test functions. -/
+noncomputable def classical_curvature_correlation
+    (G : Type) [CompactSimpleGaugeGroup G] (fs : List SchwartzSpace) (A : GaugeField G) : ℝ :=
+  (fs.map fun f => classical_curvature_observable G f A).prod
+
 /-- Bounded linear operators on a real normed space, used as quantum observables. -/
 @[reducible]
 def LinearOperator (H : Type) [NormedAddCommGroup H] [NormedSpace ℝ H] : Type :=
@@ -1001,22 +1025,6 @@ noncomputable def correlation {H : Type} [NormedAddCommGroup H] [InnerProductSpa
   vacuum_expectation Ω (smeared_product Φ fs)
 
 /--
-Short-distance agreement with perturbative predictions (Clay statement, §4).
-
-The correlators converge to a predicted value as the scale tends to `0⁺`.
--/
-structure ShortDistanceAgreement {H : Type} [NormedAddCommGroup H] [InnerProductSpace ℝ H]
-    (Φ : OperatorValuedDistribution H) (Ω : H) where
-  scale : ℝ → SchwartzSpace → SchwartzSpace
-  prediction : ℝ → List SchwartzSpace → ℝ
-  agrees :
-    ∀ fs : List SchwartzSpace,
-      Filter.Tendsto
-        (fun ε : ℝ => correlation Φ Ω (fs.map (scale ε)) - prediction ε fs)
-        (nhdsWithin (0 : ℝ) {ε : ℝ | 0 < ε})
-        (nhds 0)
-
-/--
 A stress-energy tensor with a distributional conservation law.
 
 The Clay statement mentions the existence of a stress tensor among the expected short-distance
@@ -1032,16 +1040,6 @@ structure StressEnergyTensor (H : Type) [NormedAddCommGroup H] [NormedSpace ℝ 
   symmetric : ∀ μ ν, T μ ν = T ν μ
   /-- Conservation `∑_μ T_{μν}(∂_μ f) = 0` (as an operator) for all `ν` and test functions `f`. -/
   conserved : ∀ ν f, (Finset.univ.sum fun μ : Fin 4 => T μ ν (test_deriv μ f)) = 0
-
-/-- Operator product expansion coefficients. -/
-structure OperatorProductExpansion (G : Type) (H : Type) [NormedAddCommGroup H] [NormedSpace ℝ H] where
-  coefficient :
-    GaugeInvariantLocalPolynomial G →
-      GaugeInvariantLocalPolynomial G →
-        GaugeInvariantLocalPolynomial G → ℝ
-  /-- For fixed `A,B`, only finitely many `C` have nonzero coefficient (a minimal “local finiteness”). -/
-  finite_support :
-    ∀ A B, (Set.Finite {C : GaugeInvariantLocalPolynomial G | coefficient A B C ≠ 0})
 
 /--
 Osterwalder--Schrader-strength Euclidean data.
@@ -1074,8 +1072,8 @@ structure OsterwalderSchraderStrength
 A quantum Yang--Mills theory for a compact simple gauge group.
 
 The structure bundles the Hilbert space, operator-valued fields, Wightman-style properties, local
-operator assignment, Osterwalder--Schrader-strength Euclidean data, short-distance behavior,
-stress tensor, and operator-product expansion data.
+operator assignment, Osterwalder--Schrader-strength Euclidean data, a constructive link to the
+classical Yang--Mills action, and a stress tensor.
 -/
 structure QuantumYangMillsTheory (G : Type) [CompactSimpleGaugeGroup G] where
   hilbert_space : Type  -- Physical state space
@@ -1086,9 +1084,32 @@ structure QuantumYangMillsTheory (G : Type) [CompactSimpleGaugeGroup G] where
   wightman : WightmanQuantumFieldTheoryProperties hilbert_space field_operators
   local_operators : LocalOperatorAssignment G hilbert_space
   osterwalder_schrader : OsterwalderSchraderStrength field_operators wightman.vacuum
-  short_distance : ShortDistanceAgreement field_operators wightman.vacuum
+
+  /-- Positive coupling constant in the classical Yang--Mills action being quantized. -/
+  coupling : YangMillsCoupling
+  /-- Measurable structure on classical gauge fields used by the Euclidean construction. -/
+  [gauge_field_measurable : MeasurableSpace (GaugeField G)]
+  /-- Constructive Euclidean measure on classical gauge fields. -/
+  euclidean_gauge_measure : Measure (GaugeField G)
+  /-- The Yang--Mills Boltzmann weight has a finite, strictly positive partition function. -/
+  partition_function_pos :
+    0 < ∫ A : GaugeField G,
+      Real.exp (-coupled_yang_mills_action G coupling A) ∂euclidean_gauge_measure
+  /--
+  The Euclidean Schwinger functions are normalized expectations with Boltzmann weight
+  `exp (-S_YM(A))`. This ties the quantum theory to the classical Yang--Mills dynamics rather than
+  permitting an arbitrary massive quantum field theory.
+  -/
+  schwinger_from_yang_mills_action :
+    ∀ fs : List SchwartzSpace,
+      osterwalder_schrader.schwinger_function fs =
+        (∫ A : GaugeField G,
+            Real.exp (-coupled_yang_mills_action G coupling A) *
+              classical_curvature_correlation G fs A
+              ∂euclidean_gauge_measure) /
+          (∫ A : GaugeField G,
+            Real.exp (-coupled_yang_mills_action G coupling A) ∂euclidean_gauge_measure)
   stress_tensor : StressEnergyTensor hilbert_space
-  operator_product_expansion : OperatorProductExpansion G hilbert_space
   /--
   The curvature field content is non-trivial: some smearing of the local curvature operator is not
   the zero operator.

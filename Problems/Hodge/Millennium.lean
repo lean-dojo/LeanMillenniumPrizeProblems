@@ -295,6 +295,37 @@ structure HodgeTheoryRealization where
       (⨆ p : ℕ, ⨆ q : ℕ, ⨆ (_hpq : p + q = n),
         (assignment.data X).hodge_subspace n p q) = ⊤
 
+/--
+The native anchors required before an abstract realization may stand for the canonical Hodge
+theory of a variety.
+
+This condition rules out treating arbitrary synthetic `HodgeData` as geometry.  Rational and
+complex cohomology must be linearly equivalent to Betti cohomology built from Mathlib's singular
+homology of the complex points, while the indexed algebraic cycles must be actual closed
+subschemes (ideal-sheaf data) of the underlying scheme, with the indicated codimension.
+
+The equivalences are wrapped in `Nonempty` because only their existence matters to the statement;
+no arbitrary choice of coordinates becomes part of the public target.
+-/
+structure HodgeTheoryRealization.IsCanonical
+    (realization : HodgeTheoryRealization.{u₁, u₂, u₃}) : Prop where
+  /-- The assigned rational cohomology is the variety's singular/Betti cohomology. -/
+  rational_cohomology_is_betti :
+    ∀ (X : SmoothProjectiveVariety ℂ) (n : ℕ),
+      Nonempty ((realization.assignment.data X).cohomology_q n ≃ₗ[ℚ]
+        bettiCohomology ℚ X n)
+  /-- The assigned complex cohomology is the variety's complex Betti cohomology. -/
+  complex_cohomology_is_betti :
+    ∀ (X : SmoothProjectiveVariety ℂ) (n : ℕ),
+      Nonempty ((realization.assignment.data X).cohomology_c n ≃ₗ[ℂ]
+        bettiCohomology ℂ X n)
+  /-- Algebraic cycles are geometric closed subschemes, indexed by their codimension. -/
+  algebraic_cycles_are_geometric :
+    ∃ codimension : ∀ X : SmoothProjectiveVariety ℂ, GeometricAlgebraicCycle X → ℕ,
+      ∀ (X : SmoothProjectiveVariety ℂ) (p : ℕ),
+        Nonempty ((realization.assignment.data X).algebraic_cycle p ≃
+          {Z : GeometricAlgebraicCycle X // codimension X Z = p})
+
 namespace HodgeTheoryRealization
 
 end HodgeTheoryRealization
@@ -792,12 +823,16 @@ def HodgeTheoryRealization.ClayStatement
   HodgeTheoryAssignment.ClayStatement realization.assignment
 
 /--
-Global Hodge statement used by this repository: every canonical Hodge-theory realization satisfies
-the Clay cycle-class statement. Bare coherent synthetic assignments are deliberately not quantified
-over by this public proposition.
+Global Hodge statement used by this repository: every realization anchored to the actual Betti
+cohomology and geometric algebraic cycles of each variety satisfies the Clay cycle-class statement.
+
+The `IsCanonical` premise is essential.  Quantifying over all abstract realizations is not the
+Hodge conjecture: one may otherwise choose nonzero synthetic cohomology and an empty cycle type,
+making the resulting proposition refutable.
 -/
 def ClayHodge : Prop :=
-  ∀ realization : HodgeTheoryRealization.{u₁, u₂, u₃}, realization.ClayStatement
+  ∀ realization : HodgeTheoryRealization.{u₁, u₂, u₃},
+    realization.IsCanonical → realization.ClayStatement
 
 /-- The realization form is exactly the statement for its Hodge-theory assignment. -/
 theorem HodgeTheoryRealization.ClayStatement.iff_assignment
@@ -831,9 +866,10 @@ theorem ClayHodge.Formulations.AllCoherentConjectures.iff_clay :
 /-- The public Hodge target specializes to every supplied canonical realization. -/
 theorem ClayHodge.for_realization
     (h : ClayHodge.{u₁, u₂, u₃})
-    (realization : HodgeTheoryRealization.{u₁, u₂, u₃}) :
+    (realization : HodgeTheoryRealization.{u₁, u₂, u₃})
+    (canonical : realization.IsCanonical) :
     realization.ClayStatement :=
-  h realization
+  h realization canonical
 
 /--
 `HodgeTheoryAssignment.ClayStatement assignment` is equivalent to the subspace formulation:

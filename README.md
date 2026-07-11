@@ -43,10 +43,12 @@ P versus NP is slightly different because either `P = NP` or `P ≠ NP` would se
 The statements follow the Clay PDFs included in this repository. Some subjects require explicit
 interfaces for mathematics that is not yet available directly in Mathlib:
 
-- Hodge theory uses a realization package for rational and complex cohomology, the Hodge
-  decomposition, and algebraic cycle classes.
-- Yang–Mills uses an axiomatic quantum-field-theory model and records both bounded and unbounded
-  Hamiltonian formulations.
+- Hodge theory uses a realization package whose public target requires native anchors to Mathlib's
+  singular/Betti cohomology and to closed subschemes of the underlying variety; arbitrary synthetic
+  Hodge packages are not quantified over.
+- Yang–Mills uses an axiomatic quantum-field-theory model whose Schwinger functions are required to
+  arise from a Euclidean expectation weighted by the classical Yang–Mills action, and records both
+  bounded and unbounded Hamiltonian formulations.
 - Birch and Swinnerton-Dyer packages the analytic continuation of the relevant L-series as explicit
   data.
 - P versus NP uses a concrete finite-alphabet Turing-machine model.

@@ -1,7 +1,9 @@
 import Mathlib.AlgebraicGeometry.Scheme
 import Mathlib.AlgebraicGeometry.Morphisms.Smooth
 import Mathlib.AlgebraicGeometry.ProjectiveSpectrum.Proper
+import Mathlib.AlgebraicGeometry.IdealSheaf.Basic
 import Mathlib.AlgebraicTopology.SingularHomology.Basic
+import Mathlib.Algebra.Category.ModuleCat.Abelian
 import Mathlib.Algebra.Algebra.Rat
 import Mathlib.Algebra.Module.Rat
 import Mathlib.Data.Complex.Basic
@@ -99,6 +101,34 @@ structure SmoothProjectiveVariety (K : Type*) [Field K] where
 
 attribute [instance] SmoothProjectiveVariety.smooth
 attribute [instance] SmoothProjectiveVariety.proper
+
+/-!
+## Native anchors for canonical Hodge theory
+
+The abstract `HodgeData` interface below is useful for developing equivalent formulations, but an
+arbitrary inhabitant must not be confused with the Hodge theory of a variety.  These definitions
+provide the native objects to which a canonical realization is required to be anchored: Betti
+cohomology is the linear dual of Mathlib's singular homology, and algebraic-cycle representatives
+are closed subschemes encoded by ideal-sheaf data on the underlying scheme.
+-/
+
+open CategoryTheory
+
+/-- Singular homology of the complex points of `X`, with coefficients in `R`. -/
+noncomputable abbrev bettiHomology (R : Type) [Field R]
+    (X : SmoothProjectiveVariety ℂ) (n : ℕ) : ModuleCat R :=
+  ((AlgebraicTopology.singularHomologyFunctor (ModuleCat R) n).obj (ModuleCat.of R R)).obj
+    X.realization.top_cat
+
+/-- Betti cohomology, defined as the linear dual of Mathlib's singular homology. -/
+noncomputable abbrev bettiCohomology (R : Type) [Field R]
+    (X : SmoothProjectiveVariety ℂ) (n : ℕ) : Type _ :=
+  Module.Dual R (bettiHomology R X n)
+
+/-- A geometric algebraic-cycle representative on `X`: ideal-sheaf data defining a closed
+subscheme of the underlying scheme.  A canonical realization separately records its codimension. -/
+abbrev GeometricAlgebraicCycle (X : SmoothProjectiveVariety ℂ) : Type _ :=
+  IdealSheafData X.X
 
 /--
 The cohomology, Hodge decomposition, and cycle-class structures used for a fixed variety `X`.
