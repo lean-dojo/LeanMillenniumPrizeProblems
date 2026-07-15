@@ -42,7 +42,7 @@ We encode multi-indices as lists of coordinate directions, giving a direct coord
 derivative decay condition.
 -/
 def SmoothRapidDecayInitial (u₀ : InitialVelocity) : Prop :=
-  ContDiff ℝ ⊤ u₀ ∧
+  ContDiff ℝ (⊤ : ℕ∞) u₀ ∧
     ∀ (α : List (Fin 3)) (K : ℕ),
       ∃ C : ℝ, 0 < C ∧ ∀ x : Space3,
         ‖spatial_derivative_vector u₀ α x‖ ≤ C / (1 + ‖x‖) ^ K
@@ -78,7 +78,7 @@ def SmoothRapidDecayForce (f : SpacetimeForce) : Prop :=
 theorem zero_force_smooth_rapid_decay :
     SmoothRapidDecayForce (fun _ : Spacetime3 => (0 : Space3)) := by
   refine ⟨?_, ?_⟩
-  · change ContDiffOn ℝ ⊤ (fun _ : Spacetime3 => (0 : Space3)) (global_spacetime_domain 3)
+  · change ContDiffOn ℝ (⊤ : ℕ∞) (fun _ : Spacetime3 => (0 : Space3)) (global_spacetime_domain 3)
     fun_prop
   intro α m K
   refine ⟨1, by norm_num, ?_⟩

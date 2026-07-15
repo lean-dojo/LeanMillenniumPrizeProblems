@@ -167,7 +167,7 @@ the regularity demanded by the Millennium statement is imposed on the half-space
 `ℝⁿ × [0,∞)`.
 -/
 def velocity_smooth_on_global_spacetime_domain {n : ℕ} (u : VelocityField n) : Prop :=
-  ContDiffOn ℝ ⊤ (fun y => u y) (global_spacetime_domain n)
+  ContDiffOn ℝ (⊤ : ℕ∞) (fun y => u y) (global_spacetime_domain n)
 
 /--
 Smoothness of a pressure field on Clay's global time domain.
@@ -175,7 +175,7 @@ Smoothness of a pressure field on Clay's global time domain.
 This is the scalar analogue of `velocity_smooth_on_global_spacetime_domain`.
 -/
 def pressure_smooth_on_global_spacetime_domain {n : ℕ} (p : PressureField n) : Prop :=
-  ContDiffOn ℝ ⊤ (fun y => p y) (global_spacetime_domain n)
+  ContDiffOn ℝ (⊤ : ℕ∞) (fun y => p y) (global_spacetime_domain n)
 
 /--
 Smoothness of a force field on Clay's global time domain.
@@ -184,7 +184,7 @@ This matches the force hypotheses in Fefferman's conditions (5) and (9), where `
 `ℝⁿ × [0,∞)` rather than on all of ambient spacetime.
 -/
 def force_smooth_on_global_spacetime_domain {n : ℕ} (f : ForceField n) : Prop :=
-  ContDiffOn ℝ ⊤ (fun y => f y) (global_spacetime_domain n)
+  ContDiffOn ℝ (⊤ : ℕ∞) (fun y => f y) (global_spacetime_domain n)
 
 /--
 A global-in-time Navier–Stokes solution on `ℝⁿ × [0,∞)`.
