@@ -1166,7 +1166,7 @@ structure ClayQuantumFieldTheoryAxioms {G : Type} [CompactSimpleGaugeGroup G]
   field_locality :
     ∀ (f g : SchwartzMap Spacetime ℝ),
       (∀ (x y : Spacetime),
-        (minkowski_metric (x - y) (x - y) < 0) → f x = 0 ∨ g y = 0) →
+        f x ≠ 0 → g y ≠ 0 → minkowski_metric (x - y) (x - y) < 0) →
       theory.field_operators f ∘L theory.field_operators g =
         theory.field_operators g ∘L theory.field_operators f
   /-- Positive-energy Hamiltonian. -/
@@ -1202,7 +1202,7 @@ structure ClayQuantumFieldTheoryAxioms {G : Type} [CompactSimpleGaugeGroup G]
   local_operator_locality :
     ∀ (p q : GaugeInvariantLocalPolynomial G) (f g : SchwartzMap Spacetime ℝ),
       (∀ (x y : Spacetime),
-        (minkowski_metric (x - y) (x - y) < 0) → f x = 0 ∨ g y = 0) →
+        f x ≠ 0 → g y ≠ 0 → minkowski_metric (x - y) (x - y) < 0) →
       (theory.local_operators.op p f) ∘L (theory.local_operators.op q g) =
         (theory.local_operators.op q g) ∘L (theory.local_operators.op p f)
   /-- Distributional conservation law for the stress-energy tensor. -/

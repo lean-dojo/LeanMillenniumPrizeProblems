@@ -969,7 +969,7 @@ class WightmanQuantumFieldTheoryProperties (H : Type) [NormedAddCommGroup H] [In
   -- W5: Locality/causality
   locality : ∀ (f g : SchwartzMap Spacetime ℝ),
     (∀ (x y : Spacetime),
-      (minkowski_metric (x - y) (x - y) < 0) → f x = 0 ∨ g y = 0) →
+      f x ≠ 0 → g y ≠ 0 → minkowski_metric (x - y) (x - y) < 0) →
     Φ f ∘L Φ g = Φ g ∘L Φ f  -- Fields commute at spacelike separation
 
 /-!
@@ -1134,7 +1134,7 @@ structure QuantumYangMillsTheory (G : Type) [CompactSimpleGaugeGroup G] where
   local_operators_locality :
     ∀ (p q : GaugeInvariantLocalPolynomial G) (f g : SchwartzMap Spacetime ℝ),
       (∀ (x y : Spacetime),
-        (minkowski_metric (x - y) (x - y) < 0) → f x = 0 ∨ g y = 0) →
+        f x ≠ 0 → g y ≠ 0 → minkowski_metric (x - y) (x - y) < 0) →
       (local_operators.op p f) ∘L (local_operators.op q g) =
         (local_operators.op q g) ∘L (local_operators.op p f)
 
