@@ -76,7 +76,7 @@ def PeriodicForceDecay (f : ForceField 3) : Prop :=
 theorem zero_force_periodic_decay :
     PeriodicForceDecay (fun _ : Spacetime3 => (0 : Space3)) := by
   refine ⟨?_, ?_⟩
-  · change ContDiffOn ℝ ⊤ (fun _ : Spacetime3 => (0 : Space3)) (global_spacetime_domain 3)
+  · change ContDiffOn ℝ (⊤ : ℕ∞) (fun _ : Spacetime3 => (0 : Space3)) (global_spacetime_domain 3)
     fun_prop
   intro α m K
   refine ⟨1, by norm_num, ?_⟩
@@ -110,7 +110,7 @@ Fefferman's statement (B): Existence and smoothness in the periodic setting, wit
 -/
 def SmoothExistence : Prop :=
   ∀ (ν : ℝ) (ν_pos : ν > 0) (u₀ : Space3 → Space3),
-    ContDiff ℝ ⊤ u₀ →
+    ContDiff ℝ (⊤ : ℕ∞) u₀ →
     PeriodicInitial u₀ →
       ∀ hdiv : DivergenceFreeInitial u₀,
       ∃ sol : GlobalSmoothSolution (equations ν ν_pos u₀ hdiv (fun _ => 0)),
@@ -124,7 +124,7 @@ solution-side condition is periodicity (10).
 theorem SmoothExistence.iff_periodic_fields :
     SmoothExistence ↔
       ∀ (ν : ℝ) (ν_pos : ν > 0) (u₀ : Space3 → Space3),
-        ContDiff ℝ ⊤ u₀ →
+        ContDiff ℝ (⊤ : ℕ∞) u₀ →
         PeriodicInitial u₀ →
         ∀ hdiv : DivergenceFreeInitial u₀,
           ∃ sol : GlobalSmoothSolution (equations ν ν_pos u₀ hdiv (fun _ => 0)),
@@ -143,7 +143,7 @@ Fefferman's statement (D): Breakdown in the periodic setting (forcing allowed).
 def Breakdown : Prop :=
   ∀ (ν : ℝ) (ν_pos : ν > 0),
   ∃ (u₀ : Space3 → Space3) (f : ForceField 3),
-    ContDiff ℝ ⊤ u₀ ∧
+    ContDiff ℝ (⊤ : ℕ∞) u₀ ∧
     PeriodicInitial u₀ ∧
     DivergenceFreeInitial u₀ ∧
     PeriodicForce f ∧
@@ -161,7 +161,7 @@ theorem Breakdown.iff_no_periodic_solution :
     Breakdown ↔
       ∀ (ν : ℝ) (ν_pos : ν > 0),
       ∃ (u₀ : Space3 → Space3) (f : ForceField 3),
-        ContDiff ℝ ⊤ u₀ ∧
+        ContDiff ℝ (⊤ : ℕ∞) u₀ ∧
         PeriodicInitial u₀ ∧
         DivergenceFreeInitial u₀ ∧
         PeriodicForce f ∧
