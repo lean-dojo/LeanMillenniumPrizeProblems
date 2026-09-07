@@ -4,8 +4,8 @@ authors:
   - family-names: George
     given-names: Robert Joseph
 title: "Formalization of the Millennium Prize Problem Statements in Lean 4"
-version: 2.0.0
-date-released: 2026-07-11
+version: 3.0.0
+date-released: 2026-09-07
 abstract: >-
   A formalization of the seven Millennium Prize Problem statements in the Lean 4 theorem prover.
   This project aims to represent these famous mathematical statements in a
