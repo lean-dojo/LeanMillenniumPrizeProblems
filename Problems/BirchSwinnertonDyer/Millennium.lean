@@ -437,6 +437,28 @@ theorem weierstrass_good_implies_clay_good
   intro hgood hbad
   exact hgood (C.clay_bad_prime_implies_weierstrass p hbad)
 
+/--
+For a prime `p`, the internal Weierstrass-discriminant condition `p ∣ 2Δ_W = 32Δ` and Wiles's
+cubic-discriminant condition `p ∣ 2Δ` coincide: `p ∣ 2^4 * (2Δ)` forces `p ∣ 2` or `p ∣ 2Δ`.
+Hence the two Euler products omit exactly the same primes.
+-/
+theorem weierstrass_bad_prime_iff_clay_bad_prime
+    (C : ClayShortIntegralModel) (p : Nat.Primes) :
+    C.weierstrass_bad_prime p ↔ C.clay_bad_prime p := by
+  constructor
+  · intro hbad
+    have hp : Prime ((p : ℕ) : ℤ) := Nat.prime_iff_prime_int.mp p.2
+    unfold weierstrass_bad_prime at hbad
+    rw [C.weierstrass_discriminant_eq] at hbad
+    have h : ((p : ℕ) : ℤ) ∣ 2 ^ 4 * (2 * C.cubic_discriminant) := by
+      have hrw : (2 : ℤ) * (16 * C.cubic_discriminant) = 2 ^ 4 * (2 * C.cubic_discriminant) := by
+        ring
+      rwa [hrw] at hbad
+    rcases hp.dvd_mul.mp h with h2 | h2
+    · exact Dvd.dvd.mul_right (hp.dvd_of_dvd_pow h2) _
+    · exact h2
+  · exact C.clay_bad_prime_implies_weierstrass p
+
 end ClayShortIntegralModel
 
 /--
@@ -465,8 +487,9 @@ structure LSeriesData (W : WeierstrassCurve ℤ) (_hΔ : W.Δ ≠ 0) where
 Holomorphic-continuation input for one nonsingular integral Weierstrass model: `L(C,s)` extends
 to an entire function of `s`.
 
-The witness records the continuation, its agreement with the Euler product on `Re(s) > 3/2`, and
-the comparison data needed to relate the incomplete Euler product to the formal Hasse-Weil series.
+The witness records the continuation and its agreement with the Euler product on `Re(s) > 3/2`.
+Comparison data relating the incomplete Euler product to Mathlib's formal Hasse-Weil series is
+*not* part of `LSeriesData`; it lives in the separate package `HasseWeilLSeriesData`.
 -/
 def ClayBirchSwinnertonDyer.Support.LSeriesContinuation.for_curve
     (W : WeierstrassCurve ℤ) (hΔ : W.Δ ≠ 0) : Prop :=
@@ -551,14 +574,24 @@ Hasse-Weil L-series data for a fixed nonsingular integral Weierstrass model.
 The formal Hasse-Weil L-series is `W.hasse_weil_lseries`.  The Clay PDF uses the incomplete Euler
 product with bad primes omitted.  This package keeps the Clay analytic continuation as the
 primitive object but additionally requires the finite correction factor relating it to the formal
-Hasse-Weil L-series to be nonzero at `s = 1`, so the order of vanishing at `1` is unchanged.
+Hasse-Weil L-series to be analytic and nonzero at `s = 1`, so the order of vanishing at `1` is
+unchanged.
+
+The correction factor is only required to be analytic *at* `s = 1`, not entire.  The true
+correction is `∏_{p ∣ 2Δ} L_p(s)`, the product of the local factors omitted from the incomplete
+Euler product.  For the fixed model `W` this product always includes `p = 2`, and it is a
+meromorphic function with poles on the line `Re s = 1/2` whenever an omitted prime has good
+reduction (for example `y² + y = x³ − x²`, curve 11a3, has good reduction at `2`) and poles on
+`Re s = 0` whenever an omitted prime has multiplicative reduction.  Requiring the correction to be
+entire would make this structure empty for most curves; requiring analyticity at `1` is exactly
+what the order-of-vanishing comparison below uses.
 -/
 structure HasseWeilLSeriesData (W : WeierstrassCurve ℤ) (hΔ : W.Δ ≠ 0)
     extends LSeriesData W hΔ where
   /-- Finite analytic correction for the local factors omitted at primes `p ∣ 2Δ`. -/
   bad_prime_correction : ℂ → ℂ
-  /-- The correction is analytic. -/
-  bad_prime_correction_analytic : ∀ s : ℂ, AnalyticAt ℂ bad_prime_correction s
+  /-- The correction is analytic at `s = 1` (it is meromorphic, not entire, in general). -/
+  bad_prime_correction_analytic : AnalyticAt ℂ bad_prime_correction 1
   /-- Comparison with Mathlib's formal Hasse-Weil series in the convergence half-plane. -/
   hasse_weil_eq_corrected :
     ∀ s : ℂ, s.re > (3 / 2 : ℝ) →
@@ -592,7 +625,7 @@ theorem analytic_order_hasse_weil_lseries_eq (data : HasseWeilLSeriesData W hΔ)
           analyticOrderAt data.bad_prime_correction (1 : ℂ) + analyticOrderAt data.L (1 : ℂ) := by
       exact
         analyticOrderAt_mul (z₀ := (1 : ℂ)) (f := data.bad_prime_correction) (g := data.L)
-          (data.bad_prime_correction_analytic 1) (data.analytic 1)
+          data.bad_prime_correction_analytic (data.analytic 1)
     have hcong_mul :
         analyticOrderAt (fun z => data.bad_prime_correction z * data.L z) (1 : ℂ) =
           analyticOrderAt (data.bad_prime_correction * data.L) (1 : ℂ) := by
@@ -601,7 +634,7 @@ theorem analytic_order_hasse_weil_lseries_eq (data : HasseWeilLSeriesData W hΔ)
       rfl
     exact hcong_mul.trans hmul_pointwise
   have hfac : analyticOrderAt data.bad_prime_correction (1 : ℂ) = 0 :=
-    (data.bad_prime_correction_analytic 1).analyticOrderAt_eq_zero.2
+    data.bad_prime_correction_analytic.analyticOrderAt_eq_zero.2
       data.bad_prime_correction_ne_zero_at_one
   calc
     analyticOrderAt (fun z => data.bad_prime_correction z * data.L z) 1
@@ -677,6 +710,13 @@ series is related to the ordinary series by the standard local relation near `s 
 `L*(s) = completion_factor(s) * L(s)`,
 
 with `completion_factor` analytic and nonvanishing at `s = 1`.
+
+**Warning (placeholder data).** Nothing pins `completion_factor` down: any function analytic and
+nonzero at `1` is admitted, so `lstar` is determined by `L` only up to an arbitrary nonvanishing
+factor near `s = 1` (`lstar := k • L` with any `k ≠ 0` is legal data).  The order of vanishing of
+`lstar` at `1` is therefore meaningful (`CompletedLSeriesData.order_lstar_eq`), but its leading
+coefficient `c*` is not.  A faithful completed L-function would need the actual archimedean and
+bad-prime factors, which are not formalized here.
 -/
 structure CompletedLSeriesData (W : WeierstrassCurve ℤ) (hΔ : W.Δ ≠ 0)
     extends LSeriesData W hΔ where
@@ -899,6 +939,16 @@ theorem ClayBirchSwinnertonDyer.Formulations.Taylor.Integral.iff_curves_over_q :
 Clay Birch--Swinnerton-Dyer statement:
 for every elliptic curve over `ℚ`, the Taylor expansion of its Clay `L(C,s)` at `s = 1` has
 leading term `c(s - 1)^r` with `c ≠ 0` and `r = rank(C(ℚ))`.
+
+The statement is *existential* in the analytic continuation.  A proof must, for every curve,
+construct an `LSeriesData` witness (an entire continuation agreeing with the Euler product on
+`Re(s) > 3/2`, together with convergence of the Euler product there: modularity and the Hasse
+bound), exhibit a finite rank `r` (the Mordell--Weil theorem), and then prove the Clay order of
+vanishing statement.  This matches Wiles's prose, which treats the continuation as known, but it
+makes the target strictly harder than the rank conjecture on its own.  The formulation
+`ClayBirchSwinnertonDyer.Formulations.Rank.IncompleteLSeries` quantifies universally over
+continuation data and isolates the Birch--Swinnerton-Dyer content.  By `LSeriesData.l_unique` the
+continuation is unique whenever it exists, so nothing depends on the choice of witness.
 -/
 def ClayBirchSwinnertonDyer : Prop :=
   ∀ C : ClayEllipticCurveOverQ,
@@ -1287,6 +1337,18 @@ theorem CompletedLSeriesData.exists_nonzero_leading_coeff
 The Clay PDF also gives a refined leading-coefficient formula for a *completed* L-series `L*`.
 We include that formula as a separate conjecture using the arithmetic invariants appearing in the
 Clay statement.
+
+**Warning: this section is a schema, not a statement of the refined conjecture.**  The
+Tate--Shafarevich group, regulator, period and Tamagawa numbers are recorded as *unconstrained
+data* (`RefinedInvariants`), and the completed L-function is pinned down only up to an arbitrary
+nonvanishing factor near `s = 1` (`CompletedLSeriesData`).  Consequently
+`ClayBirchSwinnertonDyer.Formulations.Refined.Conjecture assignment`, for an existentially chosen
+`assignment`, reduces to the statement that the leading coefficient of `L*` at `s = 1` is a positive
+real number: given any such coefficient `c`, choosing `Sha := Unit`, `period := 1`, all Tamagawa
+factors `1` and `regulator := c * |C(ℚ)_tors|^2` produces *valid* invariants satisfying the formula.
+A faithful refined conjecture requires actual definitions of these invariants and of the true
+completed L-function, none of which exist in Mathlib yet.  The rank part of the conjecture is
+unaffected by this warning.
 -/
 
 /-- The order of the torsion subgroup `C(ℚ)_tors`, as a natural number (`0` if infinite). -/
@@ -1421,6 +1483,11 @@ Notation correspondence (PDF → Lean fields):
 - `w_∞` → `period`
 - `w_p` → `tamagawa_factor p`
 - `∏_{p | 2Δ} w_p` → `tamagawa_product`, using the canonical `bad_reduction_primes W`
+
+**Warning (placeholder data).** None of these fields is defined from the curve: `Sha` is an
+arbitrary finite abelian group, and `regulator`, `period`, `tamagawa_factor` are arbitrary reals
+(constrained only to be positive by `RefinedInvariants.Valid`).  See the warning at the start of
+this section.
 -/
 structure RefinedInvariants (W : WeierstrassCurve ℤ) where
   /-- The Tate-Shafarevich group datum; mathlib does not construct the actual group here. -/
@@ -1597,6 +1664,11 @@ coefficient for the completed L-series.
 
 We express the leading coefficient identity in the same algebraic shape as the PDF:
 `c* = |X_C| R_∞ w_∞ ∏ w_p / |C(ℚ)_tors|^2`.
+
+**Warning.** Because `assignment` and `CompletedLSeriesData` are unconstrained placeholder data,
+`∃ assignment, Refined.Conjecture assignment` has no arithmetic content beyond the rank part and
+the positivity of the leading coefficient; see the warning at the start of this section.  This
+proposition is not a Millennium target of this repository.
 -/
 def ClayBirchSwinnertonDyer.Formulations.Refined.Conjecture (assignment : RefinedInvariantAssignment) : Prop :=
   ∀ W : WeierstrassCurve ℤ, ∀ hΔ : W.Δ ≠ 0,
@@ -1628,59 +1700,11 @@ theorem ClayBirchSwinnertonDyer.Formulations.Refined.WithLSeries.exists_complete
     Nonempty (CompletedLSeriesData W hΔ) :=
   h.2 W hΔ
 
-/--
-Refined Birch--Swinnerton-Dyer checked against every valid choice of refined arithmetic invariants.
-
-The statement quantifies over the arithmetic data satisfying the positivity and finiteness
-conditions in `RefinedInvariants.Valid`.
+/-!
+The former proposition `Refined.AllInvariants` (the refined formula for *every* valid choice of
+invariants) was removed: since the invariants are free data, it was refuted by any single completed
+L-series datum with two different regulators.
 -/
-def ClayBirchSwinnertonDyer.Formulations.Refined.AllInvariants : Prop :=
-  ∀ W : WeierstrassCurve ℤ, ∀ hΔ : W.Δ ≠ 0,
-    ∀ data : CompletedLSeriesData W hΔ,
-      ∀ inv : RefinedInvariants W,
-        RefinedInvariants.Valid inv →
-          analyticOrderAt data.lstar 1 = WeierstrassCurve.rank (W.baseChange ℚ) ∧
-            RefinedBirchSwinnertonDyerFormula data inv
-
-/--
-The all-valid-invariants statement gives the refined Birch--Swinnerton-Dyer formula for any coherent curvewise
-choice of arithmetic invariants.
--/
-theorem ClayBirchSwinnertonDyer.Formulations.Refined.AllInvariants.assignment
-    (h : ClayBirchSwinnertonDyer.Formulations.Refined.AllInvariants)
-    (assignment : RefinedInvariantAssignment) :
-    ClayBirchSwinnertonDyer.Formulations.Refined.Conjecture assignment := by
-  intro W hΔ data
-  exact h W hΔ data (assignment.invariants W hΔ) (assignment.well_formed W hΔ)
-
-/--
-With one coherent background assignment available, requiring the refined Birch--Swinnerton-Dyer formula for every
-assignment is equivalent to requiring it for every valid invariant choice.
--/
-theorem ClayBirchSwinnertonDyer.Formulations.Refined.AllInvariants.iff_assignments
-    (base : RefinedInvariantAssignment) :
-    ClayBirchSwinnertonDyer.Formulations.Refined.AllInvariants ↔
-      ∀ assignment : RefinedInvariantAssignment,
-        ClayBirchSwinnertonDyer.Formulations.Refined.Conjecture assignment := by
-  constructor
-  · intro h assignment
-    exact h.assignment assignment
-  · intro h W hΔ data inv hinv
-    let assignment : RefinedInvariantAssignment :=
-      { invariants := fun W' hΔ' => by
-          by_cases hW : W' = W
-          · subst hW
-            exact inv
-          · exact base.invariants W' hΔ'
-        well_formed := fun W' hΔ' => by
-          by_cases hW : W' = W
-          · subst hW
-            simpa using hinv
-          · simpa [hW] using base.well_formed W' hΔ' }
-    have hInv : assignment.invariants W hΔ = inv := by
-      dsimp [assignment]
-      simp
-    simpa [hInv] using h assignment W hΔ data
 
 /-- The refined Birch--Swinnerton-Dyer conjecture contains the completed-L rank statement as its first component. -/
 theorem ClayBirchSwinnertonDyer.Formulations.Refined.Conjecture.completed_rank

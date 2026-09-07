@@ -13,21 +13,26 @@ import Problems.Poincare.Millennium
 
 This module records the repository's statement-first style in Lean.
 
-The problem modules define the Clay mathematical outcomes as `Prop`s. This registry records, as
-checked Lean metadata, what kind of resolution each problem calls for and which formalization
-choices are worth knowing. P versus NP records two mutually exclusive outcome propositions and a
-separate explicit resolution type.
+The problem modules define the Clay mathematical outcomes as `Prop`s.  This registry records, as
+checked Lean metadata, which propositions count as a solution of each problem, what kind of
+resolution each problem calls for, and which formalization choices are worth knowing.
 
-If one of the open problems is solved in Lean later, its outcome proposition should stay stable and
-the final placeholder should be replaced. The registry can then change `status` without changing
-the mathematical outcome being tracked.
-
-The design point is intentional:
-* `statement` is the primary mathematical proposition; `alternative_statement` records a second
-  decision outcome when needed.
-* `prize_theorem_declaration` names the final placeholder body future work should replace.
-* `resolution_shape` says what a future solution would have to do.
-* `formalization_note` records ordinary modeling choices without changing the proposition.
+Design points:
+* `statement` is the primary mathematical proposition; `alternative_statements` lists the other
+  outcome propositions for problems that ask which of several alternatives holds (P versus NP has
+  two outcomes, Navier–Stokes has Fefferman's four).  A proof of any one of them settles the
+  problem.
+* There is deliberately **no aggregate declaration** for such problems.  The disjunction of the
+  alternatives, or an inductive type with one constructor per alternative, is inhabited by
+  classical case analysis and therefore carries no information (`Tests/AggregateTargets.lean`,
+  `Tests/NavierStokes/AggregateIsTrivial.lean`).
+* `prize_theorem_declaration` names the `sorry` placeholder a proof should replace, for the
+  problems that have one (Riemann, Birch and Swinnerton-Dyer, Poincaré).
+* `status = statement_incomplete` marks statements that are known to be interface sketches rather
+  than faithful formalizations (Hodge, Yang–Mills).  They are not valid targets and have no
+  placeholder.
+* `resolution_shape` says what a future solution would have to do; `formalization_note` records
+  modeling choices without changing the proposition.
 -/
 
 namespace MillenniumProblems
@@ -40,33 +45,21 @@ def p_versus_np : ClayProblem where
   title := "P versus NP"
   statement := Millennium.ClayPVersusNP
   statement_declaration := "Millennium.ClayPVersusNP"
-  alternative_statement := some Millennium.ClayPVersusNP.Formulations.NegativeBranch
-  alternative_statement_declaration :=
-    some "Millennium.ClayPVersusNP.Formulations.NegativeBranch"
-  prize_theorem_declaration := "Millennium.clay_prize_p_versus_np"
+  alternative_statements := [Millennium.ClayPVersusNP.Formulations.NegativeBranch]
+  alternative_statement_declarations := ["Millennium.ClayPVersusNP.Formulations.NegativeBranch"]
+  prize_theorem_declaration := none
   status := ProblemStatus.open_problem
   resolution_shape := ResolutionShape.decide
   resolution_note :=
-    "Clay's question is to settle whether P equals NP. Both P = NP and P != NP are checked outcomes, and the final resolution type accepts a proof of either one."
+    "Clay's question is to settle whether P equals NP. A sorry-free proof of either outcome proposition (P = NP, or its negation) settles it. No aggregate declaration is provided: the disjunction and a two-constructor resolution type are both inhabited by classical case analysis."
   formalization_note :=
-    "Uses Cook's verifier definition and an explicit finite-alphabet machine model. The resolution is a two-constructor Type rather than the excluded-middle proposition P = NP or P != NP."
+    "Uses Cook's verifier definition with certificates that are strings over a finite alphabet and an explicit finite-alphabet machine model. Before September 2026 the certificate type carried an arbitrary encoding, which put every language in NP."
   related_declarations := [
-    "Millennium.ClayPVersusNPResolution",
     "Millennium.ClayPVersusNP.Formulations.PositiveBranch",
     "Millennium.ClayPVersusNP.Formulations.ClassEquality",
     "Millennium.ClayPVersusNP.Formulations.NegativeBranch",
     "Millennium.ClayPVersusNP.Formulations.DeterministicSimulation"
   ]
-
-/-
-P vs NP is deliberately marked as `decide`.
-
-The proposition `ClayPVersusNP.Formulations.ClassEquality ∨
-¬ ClayPVersusNP.Formulations.ClassEquality` would not represent the prize problem in classical Lean:
-it is an instance of excluded middle. The final declaration instead returns the explicit
-`ClayPVersusNPResolution` type, whose constructors expose which outcome was proved. The registry
-records both outcome propositions.
--/
 
 /-- Registry entry for the Riemann Hypothesis. -/
 def riemann_hypothesis : ClayProblem where
@@ -74,11 +67,11 @@ def riemann_hypothesis : ClayProblem where
   title := "Riemann Hypothesis"
   statement := Millennium.ClayRiemannHypothesis
   statement_declaration := "Millennium.ClayRiemannHypothesis"
-  prize_theorem_declaration := "Millennium.clay_prize_riemann_hypothesis"
+  prize_theorem_declaration := some "Millennium.clay_prize_riemann_hypothesis"
   status := ProblemStatus.open_problem
   resolution_shape := ResolutionShape.prove
   resolution_note :=
-    "The statement is the positive critical-line formulation for every nontrivial zeta zero."
+    "The statement is the positive critical-line formulation for every nontrivial zeta zero; it is equivalent to Mathlib's `RiemannHypothesis`."
   formalization_note :=
     "The registered zeta statement is the critical-line formulation; the xi statement and zero correspondence are supporting views."
   related_declarations := [
@@ -91,15 +84,21 @@ def riemann_hypothesis : ClayProblem where
 def navier_stokes : ClayProblem where
   short_name := "Navier-Stokes"
   title := "Navier-Stokes existence and smoothness"
-  statement := MillenniumNavierStokes.ClayNavierStokes
-  statement_declaration := "MillenniumNavierStokes.ClayNavierStokes"
-  prize_theorem_declaration := "MillenniumNavierStokes.clay_prize_navier_stokes"
+  statement := MillenniumNavierStokes.FeffermanA
+  statement_declaration := "MillenniumNavierStokes.FeffermanA"
+  alternative_statements :=
+    [MillenniumNavierStokes.FeffermanB, MillenniumNavierStokes.FeffermanC,
+      MillenniumNavierStokes.FeffermanD]
+  alternative_statement_declarations :=
+    ["MillenniumNavierStokes.FeffermanB", "MillenniumNavierStokes.FeffermanC",
+      "MillenniumNavierStokes.FeffermanD"]
+  prize_theorem_declaration := none
   status := ProblemStatus.open_problem
   resolution_shape := ResolutionShape.prove_one_case
   resolution_note :=
-    "The Clay statement is Fefferman's disjunction of cases (A)-(D): smooth existence or breakdown in whole-space or periodic form."
+    "Fefferman's Clay statement offers four alternatives (A)-(D); a sorry-free proof of any one of them settles the problem. Their disjunction is a classical tautology (zero force plus the Navier-Stokes scaling symmetry) and is therefore not a target."
   formalization_note :=
-    "The Fefferman cases (A)-(D) are represented directly, with solution and forcing smoothness stated on the Clay half-space R^3 x [0, infinity) and the pressure-periodicity erratum included."
+    "Solution and forcing smoothness are stated on the closed half-space R^3 x [0, infinity), the equations and the derivative bounds on the open half-space t > 0 (ambient derivatives are junk on the boundary), and the pressure-periodicity erratum is included."
   related_declarations := [
     "NavierStokesOnR3.SmoothExistence",
     "NavierStokesPeriodic.SmoothExistence",
@@ -107,37 +106,25 @@ def navier_stokes : ClayProblem where
     "NavierStokesPeriodic.Breakdown"
   ]
 
-/-
-Navier-Stokes differs from the single-sentence conjectures: Fefferman's Clay statement is already
-a disjunction of four cases.  The resolution shape records that solving the problem
-means proving one branch, not proving four independent theorems.
--/
-
 /-- Registry entry for the Hodge Conjecture. -/
 def hodge_conjecture : ClayProblem where
   short_name := "Hodge"
   title := "Hodge Conjecture"
   statement := MillenniumHodge.ClayHodge.{0, 0, 0}
   statement_declaration := "MillenniumHodge.ClayHodge"
-  prize_theorem_declaration := "MillenniumHodge.clay_prize_hodge_conjecture"
-  status := ProblemStatus.open_problem
+  prize_theorem_declaration := none
+  status := ProblemStatus.statement_incomplete
   resolution_shape := ResolutionShape.prove
   resolution_note :=
-    "Every canonical Hodge-theory realization must satisfy the Clay cycle-class statement; bare coherent synthetic test packages are excluded from the public target."
+    "Not a valid target. The statement is vacuously true because no SmoothProjectiveVariety has a complex point (PR #9), and it would become false once that is repaired because the cycle-class map is free data (Tests/Hodge/CycleClassUnconstrained.lean)."
   formalization_note :=
-    "The cycle-class sentence matches the Clay wording. Until native singular/Hodge cohomology is available, canonical realizations explicitly require injective complexification and a spanning Hodge decomposition."
+    "Axiomatic interface sketch. A faithful statement needs the analytic topology on X(C), singular cohomology with a defined Hodge decomposition and cycle-class map, and the rational-complex comparison isomorphism, none of which exist in Mathlib yet."
   related_declarations := [
     "MillenniumHodge.HodgeTheoryAssignment.ClayStatement",
     "MillenniumHodge.HodgeTheoryRealization",
     "MillenniumHodge.ClayHodge.Formulations.AllCoherentConjectures",
     "MillenniumHodge.HodgeConjecture.Formulations.FixedCycleSpan"
   ]
-
-/-
-The Hodge statement is universe-polymorphic.  The registry instantiates it at `.{0, 0, 0}` because
-the metadata table needs one concrete proposition, while the theorem file still exposes the fully
-polymorphic declaration for mathematical use.
--/
 
 /-- Registry entry for the Birch and Swinnerton-Dyer Conjecture. -/
 def birch_swinnerton_dyer : ClayProblem where
@@ -147,16 +134,17 @@ def birch_swinnerton_dyer : ClayProblem where
   statement_declaration :=
     "MillenniumBirchSwinnertonDyer.ClayBirchSwinnertonDyer"
   prize_theorem_declaration :=
-    "MillenniumBirchSwinnertonDyer.clay_prize_birch_swinnerton_dyer"
+    some "MillenniumBirchSwinnertonDyer.clay_prize_birch_swinnerton_dyer"
   status := ProblemStatus.open_problem
   resolution_shape := ResolutionShape.prove
   resolution_note :=
-    "The statement is the Taylor/rank formulation for elliptic curves over Q, with L-series data explicit."
+    "The statement is the Taylor/rank formulation for elliptic curves over Q. It is existential in the analytic continuation, so a proof must also supply the continuation (modularity and the Hasse bound) and a finite rank (Mordell-Weil)."
   formalization_note :=
-    "The ordinary LSeriesData contains only the Clay continuation and Euler-product agreement; optional bad-prime comparison data lives in HasseWeilLSeriesData."
+    "The ordinary LSeriesData contains only the Clay continuation and Euler-product agreement; optional bad-prime comparison data lives in HasseWeilLSeriesData, whose correction factor is required to be analytic at s = 1 only."
   related_declarations := [
     "MillenniumBirchSwinnertonDyer.ClayBirchSwinnertonDyer.Formulations.Taylor.Integral",
-    "MillenniumBirchSwinnertonDyer.ClayBirchSwinnertonDyer.Formulations.Rank.HasseWeil"
+    "MillenniumBirchSwinnertonDyer.ClayBirchSwinnertonDyer.Formulations.Rank.HasseWeil",
+    "MillenniumBirchSwinnertonDyer.ClayBirchSwinnertonDyer.Formulations.Rank.IncompleteLSeries"
   ]
 
 /-- Registry entry for Yang-Mills existence and mass gap. -/
@@ -165,23 +153,18 @@ def yang_mills : ClayProblem where
   title := "Yang-Mills existence and mass gap"
   statement := MillenniumYangMills.ClayYangMills
   statement_declaration := "MillenniumYangMills.ClayYangMills"
-  prize_theorem_declaration := "MillenniumYangMills.clay_prize_yang_mills"
-  status := ProblemStatus.open_problem
+  prize_theorem_declaration := none
+  status := ProblemStatus.statement_incomplete
   resolution_shape := ResolutionShape.construct_object
   resolution_note :=
-    "The statement is an existence theorem: for each connected compact simple Lie gauge group, construct a nontrivial quantum Yang-Mills theory on R4 whose Hamiltonian spectrum has a positive finite mass gap."
+    "Not a valid target. The quantum-field-theory data are an axiomatic sketch that is not tied to Yang-Mills theory or to relativity, so the existence statement can be satisfied by a two-dimensional toy model."
   formalization_note :=
-    "The gauge group is connected and its Lie algebra is identified with the smooth model space. The canonical spectral set equals the theory Hamiltonian spectrum; unbounded and Lorentz-covariant strengthenings remain related declarations."
+    "The gauge field stores connection and curvature independently, the Lie algebra has no bracket, the Poincare group is an arbitrary group unrelated to the Hamiltonian, and the unbounded physical Hamiltonian is tied to a bounded operator's spectrum. The vacuum-uniqueness axiom was contradictory before September 2026."
   related_declarations := [
     "MillenniumYangMills.ClayYangMills.Formulations.FixedGroup",
     "MillenniumYangMills.ClayYangMills.Formulations.PhysicalHamiltonian.Statement",
     "MillenniumYangMills.ClayYangMills.Formulations.LorentzCovariant.Statement"
   ]
-
-/-
-The registry uses the canonical Clay Yang-Mills statement.  Stronger physical-Hamiltonian and
-Lorentz-covariant formulations remain listed as related declarations.
--/
 
 /-- Registry entry for the Poincare Conjecture. -/
 def poincare : ClayProblem where
@@ -189,13 +172,13 @@ def poincare : ClayProblem where
   title := "Poincare Conjecture"
   statement := MillenniumPoincare.ClayPoincareConjecture.{0}
   statement_declaration := "MillenniumPoincare.ClayPoincareConjecture"
-  prize_theorem_declaration := "MillenniumPoincare.clay_prize_poincare_conjecture"
+  prize_theorem_declaration := some "MillenniumPoincare.clay_prize_poincare_conjecture"
   status := ProblemStatus.solved_problem
   resolution_shape := ResolutionShape.prove
   resolution_note :=
-    "Perelman's theorem proves the topological three-manifold statement; this repository records `ClayPoincareConjecture` and equivalent closed-curve/`π₁` wordings."
+    "Perelman's theorem proves the topological three-manifold statement; this repository records `ClayPoincareConjecture`, which is equivalent to the shape of Mathlib's `proof_wanted` statement."
   formalization_note :=
-    "Closed simply connected three-manifold statement, with equivalent closed-curve and `π₁` formulations."
+    "Closed simply connected three-manifold statement, with equivalent closed-curve and pi_1 wordings."
   related_declarations := [
     "MillenniumPoincare.ClayPoincareConjecture.Formulations.SimplyConnectedClosed3Manifold",
     "MillenniumPoincare.ClayPoincareConjecture.Formulations.ClosedCurves",
@@ -209,7 +192,7 @@ def all_problems : List ClayProblem :=
   [p_versus_np, riemann_hypothesis, navier_stokes, hodge_conjecture,
     birch_swinnerton_dyer, yang_mills, poincare]
 
-/-- The six still-open Millennium problem registry entries. -/
+/-- The open Millennium problems whose Lean statements are believed to be faithful. -/
 def open_problems : List ClayProblem :=
   all_problems.filter ClayProblem.is_open
 
@@ -217,16 +200,24 @@ def open_problems : List ClayProblem :=
 def solved_problems : List ClayProblem :=
   all_problems.filter ClayProblem.is_solved
 
+/-- The registry entries whose Lean statements are known to be incomplete. -/
+def incomplete_problems : List ClayProblem :=
+  all_problems.filter ClayProblem.is_incomplete
+
 /-- Count of Clay Millennium problem entries in this registry. -/
 theorem all_problems.length_eq : all_problems.length = 7 := by
-  native_decide
+  decide
 
-/-- Count of still-open Clay Millennium problem entries in this registry. -/
-theorem open_problems.length_eq : open_problems.length = 6 := by
-  native_decide
+/-- Count of open entries with faithful statements. -/
+theorem open_problems.length_eq : open_problems.length = 4 := by
+  decide
 
-/-- Count of solved Clay Millennium problem entries in this registry. -/
+/-- Count of solved entries. -/
 theorem solved_problems.length_eq : solved_problems.length = 1 := by
-  native_decide
+  decide
+
+/-- Count of entries whose statement is incomplete. -/
+theorem incomplete_problems.length_eq : incomplete_problems.length = 2 := by
+  decide
 
 end MillenniumProblems

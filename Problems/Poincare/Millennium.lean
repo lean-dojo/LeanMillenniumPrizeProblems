@@ -15,7 +15,9 @@ Clay problem description:
 
 Mathlib contains the standard Poincaré conjecture statements in
 `Mathlib/Geometry/Manifold/PoincareConjecture.lean`. This file isolates the dimension-`3` case
-as `ClayPoincareConjecture.Formulations.SimplyConnectedClosed3Manifold`.
+as `ClayPoincareConjecture.Formulations.SimplyConnectedClosed3Manifold`, and
+`ClayPoincareConjecture.iff_mathlib_shape` proves it equivalent to the statement shape of Mathlib's
+`proof_wanted SimplyConnectedSpace.nonempty_homeomorph_sphere_three`.
 
 The Poincaré conjecture states that every simply connected, closed 3-manifold
 is homeomorphic to the 3-sphere. It was proven by Grigori Perelman in 2003.
@@ -95,11 +97,20 @@ def ClayPoincareConjecture : Prop :=
   ClayPoincareConjecture.Formulations.SimplyConnectedClosed3Manifold.{u}
 
 /--
-Clay's wording “every simple closed curve can be deformed continuously to a point”, represented by
-the standard simply-connected-space hypothesis used by Mathlib.
+Clay's wording “every simple closed curve can be deformed continuously to a point”: the space is
+path connected and every loop, at every base point, is homotopic to the constant loop.
+
+This is equivalent to Mathlib's `SimplyConnectedSpace` (`ClosedCurvesContract.iff_simplyConnected`).
+Clay's word “simple” is informal: the fundamental group sees all loops, and in a simply connected
+space all of them contract.
 -/
 def ClosedCurvesContract (M : Type u) [TopologicalSpace M] : Prop :=
-  SimplyConnectedSpace M
+  PathConnectedSpace M ∧ ∀ (x : M) (γ : Path x x), Path.Homotopic γ (Path.refl x)
+
+/-- Contractibility of all closed curves is simple connectivity. -/
+theorem ClosedCurvesContract.iff_simplyConnected (M : Type u) [TopologicalSpace M] :
+    ClosedCurvesContract M ↔ SimplyConnectedSpace M :=
+  simply_connected_iff_loops_nullhomotopic.symm
 
 /-- The fundamental group `pi_1(M, x)` appearing in Milnor's Clay discussion. -/
 @[reducible]
@@ -107,18 +118,35 @@ def FundamentalGroupAt (M : Type u) [TopologicalSpace M] (x : M) : Type _ :=
   FundamentalGroup M x
 
 /--
-Clay's equivalent modern wording that the fundamental group is trivial, represented by
-Mathlib's simply-connected-space hypothesis.
+Clay's equivalent modern wording that the fundamental group is trivial: the space is path
+connected and `π₁(M, x)` is trivial at every base point `x`.
+
+This is equivalent to Mathlib's `SimplyConnectedSpace`
+(`TrivialFundamentalGroup.iff_simplyConnected`).
 -/
-abbrev TrivialFundamentalGroup (M : Type u) [TopologicalSpace M] : Prop :=
-  SimplyConnectedSpace M
+def TrivialFundamentalGroup (M : Type u) [TopologicalSpace M] : Prop :=
+  PathConnectedSpace M ∧ ∀ x : M, Subsingleton (FundamentalGroupAt M x)
 
 /-- A `TrivialFundamentalGroup` hypothesis gives a subsingleton fundamental group. -/
 theorem TrivialFundamentalGroup.fundamental_group_subsingleton
     {M : Type u} [TopologicalSpace M] (h : TrivialFundamentalGroup M) (x : M) :
-    Subsingleton (FundamentalGroupAt (M := M) x) := by
-  letI : SimplyConnectedSpace M := h
-  infer_instance
+    Subsingleton (FundamentalGroupAt (M := M) x) :=
+  h.2 x
+
+/--
+Path connectedness together with a trivial fundamental group at every base point is simple
+connectivity: a trivial `π₁(M, x)` means every loop at `x` is homotopic to the constant loop.
+-/
+theorem TrivialFundamentalGroup.iff_simplyConnected (M : Type u) [TopologicalSpace M] :
+    TrivialFundamentalGroup M ↔ SimplyConnectedSpace M := by
+  constructor
+  · rintro ⟨hpc, hsub⟩
+    rw [simply_connected_iff_loops_nullhomotopic]
+    refine ⟨hpc, fun x γ => ?_⟩
+    haveI : Subsingleton (Path.Homotopic.Quotient x x) := hsub x
+    exact Quotient.eq.mp (@Subsingleton.elim (Path.Homotopic.Quotient x x) _ ⟦γ⟧ ⟦Path.refl x⟧)
+  · intro h
+    exact ⟨inferInstance, fun x => inferInstance⟩
 
 /--
 Clay's question wording: if a compact 3-manifold has every closed curve deformable to a point, then
@@ -153,27 +181,20 @@ theorem ClayPoincareConjecture.iff_closed_curves :
     ClayPoincareConjecture.{u} ↔ ClayPoincareConjecture.Formulations.ClosedCurves.{u} := by
   constructor
   · intro h M _top _t2 _second _charted _compact hcurves
-    haveI : SimplyConnectedSpace M := by
-      simpa [ClosedCurvesContract] using hcurves
+    haveI : SimplyConnectedSpace M := (ClosedCurvesContract.iff_simplyConnected M).1 hcurves
     exact h M
   · intro h M _top _t2 _second _charted _simple _compact
-    have hcurves : ClosedCurvesContract M := by
-      dsimp [ClosedCurvesContract]
-      infer_instance
-    exact h M hcurves
+    exact h M ((ClosedCurvesContract.iff_simplyConnected M).2 inferInstance)
 
 /-- The `π₁` formulation is equivalent to the simply-connected statement. -/
 theorem ClayPoincareConjecture.iff_fundamental_group :
     ClayPoincareConjecture.{u} ↔ ClayPoincareConjecture.Formulations.TrivialPi1.{u} := by
   constructor
   · intro h M _top _t2 _second _charted _compact hpi
-    haveI : SimplyConnectedSpace M := by
-      simpa [TrivialFundamentalGroup] using hpi
+    haveI : SimplyConnectedSpace M := (TrivialFundamentalGroup.iff_simplyConnected M).1 hpi
     exact h M
   · intro h M _top _t2 _second _charted _simple _compact
-    exact h M (by
-      dsimp [TrivialFundamentalGroup]
-      infer_instance)
+    exact h M ((TrivialFundamentalGroup.iff_simplyConnected M).2 inferInstance)
 
 /-- The closed-curve and `π₁` global formulations are equivalent. -/
 theorem ClayPoincareConjecture.Formulations.ClosedCurves.iff_fundamental_group :
@@ -183,9 +204,41 @@ theorem ClayPoincareConjecture.Formulations.ClosedCurves.iff_fundamental_group :
     ClayPoincareConjecture.iff_fundamental_group
 
 /-!
-`SimplyConnectedSpace` already captures trivial `π₁`, so `ClayPoincareConjecture.Formulations.SimplyConnectedClosed3Manifold` already
-matches the usual “π₁(M) is trivial” formulation.
+The three formulations above differ only in how the hypothesis on `M` is phrased: Mathlib's
+`SimplyConnectedSpace`, contractibility of every closed curve (`ClosedCurvesContract`), and
+triviality of every fundamental group `π₁(M, x)` (`TrivialFundamentalGroup`).  The equivalences
+`ClosedCurvesContract.iff_simplyConnected` and `TrivialFundamentalGroup.iff_simplyConnected` are
+genuine theorems, not definitional unfoldings.
 -/
+
+/--
+The statement shape of Mathlib's
+`proof_wanted SimplyConnectedSpace.nonempty_homeomorph_sphere_three`
+(`Mathlib/Geometry/Manifold/PoincareConjecture.lean`), which omits the second-countability
+hypothesis and writes `S³` as the unit sphere of `EuclideanSpace ℝ (Fin (3 + 1))`.
+-/
+def ClayPoincareConjecture.Formulations.MathlibShape : Prop :=
+  ∀ (M : Type u)
+    [TopologicalSpace M]
+    [T2Space M]
+    [ChartedSpace (EuclideanSpace ℝ (Fin 3)) M]
+    [SimplyConnectedSpace M]
+    [CompactSpace M],
+      Nonempty (M ≃ₜ sphere (0 : EuclideanSpace ℝ (Fin (3 + 1))) 1)
+
+/--
+The repository statement is equivalent to Mathlib's statement shape: for a compact space charted
+on `ℝ³`, second countability is automatic (`ChartedSpace.secondCountable_of_sigmaCompact`).
+-/
+theorem ClayPoincareConjecture.iff_mathlib_shape :
+    ClayPoincareConjecture.{u} ↔ ClayPoincareConjecture.Formulations.MathlibShape.{u} := by
+  constructor
+  · intro h M _top _t2 _charted _simple _compact
+    haveI : SecondCountableTopology M :=
+      ChartedSpace.secondCountable_of_sigmaCompact EuclideanThreeSpace M
+    exact h M
+  · intro h M _top _t2 _second _charted _simple _compact
+    exact h M
 
 /-!
 ## Main theorem

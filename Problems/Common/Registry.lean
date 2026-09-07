@@ -8,10 +8,16 @@ namespace MillenniumProblems
 
 /-! ## Classification types -/
 
-/-- Current mathematical status of the Clay problem. -/
+/-- Status of a Clay problem's Lean statement in this repository. -/
 inductive ProblemStatus where
+  /-- The mathematics is open and the Lean statement is believed to be faithful. -/
   | open_problem
+  /-- The mathematics is settled and the Lean statement is believed to be faithful; a Lean proof
+  may still be missing. -/
   | solved_problem
+  /-- The Lean statement is an interface sketch with known defects.  It is not a valid target: a
+  proof of it would not represent progress on the mathematical problem. -/
+  | statement_incomplete
   deriving DecidableEq
 
 namespace ProblemStatus
@@ -20,6 +26,7 @@ namespace ProblemStatus
 def label : ProblemStatus → String
   | open_problem => "open"
   | solved_problem => "solved"
+  | statement_incomplete => "statement incomplete (not a valid target)"
 
 end ProblemStatus
 
@@ -27,7 +34,7 @@ end ProblemStatus
 inductive ResolutionShape where
   /-- Solve by proving the stated proposition directly. -/
   | prove
-  /-- Solve by proving one case of a formal disjunction already present in the statement. -/
+  /-- Solve by proving one of several alternative propositions listed separately. -/
   | prove_one_case
   /-- Solve by constructing an object satisfying the stated properties. -/
   | construct_object
@@ -51,25 +58,32 @@ end ResolutionShape
 /--
 Repository-level metadata for a Clay problem.
 
-The `statement` field is the checked Lean proposition that this repository exposes. The string
-fields are documentation handles; they deliberately do not affect the mathematical content.
+The `statement` and `alternative_statements` fields are the checked Lean propositions that this
+repository exposes; a proof of any one of them settles the problem.  The string fields are
+documentation handles; they deliberately do not affect the mathematical content.
 -/
 structure ClayProblem where
   /-- Short display name. -/
   short_name : String
   /-- Full display name. -/
   title : String
-  /-- The Lean proposition tracked by this registry entry. -/
+  /-- The primary Lean proposition tracked by this registry entry. -/
   statement : Prop
   /-- Fully qualified Lean declaration for `statement`. -/
   statement_declaration : String
-  /-- Optional mutually exclusive alternative outcome, used for decision problems. -/
-  alternative_statement : Option Prop := none
-  /-- Fully qualified Lean declaration for the optional alternative outcome. -/
-  alternative_statement_declaration : Option String := none
-  /-- Fully qualified final declaration whose placeholder body future work should replace. -/
-  prize_theorem_declaration : String
-  /-- Whether the problem is mathematically open or solved. -/
+  /-- Further outcome propositions, for problems that ask which of several alternatives holds.
+  A proof of `statement` or of any element of this list settles the problem. -/
+  alternative_statements : List Prop := []
+  /-- Fully qualified Lean declarations for `alternative_statements`, in the same order. -/
+  alternative_statement_declarations : List String := []
+  /-- Placeholder declaration whose `sorry` a proof should replace, when the problem has one.
+
+  Problems with several alternatives have no placeholder: any single declaration that covers all
+  alternatives, whether a disjunction or an inductive type with one constructor per alternative,
+  is provable by classical case analysis (see `Tests/AggregateTargets.lean`).  Problems whose
+  statement is incomplete have no placeholder either. -/
+  prize_theorem_declaration : Option String := none
+  /-- Status of the Lean statement. -/
   status : ProblemStatus
   /-- What kind of mathematical act would resolve the problem. -/
   resolution_shape : ResolutionShape
@@ -82,13 +96,21 @@ structure ClayProblem where
 
 namespace ClayProblem
 
-/-- True when the registry entry is currently marked open. -/
+/-- True when the registry entry is an open problem with a faithful statement. -/
 def is_open (problem : ClayProblem) : Bool :=
   problem.status == ProblemStatus.open_problem
 
-/-- True when the registry entry is currently marked solved. -/
+/-- True when the registry entry is a solved problem. -/
 def is_solved (problem : ClayProblem) : Bool :=
   problem.status == ProblemStatus.solved_problem
+
+/-- True when the registry entry's statement is incomplete and not a valid target. -/
+def is_incomplete (problem : ClayProblem) : Bool :=
+  problem.status == ProblemStatus.statement_incomplete
+
+/-- All propositions a proof of which settles the problem. -/
+def target_statements (problem : ClayProblem) : List Prop :=
+  problem.statement :: problem.alternative_statements
 
 end ClayProblem
 

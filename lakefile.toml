@@ -1,5 +1,5 @@
 name = "problems"
-defaultTargets = ["Problems"]
+defaultTargets = ["Problems", "Tests"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
@@ -18,3 +18,7 @@ rev = "3dddd61e231b2f8936dbaa1460dc60df71bc434d"
 
 [[lean_lib]]
 name = "Problems"
+
+[[lean_lib]]
+name = "Tests"
+globs = ["Tests.+"]

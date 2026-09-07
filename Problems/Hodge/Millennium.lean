@@ -11,6 +11,24 @@ universe u₁ u₂ u₃
 
 Lean statement of the Clay Millennium problem “Hodge conjecture”.
 
+**Warning (September 2026 review).**  This file is an axiomatic *sketch*, not a faithful formal
+statement of the Hodge conjecture, and `MillenniumHodge.ClayHodge` is **not a valid prize
+target**.  Two independent defects are machine-checked in `Tests/Hodge/`:
+
+* every `SmoothProjectiveVariety ℂ` has no complex points at all, because `points` is required to
+  be in bijection with the plain `Scheme` hom-set `Spec ℂ ⟶ X` (which has more than continuum many
+  elements whenever it is nonempty) and to inject into a finite `ℙ^N(ℂ)`; hence `ClayHodge` is
+  vacuously true (Kevin Buzzard, PR #9);
+* `hodge_subspace` and `cycle_class` are free data: replacing the cycle-class map by `0` preserves
+  every "canonical" anchor, so `ClayHodge` forces all even-degree rational cohomology to vanish and
+  would become false as soon as the first defect were repaired
+  (`Tests/Hodge/CycleClassUnconstrained.lean`).
+
+A faithful statement needs the analytic topology on `X(ℂ)`, singular cohomology with a *defined*
+Hodge decomposition, a *defined* cycle-class map, and the comparison isomorphism between rational
+and complex cohomology, none of which exist in Mathlib yet.  Until then the registry records the
+problem as `statement_incomplete` and there is no `sorry` placeholder for it.
+
 For a projective nonsingular algebraic variety `X` over `ℂ`, every rational `(p,p)` Hodge class in
 `H^{2p}(X, ℚ)` should be a finite `ℚ`-linear combination of cohomology classes of algebraic cycles.
 
@@ -1232,15 +1250,13 @@ theorem FiniteRationalHodgeData.basis_class_algebraic
   FiniteRationalHodgeData.single_mem_algebraic m X p i
 
 /-!
-## Main theorem
+## No placeholder theorem
 
-This final theorem records the Hodge Conjecture target for the canonical-realization interface.
-Replace the placeholder proof when one is available.
+Earlier versions of this file ended with `theorem clay_prize_hodge_conjecture : ClayHodge := by
+sorry`.  It has been removed: `ClayHodge` is provable outright because no
+`SmoothProjectiveVariety ℂ` has a point (see the warning at the top of this file and PR #9), so
+the placeholder could be "solved" without any Hodge theory.  The registry records the problem as
+`statement_incomplete`.
 -/
-
-/-- Clay Millennium Prize target for the Hodge Conjecture. -/
-theorem clay_prize_hodge_conjecture :
-    ClayHodge.{u₁, u₂, u₃} := by
-  sorry
 
 end MillenniumHodge

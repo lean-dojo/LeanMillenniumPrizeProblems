@@ -207,6 +207,25 @@ def ManyOneReducible {α β : Type} (ea : FinEncoding α) (eb : FinEncoding β)
     ∀ a, L₁ a ↔ L₂ (f a)
 
 /--
+Trivial “string” encoding for `List alphabet` when `alphabet` is finite.
+
+This is the identity encoding (`encode = id`, `decode = some`).  It is used both for the input
+strings `Σ*` of the Clay statement and for the certificate strings `Γ₁*` in the definitions of
+`NP` and of computably enumerable languages: certificates are *all* finite strings over a finite
+alphabet, exactly as in Cook's write-up, and not elements of an arbitrary encoded type.
+-/
+def fin_encoding_string (alphabet : Type) [Fintype alphabet] : FinEncoding (List alphabet) :=
+  { Γ := alphabet
+    encode := id
+    decode := fun l => some l
+    decode_encode := by intro l; rfl
+    ΓFin := inferInstance }
+
+@[simp] theorem fin_encoding_string_encode (alphabet : Type) [Fintype alphabet]
+    (w : List alphabet) : (fin_encoding_string alphabet).encode w = w :=
+  rfl
+
+/--
 A (binary) checking relation `R` is *computable* if membership in the associated language
 `L_R = { w#y | R(w, y) }` is decidable by a Turing machine (without a time bound).
 -/
@@ -219,11 +238,16 @@ def ComputableCheckingRelation {α β : Type} (ea : FinEncoding α) (eb : FinEnc
 /--
 Computably enumerable languages (c.e.): `L` is c.e. iff there is a computable checking relation
 `R(x, y)` such that `x ∈ L ↔ ∃y, R(x, y)` (Cook, Section 2).
+
+The certificates `y` range over *all* finite strings over some finite alphabet `Γ₁` (identity
+encoding `fin_encoding_string Γ₁`), so the checking machine must be correct on every pair
+`x # y`.  Quantifying over an arbitrary encoded certificate type instead would let the
+certificate type itself carry the membership information and make every language c.e.
 -/
 def ComputablyEnumerable {α : Type} (ea : FinEncoding α) (L : Language α) : Prop :=
-  ∃ (β : Type) (eb : FinEncoding β) (R : α → β → Prop),
-    ComputableCheckingRelation ea eb R ∧
-      ∀ a, L a ↔ ∃ b, R a b
+  ∃ (Γ₁ : Type) (_ : Fintype Γ₁) (R : α → List Γ₁ → Prop),
+    ComputableCheckingRelation ea (fin_encoding_string Γ₁) R ∧
+      ∀ a, L a ↔ ∃ y : List Γ₁, R a y
 
 /--
 c.e.-completeness (Cook, Definition 2): `L` is c.e.-complete if `L` is c.e. and every c.e.
@@ -247,17 +271,22 @@ def PolynomialTimeCheckingRelation {α β : Type} (ea : FinEncoding α) (eb : Fi
   InPolynomialTime (pair_encoding ea eb) (fun p => R p.1 p.2)
 
 /--
-`NP` (Cook): A language `L` is in `NP` if there exist `k ∈ ℕ` and a polynomial-time checking
-relation `R` such that for all inputs `w`,
+`NP` (Cook): A language `L` is in `NP` if there exist a finite certificate alphabet `Γ₁`, an
+exponent `k ∈ ℕ`, and a polynomial-time checking relation `R ⊆ α × Γ₁*` such that for all inputs
+`w`,
 
-`w ∈ L ↔ ∃ y (|y| ≤ |w|^k ∧ R(w, y))`.
+`w ∈ L ↔ ∃ y ∈ Γ₁* (|y| ≤ |w|^k ∧ R(w, y))`.
 
-Here `|w|` and `|y|` are measured as the lengths of `ea.encode w` and `eb.encode y`.
+Here `|w|` is the length of `ea.encode w` and `|y|` is the length of the certificate string `y`.
+Certificates are all finite strings over `Γ₁` with the identity encoding `fin_encoding_string Γ₁`,
+so `L_R = { w#y | R(w, y) } ∈ P` is required over *all* certificate strings, as in Cook's
+definition.  (An earlier version quantified over an arbitrary encoded certificate type `β`; that
+let the type `β` itself encode membership in `L` and put every language into `NP`.)
 -/
 def InNondeterministicPolynomialTime {α : Type} (ea : FinEncoding α) (L : Language α) : Prop :=
-  ∃ (β : Type) (eb : FinEncoding β) (R : α → β → Prop) (k : ℕ),
-    PolynomialTimeCheckingRelation ea eb R ∧
-      ∀ a, L a ↔ ∃ b, (eb.encode b).length ≤ (ea.encode a).length ^ k ∧ R a b
+  ∃ (Γ₁ : Type) (_ : Fintype Γ₁) (R : α → List Γ₁ → Prop) (k : ℕ),
+    PolynomialTimeCheckingRelation ea (fin_encoding_string Γ₁) R ∧
+      ∀ a, L a ↔ ∃ y : List Γ₁, y.length ≤ (ea.encode a).length ^ k ∧ R a y
 
 /--
 Polynomial-time many-one reducibility (Cook, Definition 3).
@@ -356,38 +385,33 @@ theorem NondeterministicPolynomialTimeComplete.transfer
   exact PolynomialTimeReducible.trans ec ea eb L₃ L₁ L₂ hComp hL₃L₁ hL₁L₂
 
 /--
-Trivial “string” encoding for `List alphabet` when `alphabet` is finite.
-
-This is the identity encoding (`encode = id`, `decode = some`) and is used to express the Clay
-statement for languages over finite alphabets.
--/
-def fin_encoding_string (alphabet : Type) [Fintype alphabet] : FinEncoding (List alphabet) :=
-  { Γ := alphabet
-    encode := id
-    decode := fun l => some l
-    decode_encode := by intro l; rfl
-    ΓFin := inferInstance }
-
-/--
 Cook's Clay verifier data for one language over a finite string alphabet.
 
 This packages the PDF sentence:
-`w ∈ L ⇔ ∃ y, |y| ≤ |w|^k` and a polynomial-time checking relation `R(w,y)`.
-The finite certificate alphabet is the alphabet in `certificate_encoding`.
+`w ∈ L ⇔ ∃ y ∈ Γ₁*, |y| ≤ |w|^k` and a polynomial-time checking relation `R(w,y)`,
+where `Γ₁` is the finite certificate alphabet `certificate_alphabet` and certificates are all
+finite strings over it.
 -/
 structure ClayPolynomialTimeVerification
     (alphabet : Type) [Fintype alphabet] (L : Language (List alphabet)) where
-  certificate_type : Type
-  certificate_encoding : FinEncoding certificate_type
-  checking_relation : List alphabet → certificate_type → Prop
+  /-- Cook's finite certificate alphabet `Γ₁`. -/
+  certificate_alphabet : Type
+  [certificate_alphabet_fintype : Fintype certificate_alphabet]
+  /-- The checking relation `R ⊆ Σ* × Γ₁*`. -/
+  checking_relation : List alphabet → List certificate_alphabet → Prop
+  /-- The exponent `k` in the certificate length bound `|y| ≤ |w|^k`. -/
   exponent : ℕ
+  /-- `L_R = { w#y | R(w, y) }` is in `P`, over all strings `w ∈ Σ*` and `y ∈ Γ₁*`. -/
   checking_relation_in_polynomial_time :
-    PolynomialTimeCheckingRelation (fin_encoding_string alphabet) certificate_encoding checking_relation
+    PolynomialTimeCheckingRelation (fin_encoding_string alphabet)
+      (fin_encoding_string certificate_alphabet) checking_relation
+  /-- Cook's membership condition `w ∈ L ⇔ ∃ y (|y| ≤ |w|^k ∧ R(w, y))`. -/
   membership_iff_exists_bounded_certificate :
     ∀ w : List alphabet,
-      L w ↔ ∃ y : certificate_type,
-        (certificate_encoding.encode y).length ≤
-          ((fin_encoding_string alphabet).encode w).length ^ exponent ∧ checking_relation w y
+      L w ↔ ∃ y : List certificate_alphabet,
+        y.length ≤ w.length ^ exponent ∧ checking_relation w y
+
+attribute [instance] ClayPolynomialTimeVerification.certificate_alphabet_fintype
 
 /-- Clay's polynomial-time-verification wording for `L ∈ NP`. -/
 def ClayVerifiableLanguage
@@ -402,13 +426,13 @@ theorem ClayVerifiableLanguage.iff_in_nondeterministic_polynomial_time
   constructor
   · rintro ⟨witness⟩
     exact
-      ⟨witness.certificate_type, witness.certificate_encoding, witness.checking_relation,
-        witness.exponent, witness.checking_relation_in_polynomial_time,
+      ⟨witness.certificate_alphabet, witness.certificate_alphabet_fintype,
+        witness.checking_relation, witness.exponent,
+        witness.checking_relation_in_polynomial_time,
         witness.membership_iff_exists_bounded_certificate⟩
-  · rintro ⟨β, eb, R, k, hR, hmem⟩
+  · rintro ⟨Γ₁, _, R, k, hR, hmem⟩
     exact
-      ⟨{ certificate_type := β
-         certificate_encoding := eb
+      ⟨{ certificate_alphabet := Γ₁
          checking_relation := R
          exponent := k
          checking_relation_in_polynomial_time := hR
@@ -1481,12 +1505,12 @@ theorem PolynomialTimeContainedInNondeterministicPolynomialTime.certificate_veri
       ∀ (alphabet : Type) [Fintype alphabet] [Nontrivial alphabet] (L : Language (List alphabet)),
         InPolynomialTime (fin_encoding_string alphabet) L → InNondeterministicPolynomialTime (fin_encoding_string alphabet) L := by
   intro hLift alphabet _ _ L hP
-  refine ⟨List alphabet, fin_encoding_string alphabet, (fun a _certificate => L a), 0,
+  refine ⟨alphabet, inferInstance, (fun a _certificate => L a), 0,
     hLift alphabet L hP, ?_⟩
   intro a
   constructor
   · intro hLa
-    exact ⟨[], by simp [fin_encoding_string], hLa⟩
+    exact ⟨[], by simp, hLa⟩
   · rintro ⟨_certificate, _hBound, hLa⟩
     exact hLa
 
@@ -1836,49 +1860,25 @@ abbrev ClayPVersusNP.Formulations.PositiveBranch : Prop :=
 def ClayPVersusNP.Formulations.NegativeBranch : Prop :=
   ¬ ClayPVersusNP
 
-/--
-An explicit resolution of Cook's question.
-
-This lives in `Type`, rather than being the proposition
-`ClayPVersusNP ∨ ¬ ClayPVersusNP`: the latter is an immediate consequence of classical excluded
-middle and therefore is not an adequate prize target. A genuine resolution should construct one
-of these two constructors with the corresponding mathematical proof.
--/
-inductive ClayPVersusNPResolution : Type where
-  /-- Positive resolution: `P = NP`. -/
-  | equal (proof : ClayPVersusNP.Formulations.PositiveBranch)
-  /-- Negative resolution: `P ≠ NP`. -/
-  | notEqual (proof : ClayPVersusNP.Formulations.NegativeBranch)
-
-namespace ClayPVersusNPResolution
-
-/-- The proposition selected by an explicit P-versus-NP resolution. -/
-def SelectedStatement : ClayPVersusNPResolution → Prop
-  | .equal _ => ClayPVersusNP.Formulations.PositiveBranch
-  | .notEqual _ => ClayPVersusNP.Formulations.NegativeBranch
-
-/-- Every explicit resolution carries a proof of the branch it selects. -/
-theorem selectedProof (resolution : ClayPVersusNPResolution) :
-    resolution.SelectedStatement := by
-  cases resolution with
-  | equal proof => exact proof
-  | notEqual proof => exact proof
-
-end ClayPVersusNPResolution
-
 /-!
-## Main theorem
+## How to claim a solution
 
-This final declaration accepts either mathematical outcome. Replace the placeholder with
-`ClayPVersusNPResolution.equal proofOfPEqualsNP` or
-`ClayPVersusNPResolution.notEqual proofOfPNotEqualsNP`.
--/
+The two target propositions of this file are
 
-/--
-Clay Millennium Prize resolution target for P versus NP, with both outcomes represented.
+* `Millennium.ClayPVersusNP` — `P = NP` in this finite-alphabet two-stack Turing-machine model
+  (the class equality `ClayPVersusNP.Formulations.ClassEquality`), and
+* `Millennium.ClayPVersusNP.Formulations.NegativeBranch` — `P ≠ NP`, literally `¬ ClayPVersusNP`.
+
+A solution of the Clay problem is a `sorry`-free proof of **one** of these two propositions, and
+the registry (`Problems/Registry.lean`) records both as the admissible outcomes.
+
+No aggregate declaration is provided: neither the disjunction
+`ClayPVersusNP ∨ ClayPVersusNP.Formulations.NegativeBranch` nor a two-constructor `Type` whose
+constructors carry proofs of the two branches.  The disjunction is an instance of excluded middle,
+and the `Type`-shaped version is inhabited just as easily, since `Classical.propDecidable` gives a
+`Decidable ClayPVersusNP` instance and `dite` eliminates into `Type`; see
+`Tests/AggregateTargets.lean`.  Any such aggregate would therefore be provable without any
+complexity theory and would not encode the mathematical challenge.
 -/
-def clay_prize_p_versus_np :
-    ClayPVersusNPResolution := by
-  sorry
 
 end Millennium

@@ -65,13 +65,16 @@ noncomputable def spacetime_derivative_vector (f : SpacetimeForce) (α : List (F
 /--
 Fefferman's decay condition (5) for the forcing term `f` on `ℝ³ × [0,∞)`.
 
-We express the weight as `(1 + |x| + t)^{-K}` using `‖space x‖` for `|x|` and the time coordinate `x 0 = t`.
+We express the weight as `(1 + |x| + t)^{-K}` using `‖space x‖` for `|x|` and the time coordinate
+`x 0 = t`.  The derivative bounds are imposed for `t > 0`: the derivatives are ambient Fréchet
+derivatives, which are junk on the boundary `t = 0` of the half-space on which `f` is smooth (see
+`interior_spacetime_domain`), and by continuity up to the boundary the bounds extend to `t = 0`.
 -/
 def SmoothRapidDecayForce (f : SpacetimeForce) : Prop :=
   force_smooth_on_global_spacetime_domain f ∧
     ∀ (α : List (Fin 3)) (m K : ℕ),
       ∃ C : ℝ, 0 < C ∧
-        ∀ x : Spacetime3, 0 ≤ x 0 →
+        ∀ x : Spacetime3, 0 < x 0 →
           ‖spacetime_derivative_vector f α m x‖ ≤ C / (1 + ‖space x‖ + x 0) ^ K
 
 /-- The zero force satisfies Fefferman's forcing decay condition (5). -/
@@ -82,7 +85,7 @@ theorem zero_force_smooth_rapid_decay :
     fun_prop
   intro α m K
   refine ⟨1, by norm_num, ?_⟩
-  intro x hx_nonneg
+  intro x _hx
   rw [spacetime_derivative_vector_zero, norm_zero]
   positivity
 

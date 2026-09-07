@@ -63,13 +63,14 @@ theorem zero_force_periodic :
 /--
 Fefferman's time-decay condition (9) for the force in the periodic setting.
 
-This is the same mixed-derivative expression as in (5), but the weight depends only on time.
+This is the same mixed-derivative expression as in (5), but the weight depends only on time.  As
+in (5), the bounds are imposed for `t > 0` (see `interior_spacetime_domain`).
 -/
 def PeriodicForceDecay (f : ForceField 3) : Prop :=
   force_smooth_on_global_spacetime_domain f ∧
     ∀ (α : List (Fin 3)) (m K : ℕ),
       ∃ C : ℝ, 0 < C ∧
-        ∀ x : Spacetime3, 0 ≤ x 0 →
+        ∀ x : Spacetime3, 0 < x 0 →
           ‖spacetime_derivative_vector f α m x‖ ≤ C / (1 + |x 0|) ^ K
 
 /-- The zero force satisfies Fefferman's periodic-setting force decay condition (9). -/
@@ -80,7 +81,7 @@ theorem zero_force_periodic_decay :
     fun_prop
   intro α m K
   refine ⟨1, by norm_num, ?_⟩
-  intro x hx_nonneg
+  intro x _hx
   rw [spacetime_derivative_vector_zero, norm_zero]
   positivity
 

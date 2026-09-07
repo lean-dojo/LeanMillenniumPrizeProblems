@@ -276,15 +276,13 @@ theorem ClayYangMills.Formulations.PhysicalHamiltonian.Statement.exists_gap
   (h.for_group G).exists_gap
 
 /-!
-## Main theorem
+## No placeholder theorem
 
-This final theorem records the Yang--Mills existence and mass-gap target directly. Replace the
-placeholder proof when a formal Lean construction is available.
+Earlier versions of this file ended with `theorem clay_prize_yang_mills : ClayYangMills := by
+sorry`.  It has been removed: `ClayYangMills` is not a faithful statement of the Clay problem (see
+the warning at the top of `Problems.YangMills.Quantum`), so a proof of it would not represent
+progress on Yang–Mills existence and mass gap.  The registry records the problem as
+`statement_incomplete`.
 -/
-
-/-- Clay Millennium Prize target for Yang--Mills existence and mass gap. -/
-theorem clay_prize_yang_mills :
-    ClayYangMills := by
-  sorry
 
 end MillenniumYangMills

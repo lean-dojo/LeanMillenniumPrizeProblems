@@ -97,8 +97,8 @@ structure NavierStokesEquations (n : ℕ) where
 
     This parameter represents the fluid's resistance to flow or deformation.
     Higher values indicate more viscous fluids (like honey), while lower values
-    indicate less viscous fluids (like water). In the Millennium Problem,
-    we typically use ν = 1 to normalize the equations.
+    indicate less viscous fluids (like water). The Clay statement quantifies over
+    every viscosity ν > 0; no normalization is assumed.
 
     It appears in the diffusion term ν·Δu, which models how momentum diffuses
     through the fluid due to molecular interactions.
@@ -132,7 +132,8 @@ structure NavierStokesEquations (n : ℕ) where
     Initial velocity field at time t=0.
 
     This defines the starting configuration of the fluid flow. In the Millennium
-    Problem, this initial condition is assumed to be smooth and have finite energy.
+    Problem the initial condition is smooth with rapidly decaying derivatives
+    (Fefferman's condition (4)) or smooth and periodic (condition (8)).
 
     The evolution of this initial state according to the Navier-Stokes equations
     is the central focus of the Millennium Problem - specifically whether this
@@ -158,6 +159,27 @@ structure NavierStokesEquations (n : ℕ) where
 /-- Spacetime domain `ℝⁿ × [0,∞)` viewed inside `ℝ^{n+1}`. -/
 def global_spacetime_domain (n : ℕ) : Set (Spacetime n) :=
   {x | 0 ≤ x 0}
+
+/--
+Open spacetime domain `ℝⁿ × (0,∞)` viewed inside `ℝ^{n+1}`.
+
+The differential equations are imposed on this open set.  The fields are ambient functions on
+`ℝⁿ⁺¹` whose regularity is only required on the closed half-space `global_spacetime_domain n`, and
+`partial_deriv` is the ambient Fréchet derivative, which Mathlib sets to `0` wherever the function
+is not differentiable in every direction.  On the boundary `t = 0` that value is junk, so the
+equations may not be imposed there.  Since the fields are `C^∞` up to the boundary, the equations
+on `t > 0` extend to `t = 0` by continuity, which is exactly Fefferman's requirement on
+`ℝⁿ × [0,∞)`.
+-/
+def interior_spacetime_domain (n : ℕ) : Set (Spacetime n) :=
+  {x | 0 < x 0}
+
+theorem interior_spacetime_domain_subset (n : ℕ) :
+    interior_spacetime_domain n ⊆ global_spacetime_domain n := by
+  intro x hx
+  have hx' : 0 < x 0 := hx
+  show 0 ≤ x 0
+  exact le_of_lt hx'
 
 /--
 Smoothness of a velocity field on Clay's global time domain.
@@ -189,8 +211,9 @@ def force_smooth_on_global_spacetime_domain {n : ℕ} (f : ForceField n) : Prop 
 /--
 A global-in-time Navier–Stokes solution on `ℝⁿ × [0,∞)`.
 
-This matches the Clay statement's use of solutions on `ℝ³ × [0,∞)`, avoiding the finite-horizon
-parameter `T` used by `Solution`.
+This matches the Clay statement's use of solutions on `ℝ³ × [0,∞)`.  The equations are imposed on
+the open half-space `t > 0` (see `interior_spacetime_domain`); the initial condition is imposed at
+`t = 0`; smoothness up to the boundary is imposed by `GlobalSmoothSolution`.
 -/
 structure GlobalSolution {n : ℕ} (nse : NavierStokesEquations n) where
   /-- Velocity field `u : ℝ^{n+1} → ℝⁿ`. -/
@@ -198,16 +221,16 @@ structure GlobalSolution {n : ℕ} (nse : NavierStokesEquations n) where
   /-- Pressure field `p : ℝ^{n+1} → ℝ`. -/
   pressure : PressureField n
 
-  /-- Momentum equation (Navier–Stokes) on `t ≥ 0`. -/
+  /-- Momentum equation (Navier–Stokes) on `t > 0`. -/
   momentum_equation :
     ∀ x : Spacetime n,
-      x ∈ global_spacetime_domain n →
+      x ∈ interior_spacetime_domain n →
         material_derivative n velocity velocity x + pressure_gradient pressure x =
           viscous_term n nse.viscosity velocity x + nse.external_force x
 
-  /-- Incompressibility `div u = 0` on `t ≥ 0`. -/
+  /-- Incompressibility `div u = 0` on `t > 0`. -/
   incompressible :
-    ∀ x : Spacetime n, x ∈ global_spacetime_domain n → divergence_free_at velocity x
+    ∀ x : Spacetime n, x ∈ interior_spacetime_domain n → divergence_free_at velocity x
 
   /-- Initial condition at time `t = 0`. -/
   initial_condition :

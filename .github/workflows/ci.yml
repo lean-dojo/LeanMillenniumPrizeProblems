@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Installs the toolchain from lean-toolchain, fetches the Mathlib cache,
+      # and runs `lake build` (default targets: Problems and Tests).
+      - uses: leanprover/lean-action@v1
+        with:
+          use-mathlib-cache: true
+
+      - name: Verify the local copies of the Clay PDFs
+        run: python3 scripts/clay_refs.py verify

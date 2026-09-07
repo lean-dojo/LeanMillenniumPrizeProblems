@@ -16,7 +16,12 @@ Mathlib's Weierstrass-curve constructions.
 
 The main Millennium statement in `Problems.BirchSwinnertonDyer.Millennium` uses the Clay-specific
 Euler product and refined leading-coefficient formula.  The auxiliary definitions here keep the
-Mordell-Weil group, rank, and a basic incomplete Euler product available as reusable ingredients.
+Mordell-Weil group, rank, and the local Euler factor polynomial available as reusable ingredients.
+
+A former "rank part" statement built from a naive Euler product over *all* primes was removed from
+this file: its bad-prime factor used the good-reduction trace `q + 1 - #W(𝔽_q)`, which is off by
+one at singular reductions, so the resulting product had poles that no entire continuation can
+match and the statement was false for every curve with split multiplicative reduction.
 -/
 
 universe u
@@ -46,12 +51,20 @@ polymorphically over the base ring for use after reduction modulo a prime.
 
 The corresponding term in the L-function is `f(q⁻ˢ)⁻¹`, where `q` is the cardinality of the base
 field.
+
+For a singular reduction the standard factor is `1 - aₚ X` with `aₚ = q - #W_ns(𝔽_q)`, where
+`W_ns(𝔽_q)` is the set of nonsingular points *including* the point at infinity.  Mathlib's
+`W.toAffine.Point` consists of exactly these points, so `aₚ = q - W.num_points`, which is `1`,
+`-1`, `0` for split multiplicative, nonsplit multiplicative and additive reduction respectively.
+The good-reduction trace `W.frobenius_trace = q + 1 - W.num_points` would be off by one here.
+The Clay Euler product `WeierstrassCurve.incomplete_lseries` omits the bad primes entirely and
+never evaluates this branch.
 -/
 noncomputable def local_euler_factor_polynomial : ℤ[X] :=
   if W.IsElliptic then
     1 - W.frobenius_trace • X + Cardinal.toNat #R • X ^ 2
   else
-    1 - W.frobenius_trace • X
+    1 - (Cardinal.toNat #R - W.num_points : ℤ) • X
 
 end CommRing
 
@@ -130,30 +143,5 @@ theorem MordellWeilDecompositionData.torsion_finite {W : WeierstrassCurve F}
 
 end Field
 
-section Int
-
-variable (W : WeierstrassCurve ℤ)
-
-/--
-The incomplete Euler product attached to a Weierstrass curve over `ℤ`.
-
-This is the product of Clay local Euler polynomials. The main Birch--Swinnerton-Dyer file uses the Clay-specific
-variant `WeierstrassCurve.incomplete_lseries`, which explicitly omits the bad primes `p ∣ 2Δ`.
--/
-noncomputable def incomplete_euler_product (s : ℂ) : ℂ :=
-  ∏' p : Nat.Primes, (aeval (p ^ (-s) : ℂ) (W.baseChange (ZMod p.1)).local_euler_factor_polynomial)⁻¹
-
-/-- The **rank part of the Birch and Swinnerton-Dyer conjecture** for elliptic curves over `ℚ`.
-It is stated as that for any Weierstrass curve over `ℤ` with non-zero discriminant, the
-Mordell-Weil group of the corresponding elliptic curve over `ℚ` is finitely generated,
-and its incomplete Euler product has an analytic continuation to the whole complex plane,
-whose order of zeroes at `1` is equal to the Mordell-Weil rank. -/
-def BirchSwinnertonDyerRankPart : Prop :=
-  ∀ W : WeierstrassCurve ℤ, W.Δ ≠ 0 → WeierstrassCurve.MordellWeil (W.baseChange ℚ) ∧
-    ∃ (L : ℂ → ℂ) (σ : ℝ) (_han : ∀ s : ℂ, AnalyticAt ℂ L s),
-      (∀ s : ℂ, s.re > σ → L s = W.incomplete_euler_product s) ∧
-        analyticOrderAt L 1 = WeierstrassCurve.rank (W.baseChange ℚ)
-
-end Int
 
 end WeierstrassCurve

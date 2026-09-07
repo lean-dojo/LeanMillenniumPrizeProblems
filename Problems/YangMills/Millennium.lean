@@ -12,6 +12,13 @@ Lean statement of the Clay Millennium problem “Yang–Mills existence and mass
 For each compact simple gauge group `G`, the problem asks for a non-trivial quantum Yang–Mills
 theory on `ℝ⁴` with a Hamiltonian spectral gap `Δ > 0` and finite Clay mass.
 
+**Warning (September 2026 review).**  `ClayYangMills` and its variants below are **not valid
+prize targets**: the underlying `QuantumYangMillsTheory` is an axiomatic sketch whose data are not
+tied to Yang–Mills theory or to relativity (see the warning at the top of
+`Problems.YangMills.Quantum`), so the existence statement can be satisfied by a two-dimensional
+toy model.  There is no `sorry` placeholder for Yang–Mills for this reason.  The registry marks
+the problem as `statement_incomplete`.
+
 The statement below keeps the constructive quantum-field-theory ingredients explicit: Wightman and
 Osterwalder--Schrader style axioms, gauge-invariant local curvature operators, physical
 Hamiltonian spectral data, and a positive finite mass gap.  Companion modules connect this formulation
@@ -1174,13 +1181,12 @@ structure ClayQuantumFieldTheoryAxioms {G : Type} [CompactSimpleGaugeGroup G]
   /-- The Hamiltonian spectrum is supported in `[0, ∞)`. -/
   wightman_spectrum_nonnegative :
     ∀ E, E ∈ spectrum ℝ theory.wightman.hamiltonian → 0 ≤ E
-  /-- The normalized Poincare-invariant vacuum is unique. -/
+  /-- The Poincaré-invariant vacuum is unique up to a scalar. -/
   wightman_vacuum_unique :
     ∀ Ω' : theory.hilbert_space,
       IsVacuum Ω' theory.wightman.hamiltonian →
         (∀ g, theory.wightman.unitary_rep g Ω' = Ω') →
-          ‖Ω'‖ = 1 →
-            Ω' = theory.wightman.vacuum
+          ∃ c : ℝ, Ω' = c • theory.wightman.vacuum
   /-- Osterwalder-Schrader reflection positivity. -/
   os_reflection_positivity :
     ∀ fs : List SchwartzSpace,
@@ -1245,13 +1251,12 @@ structure ClayExistence {G : Type} [CompactSimpleGaugeGroup G]
   nontrivial : NontrivialTheory theory
   /-- The vacuum vector is normalized. -/
   vacuum_norm_one : ‖theory.wightman.vacuum‖ = 1
-  /-- The normalized Poincaré-invariant vacuum is unique. -/
+  /-- The Poincaré-invariant vacuum is unique up to a scalar. -/
   vacuum_unique :
     ∀ Ω' : theory.hilbert_space,
       IsVacuum Ω' theory.wightman.hamiltonian →
         (∀ g, theory.wightman.unitary_rep g Ω' = Ω') →
-          ‖Ω'‖ = 1 →
-            Ω' = theory.wightman.vacuum
+          ∃ c : ℝ, Ω' = c • theory.wightman.vacuum
   /-- The curvature local operator is not identically zero after smearing. -/
   curvature_local_operator_nonzero :
     ∃ f : SchwartzSpace,

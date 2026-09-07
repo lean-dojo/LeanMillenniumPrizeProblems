@@ -27,6 +27,24 @@ universe u v u₁ u₂ u₃
 The definitions below isolate the geometric input, cohomology groups, Hodge summands, and
 cycle-class maps needed for the Hodge conjecture.
 
+**Warning (September 2026 review).**  This file is an axiomatic *sketch*, not a faithful formal
+statement of the Hodge conjecture, and `MillenniumHodge.ClayHodge` is **not a valid prize
+target**.  Two independent defects are machine-checked in `Tests/Hodge/`:
+
+* every `SmoothProjectiveVariety ℂ` has no complex points at all, because `points` is required to
+  be in bijection with the plain `Scheme` hom-set `Spec ℂ ⟶ X` (which has more than continuum many
+  elements whenever it is nonempty) and to inject into a finite `ℙ^N(ℂ)`; hence `ClayHodge` is
+  vacuously true (Kevin Buzzard, PR #9);
+* `hodge_subspace` and `cycle_class` are free data: replacing the cycle-class map by `0` preserves
+  every "canonical" anchor, so `ClayHodge` forces all even-degree rational cohomology to vanish and
+  would become false as soon as the first defect were repaired
+  (`Tests/Hodge/CycleClassUnconstrained.lean`).
+
+A faithful statement needs the analytic topology on `X(ℂ)`, singular cohomology with a *defined*
+Hodge decomposition, a *defined* cycle-class map, and the comparison isomorphism between rational
+and complex cohomology, none of which exist in Mathlib yet.  Until then the registry records the
+problem as `statement_incomplete` and there is no `sorry` placeholder for it.
+
 The Clay PDF uses Hodge theory of smooth projective complex varieties.  This file represents that
 theory by an explicit interface: rational and complex cohomology, Hodge summands, filtration,
 algebraic cycles, closed analytic subspaces, Chow comparison, and cycle classes.

@@ -26,7 +26,11 @@ state a few standard facts mentioned in the Clay write-up (Dirichlet series and 
 Riemann's `ξ`-function).
 
 `ClayRiemannHypothesis` below states the Clay critical-line formulation.  It is equivalent to the
-real-part statement `ClayRiemannHypothesis.Formulations.RealPart` and to Mathlib's `_root_.RiemannHypothesis`.
+real-part statement `ClayRiemannHypothesis.Formulations.RealPart`, to Mathlib's
+`_root_.RiemannHypothesis`, and to Riemann's original `ξ(t)` wording
+`ClayRiemannHypothesis.Formulations.XiZeros`; the zero correspondence between `ξ(t)` and the
+nontrivial zeros of `ζ(s)` needed for the last equivalence is proved in
+`ClayRiemannHypothesis.Support.XiZetaZeroCorrespondence.holds`.
 -/
 
 /-!
@@ -144,6 +148,13 @@ Bombieri's Clay PDF formula
 
 The global definition `xi` above uses the pole-cancelled entire completed-zeta expression; this
 definition records the expanded meromorphic PDF expression.
+
+**Warning: do not state the Riemann Hypothesis with this function.**  Mathlib's `riemannZeta` and
+`Gammaℝ` are total functions.  At the trivial zeros `s = -2, -4, …` the factor `Γ(s/2)` has a pole
+in mathematics but the junk value `0` in Lean, and `ζ(s) = 0` there as well, so
+`expanded_xi_formula` has spurious zeros at the non-real points `t = -i (s - 1/2)` for `s` a
+negative even integer, where `xi` is nonzero.  The two functions agree exactly away from
+`s ∈ {0, 1}` and the trivial zeros (`expanded_xi_formula.eq_xi_of_ne`).
 -/
 noncomputable def expanded_xi_formula (t : ℂ) : ℂ :=
   let s : ℂ := xi_argument t
@@ -157,8 +168,12 @@ theorem xi.eq_xi_argument (t : ℂ) :
   simp [xi, xi_argument]
 
 /--
-Away from the pole locations `s = 0` and `s = 1`, Bombieri's expanded PDF formula agrees with the
+In the half-plane `re s > 0` and away from `s = 1`, Bombieri's expanded PDF formula agrees with the
 pole-cancelled entire definition used by `xi`.
+
+The hypothesis `0 < re s` excludes the whole left half-plane, in particular the trivial zeros,
+where the two functions differ (see the warning on `expanded_xi_formula`).  The sharp version is
+`expanded_xi_formula.eq_xi_of_ne`.
 -/
 theorem expanded_xi_formula.eq_xi {t : ℂ}
     (ht : 0 < (xi_argument t).re) (hone : xi_argument t ≠ 1) :
@@ -237,6 +252,53 @@ def IsTrivialZero (s : ℂ) : Prop :=
 /-- A “nontrivial” zero is a zero that is not a trivial zero and not the pole at `s = 1`. -/
 def IsNontrivialZero (s : ℂ) : Prop :=
   riemannZeta s = 0 ∧ ¬IsTrivialZero s ∧ s ≠ 1
+
+/-- `Gammaℝ s` vanishes (in Lean) exactly at `s = 0` and at the trivial zeros. -/
+theorem gammaReal_ne_zero_of_ne {s : ℂ} (h0 : s ≠ 0) (htriv : ¬ IsTrivialZero s) :
+    Gammaℝ s ≠ 0 := by
+  intro hG
+  obtain ⟨n, hn⟩ := Gammaℝ_eq_zero_iff.mp hG
+  rcases n with _ | m
+  · exact h0 (by simpa using hn)
+  · exact htriv ⟨m, by rw [hn]; push_cast; ring⟩
+
+/--
+Sharp form of `expanded_xi_formula.eq_xi`: Bombieri's expanded PDF formula agrees with `xi`
+exactly when `s = 1/2 + i t` is neither a pole location (`s ≠ 0`, `s ≠ 1`) nor a trivial zero
+(where the Lean junk value `Gammaℝ s = 0` makes the expanded formula vanish spuriously).
+-/
+theorem expanded_xi_formula.eq_xi_of_ne {t : ℂ}
+    (h0 : xi_argument t ≠ 0) (h1 : xi_argument t ≠ 1)
+    (htriv : ¬ IsTrivialZero (xi_argument t)) :
+    expanded_xi_formula t = xi t := by
+  let s : ℂ := xi_argument t
+  have hzero : s ≠ 0 := h0
+  have hGamma : Gammaℝ s ≠ 0 := gammaReal_ne_zero_of_ne h0 htriv
+  have hcompleted : xi_gamma_factor s * riemannZeta s = completed_zeta s := by
+    calc
+      xi_gamma_factor s * riemannZeta s = Gammaℝ s * riemannZeta s := by
+        rw [xi_gamma_factor.eq_gamma_real]
+      _ = Gammaℝ s * (completedRiemannZeta s / Gammaℝ s) := by
+        rw [riemannZeta_def_of_ne_zero hzero]
+      _ = completedRiemannZeta s := by
+        rw [← mul_div_assoc]
+        exact mul_div_cancel_left₀ _ hGamma
+      _ = completed_zeta s := rfl
+  have hcancel :
+      (1 / 2 : ℂ) * s * (s - 1) * completed_zeta s =
+        (1 / 2 : ℂ) * (s * (s - 1) * completed_zeta_entire s + 1) := by
+    have hOneSub : 1 - s ≠ 0 := sub_ne_zero.mpr h1.symm
+    change (1 / 2 : ℂ) * s * (s - 1) * completedRiemannZeta s =
+        (1 / 2 : ℂ) * (s * (s - 1) * completedRiemannZeta₀ s + 1)
+    rw [completedRiemannZeta_eq]
+    field_simp [hzero, hOneSub]
+    ring
+  calc
+    expanded_xi_formula t = (1 / 2 : ℂ) * s * (s - 1) * completed_zeta s := by
+      simp [expanded_xi_formula, s, hcompleted]
+    _ = (1 / 2 : ℂ) * (s * (s - 1) * completed_zeta_entire s + 1) := hcancel
+    _ = xi t := by
+      simpa [s] using (xi.eq_xi_argument t).symm
 
 /-- A nontrivial zero cannot lie in the Euler-product half-plane `Re(s) > 1`. -/
 theorem IsNontrivialZero.re_le_one {s : ℂ} (hs : IsNontrivialZero s) : s.re ≤ 1 := by
@@ -329,6 +391,9 @@ theorem ClayRiemannHypothesis.Formulations.XiZeros.arg_mem_critical_line
 /--
 Analytic zero correspondence between Riemann's `ξ(t)` and nontrivial zeros of `ζ(s)`, expressed
 with the coordinate change `s = 1/2 + i t`.
+
+This is a theorem, proved below as `ClayRiemannHypothesis.Support.XiZetaZeroCorrespondence.holds`;
+it is kept as a named proposition so that the two directions can be referred to separately.
 -/
 def ClayRiemannHypothesis.Support.XiZetaZeroCorrespondence : Prop :=
   (∀ t : ℂ, xi t = 0 → IsNontrivialZero (xi_argument t)) ∧
@@ -346,13 +411,95 @@ theorem ClayRiemannHypothesis.Support.XiZetaZeroCorrespondence.xi_zero
     xi (zeta_zero_parameter s) = 0 :=
   hCorr.2 s hs
 
+/-- For `s ∉ {0, 1}`, the pole-cancelled expression used by `xi` equals `s (s - 1) Λ(s)`. -/
+theorem ClayRiemannHypothesis.Support.xi_polynomial_eq {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) :
+    s * (s - 1) * completedRiemannZeta₀ s + 1 = s * (s - 1) * completedRiemannZeta s := by
+  rw [completedRiemannZeta_eq]
+  have h1' : 1 - s ≠ 0 := sub_ne_zero.mpr (Ne.symm h1)
+  field_simp
+  ring
+
+/-- `Λ` does not vanish at the trivial zeros: there the zero of `ζ` comes from the pole of `Γ`. -/
+theorem ClayRiemannHypothesis.Support.completedRiemannZeta_ne_zero_of_trivial_zero (n : ℕ) :
+    completedRiemannZeta (-2 * ((n : ℂ) + 1)) ≠ 0 := by
+  rw [← completedRiemannZeta_one_sub]
+  have hs : (1 - (-2 * ((n : ℂ) + 1))) = 2 * (n : ℂ) + 3 := by ring
+  rw [hs]
+  have hre : 1 < (2 * (n : ℂ) + 3).re := by
+    simp only [add_re, mul_re, re_ofNat, natCast_re, im_ofNat, natCast_im, mul_zero, sub_zero]
+    have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
+    linarith
+  have hζ := riemannZeta_ne_zero_of_one_lt_re hre
+  have hne : (2 * (n : ℂ) + 3) ≠ 0 := by
+    intro h
+    have := congrArg re h
+    simp at this
+    linarith [(Nat.cast_nonneg n : (0 : ℝ) ≤ n)]
+  rw [riemannZeta_def_of_ne_zero hne] at hζ
+  intro h
+  apply hζ
+  rw [h, zero_div]
+
+/-- `xi` written with Mathlib's `completedRiemannZeta₀`. -/
+theorem ClayRiemannHypothesis.Support.xi_eq_completedRiemannZeta₀ (t : ℂ) :
+    xi t = (1 / 2 : ℂ) *
+      (xi_argument t * (xi_argument t - 1) * completedRiemannZeta₀ (xi_argument t) + 1) :=
+  xi.eq_xi_argument t
+
+/-- A zero of `ξ(t)` is a nontrivial zero of `ζ` at `s = 1/2 + i t`. -/
+theorem ClayRiemannHypothesis.Support.xi_zero_imp_nontrivial_zero (t : ℂ) (ht : xi t = 0) :
+    IsNontrivialZero (xi_argument t) := by
+  set s := xi_argument t with hs
+  rw [ClayRiemannHypothesis.Support.xi_eq_completedRiemannZeta₀] at ht
+  have h0 : s ≠ 0 := by
+    intro h
+    rw [← hs, h] at ht
+    norm_num at ht
+  have h1 : s ≠ 1 := by
+    intro h
+    rw [← hs, h] at ht
+    norm_num at ht
+  rw [← hs, ClayRiemannHypothesis.Support.xi_polynomial_eq h0 h1] at ht
+  have hΛ : completedRiemannZeta s = 0 := by
+    have h1' : s - 1 ≠ 0 := sub_ne_zero.mpr h1
+    simpa [h0, h1'] using ht
+  refine ⟨?_, ?_, h1⟩
+  · rw [riemannZeta_def_of_ne_zero h0, hΛ, zero_div]
+  · rintro ⟨n, hn⟩
+    exact ClayRiemannHypothesis.Support.completedRiemannZeta_ne_zero_of_trivial_zero n (hn ▸ hΛ)
+
+/-- A nontrivial zero `s` of `ζ` gives a zero of `ξ` at `t = -i (s - 1/2)`. -/
+theorem ClayRiemannHypothesis.Support.nontrivial_zero_imp_xi_zero (s : ℂ)
+    (hs : IsNontrivialZero s) :
+    xi (zeta_zero_parameter s) = 0 := by
+  obtain ⟨hζ, htriv, h1⟩ := hs
+  have h0 : s ≠ 0 := by
+    rintro rfl
+    rw [riemannZeta_zero] at hζ
+    norm_num at hζ
+  rw [ClayRiemannHypothesis.Support.xi_eq_completedRiemannZeta₀,
+    xi_argument.comp_zeta_zero_parameter, ClayRiemannHypothesis.Support.xi_polynomial_eq h0 h1]
+  have hΛ : completedRiemannZeta s = 0 := by
+    rw [riemannZeta_def_of_ne_zero h0] at hζ
+    rcases div_eq_zero_iff.mp hζ with h | h
+    · exact h
+    · exact absurd h (gammaReal_ne_zero_of_ne h0 htriv)
+  rw [hΛ]
+  ring
+
+/-- The analytic zero correspondence between `ξ(t)` and the nontrivial zeros of `ζ(s)` holds. -/
+theorem ClayRiemannHypothesis.Support.XiZetaZeroCorrespondence.holds :
+    ClayRiemannHypothesis.Support.XiZetaZeroCorrespondence :=
+  ⟨ClayRiemannHypothesis.Support.xi_zero_imp_nontrivial_zero,
+    ClayRiemannHypothesis.Support.nontrivial_zero_imp_xi_zero⟩
+
 /--
-With the xi/zeta zero correspondence, Riemann's `ξ(t)` wording and the critical-line zeta wording
-are equivalent.
+Riemann's `ξ(t)` wording and the critical-line zeta wording are equivalent, via the zero
+correspondence `ClayRiemannHypothesis.Support.XiZetaZeroCorrespondence.holds`.
 -/
-theorem ClayRiemannHypothesis.Formulations.XiZeros.iff_zeta
-    (hCorr : ClayRiemannHypothesis.Support.XiZetaZeroCorrespondence) :
+theorem ClayRiemannHypothesis.Formulations.XiZeros.iff_zeta :
     ClayRiemannHypothesis.Formulations.XiZeros ↔ ClayRiemannHypothesis := by
+  have hCorr := ClayRiemannHypothesis.Support.XiZetaZeroCorrespondence.holds
   constructor
   · intro hXi s hs
     have htZero : xi (zeta_zero_parameter s) = 0 :=
@@ -363,17 +510,16 @@ theorem ClayRiemannHypothesis.Formulations.XiZeros.iff_zeta
     exact (xi_argument.mem_critical_line_iff_real t).1
       (hZeta (xi_argument t) (hCorr.zeta_zero ht))
 
-/-- With the xi/zeta zero correspondence, the `ξ(t)` wording gives the zeta zero wording. -/
+/-- The `ξ(t)` wording gives the zeta zero wording. -/
 theorem ClayRiemannHypothesis.Formulations.XiZeros.critical_line
-    (hCorr : ClayRiemannHypothesis.Support.XiZetaZeroCorrespondence) (h : ClayRiemannHypothesis.Formulations.XiZeros) :
+    (h : ClayRiemannHypothesis.Formulations.XiZeros) :
     ClayRiemannHypothesis :=
-  (ClayRiemannHypothesis.Formulations.XiZeros.iff_zeta hCorr).1 h
+  ClayRiemannHypothesis.Formulations.XiZeros.iff_zeta.1 h
 
-/-- With the xi/zeta zero correspondence, the critical-line zeta wording gives the `ξ(t)` wording. -/
-theorem ClayRiemannHypothesis.xi_zeros
-    (hCorr : ClayRiemannHypothesis.Support.XiZetaZeroCorrespondence) (h : ClayRiemannHypothesis) :
+/-- The critical-line zeta wording gives the `ξ(t)` wording. -/
+theorem ClayRiemannHypothesis.xi_zeros (h : ClayRiemannHypothesis) :
     ClayRiemannHypothesis.Formulations.XiZeros :=
-  (ClayRiemannHypothesis.Formulations.XiZeros.iff_zeta hCorr).2 h
+  ClayRiemannHypothesis.Formulations.XiZeros.iff_zeta.2 h
 
 /-- The critical-line wording is equivalent to the real-part formulation. -/
 theorem ClayRiemannHypothesis.iff_real_part :
@@ -384,14 +530,10 @@ theorem ClayRiemannHypothesis.iff_real_part :
   · intro h s hs
     simpa [ClayRiemannHypothesis, CriticalLine] using h s hs
 
-/--
-With the xi/zeta zero correspondence, the Clay critical-line statement is equivalent to
-Riemann's original `ξ(t)` zero wording.
--/
-theorem ClayRiemannHypothesis.iff_xi
-    (hCorr : ClayRiemannHypothesis.Support.XiZetaZeroCorrespondence) :
+/-- The Clay critical-line statement is equivalent to Riemann's original `ξ(t)` zero wording. -/
+theorem ClayRiemannHypothesis.iff_xi :
     ClayRiemannHypothesis ↔ ClayRiemannHypothesis.Formulations.XiZeros :=
-  (ClayRiemannHypothesis.Formulations.XiZeros.iff_zeta hCorr).symm
+  ClayRiemannHypothesis.Formulations.XiZeros.iff_zeta.symm
 
 /-- Rephrase critical-line membership as the equation `re s = 1 / 2`. -/
 theorem ClayRiemannHypothesis.real_part
@@ -399,11 +541,11 @@ theorem ClayRiemannHypothesis.real_part
     ClayRiemannHypothesis.Formulations.RealPart :=
   ClayRiemannHypothesis.iff_real_part.1 h
 
-/-- With the xi/zeta zero correspondence, translate the `ξ(t)` wording back to zeta zeros. -/
+/-- Translate the `ξ(t)` wording back to zeta zeros. -/
 theorem ClayRiemannHypothesis.Formulations.XiZeros.zeta_zeros
-    (hCorr : ClayRiemannHypothesis.Support.XiZetaZeroCorrespondence) (h : ClayRiemannHypothesis.Formulations.XiZeros) :
+    (h : ClayRiemannHypothesis.Formulations.XiZeros) :
     ClayRiemannHypothesis :=
-  (ClayRiemannHypothesis.iff_xi hCorr).2 h
+  ClayRiemannHypothesis.iff_xi.2 h
 
 /-- Under the Clay critical-line statement, every nontrivial zero has real part `1 / 2`. -/
 theorem ClayRiemannHypothesis.zero_re_eq_half

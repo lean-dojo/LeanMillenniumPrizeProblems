@@ -35,6 +35,18 @@ open scoped BigOperators Manifold ContDiff
 
 Definitions for the Clay Millennium problem “Yang–Mills existence and mass gap”.
 
+**Warning (September 2026 review).**  This file and its companions are an axiomatic *sketch* of a
+quantum Yang–Mills theory, not a faithful formal statement of the Clay problem, and the existence
+statement in `Problems.YangMills.Millennium` is **not a valid prize target**.  The data below are
+characterised by too few properties to pin down what they are meant to represent: `GaugeField`
+stores the connection and the curvature as independent data, the Lie algebra carries no bracket,
+`poincare_group` is an arbitrary group unrelated to the Hamiltonian, the Osterwalder–Schrader
+reconstruction is stated as an equality of Schwinger and Wightman functions, and the "unbounded"
+physical Hamiltonian is tied to the spectrum of a bounded operator.  As a result the existence
+statement can be satisfied by a two-dimensional toy model.  (Before September 2026 the vacuum
+uniqueness axiom was contradictory and the structure was uninhabited; that slip is fixed, but the
+statement remains a sketch.)  See `README.md` for the status and the list of known defects.
+
 The core objects are:
 * four-dimensional spacetime and compact simple gauge groups;
 * gauge fields, curvature, and the Yang--Mills action;
@@ -951,17 +963,17 @@ class WightmanQuantumFieldTheoryProperties (H : Type) [NormedAddCommGroup H] [In
   vacuum_invariant : ∀ g, unitary_rep g vacuum = vacuum  -- Vacuum is Poincaré invariant
   vacuum_spatial_invariant : ∀ x : Space, space_translation x vacuum = vacuum
   /--
-  Uniqueness of the normalized Poincaré-invariant vacuum.
+  Uniqueness of the Poincaré-invariant vacuum, up to a scalar.
 
-  The zero vector is always a zero-energy invariant vector, so the uniqueness condition is stated
-  for normalized vectors.
+  Every Poincaré-invariant zero-energy vector is a real multiple of `vacuum`.  The earlier form
+  `‖Ω'‖ = 1 → Ω' = vacuum` was contradictory: `-vacuum` is also a normalized invariant zero-energy
+  vector, so it forced `vacuum = 0` and made this structure uninhabited.
   -/
   vacuum_unique :
     ∀ Ω' : H,
       IsVacuum Ω' hamiltonian →
         (∀ g, unitary_rep g Ω' = Ω') →
-          ‖Ω'‖ = 1 →
-            Ω' = vacuum
+          ∃ c : ℝ, Ω' = c • vacuum
 
   -- W4: Cyclicity of the vacuum
   vacuum_cyclic : Dense (field_generated_submodule Φ vacuum : Set H)

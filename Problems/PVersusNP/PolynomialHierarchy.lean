@@ -68,12 +68,14 @@ def polynomial_hierarchy_sigma_level (k : ℕ) : {α : Type} → [_inst : Primco
   match k with
   | 0 => InPolynomialTime ea L
   | k+1 =>
-      ∃ (β : Type) (_instβ : Primcodable β) (eb : FinEncoding β) (L' : Language (α × β)),
+      -- The witness `b` ranges over *all* finite strings over a finite alphabet `β` (identity
+      -- encoding `fin_encoding_string β`), as in `InNondeterministicPolynomialTime`.
+      ∃ (β : Type) (_instβ : Fintype β) (_primβ : Primcodable β) (L' : Language (α × List β)),
         -- `L'` is in `Πₖᴾ`, i.e. its complement is in `Σₖᴾ`.
-        polynomial_hierarchy_sigma_level k (pair_encoding ea eb) (complement L') ∧
+        polynomial_hierarchy_sigma_level k (pair_encoding ea (fin_encoding_string β)) (complement L') ∧
         -- Witness size is polynomially bounded.
         ∃ (p : Polynomial ℕ),
-          ∀ a, L a ↔ ∃ b, (eb.encode b).length ≤ Polynomial.eval (ea.encode a).length p ∧ L' (a, b)
+          ∀ a, L a ↔ ∃ b : List β, b.length ≤ Polynomial.eval (ea.encode a).length p ∧ L' (a, b)
 
 /--
 `Πₖᴾ` is defined as complements of `Σₖᴾ`.
