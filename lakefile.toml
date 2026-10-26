@@ -13,8 +13,8 @@ rev = "v4.31.0"
 
 [[require]]
 name = "Physlib"
-git = "https://github.com/HEPLean/PhysLean"
-rev = "3dddd61e231b2f8936dbaa1460dc60df71bc434d"
+git = "https://github.com/leanprover-community/physlib"
+rev = "v4.31.0"
 
 [[lean_lib]]
 name = "Problems"

@@ -20,6 +20,7 @@ tmp/
 
 # Cache files
 .cache/
+__pycache__/
 
 # Reference PDFs are stored under `Problems/**/references/`.
 *.pdf.sha256

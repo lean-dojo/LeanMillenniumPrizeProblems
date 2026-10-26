@@ -18,12 +18,15 @@ inductive ProblemStatus where
   /-- The Lean statement is an interface sketch with known defects.  It is not a valid target: a
   proof of it would not represent progress on the mathematical problem. -/
   | statement_incomplete
+  /-- A proposed replacement specification whose source fidelity awaits independent review. -/
+  | proposed_statement
   deriving DecidableEq
 
 namespace ProblemStatus
 
 /-- Human-readable status label for generated summaries. -/
 def label : ProblemStatus → String
+  | proposed_statement => "proposed statement (independent review pending)"
   | open_problem => "open"
   | solved_problem => "solved"
   | statement_incomplete => "statement incomplete (not a valid target)"
@@ -59,7 +62,8 @@ end ResolutionShape
 Repository-level metadata for a Clay problem.
 
 The `statement` and `alternative_statements` fields are the checked Lean propositions that this
-repository exposes; a proof of any one of them settles the problem.  The string fields are
+repository exposes. For a faithful statement, a proof of any one settles the problem;
+`proposed_statement` entries still require independent source-fidelity review.  The string fields are
 documentation handles; they deliberately do not affect the mathematical content.
 -/
 structure ClayProblem where
@@ -108,7 +112,11 @@ def is_solved (problem : ClayProblem) : Bool :=
 def is_incomplete (problem : ClayProblem) : Bool :=
   problem.status == ProblemStatus.statement_incomplete
 
-/-- All propositions a proof of which settles the problem. -/
+/-- True when independent review of the proposed statement is pending. -/
+def is_proposed (problem : ClayProblem) : Bool :=
+  problem.status == ProblemStatus.proposed_statement
+
+/-- Tracked target propositions; interpretation is qualified by the entry’s status. -/
 def target_statements (problem : ClayProblem) : List Prop :=
   problem.statement :: problem.alternative_statements
 
