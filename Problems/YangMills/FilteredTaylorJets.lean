@@ -2,7 +2,6 @@ import Problems.YangMills.FourierTaylorUniformEnumeration
 import Problems.YangMills.MomentumJetSymmetry
 import Mathlib.Analysis.Analytic.IteratedFDeriv
 
--- Compatibility settings for the Lean 4.31 port of the reviewed source.
 set_option backward.isDefEq.respectTransparency false
 set_option warningAsError true
 

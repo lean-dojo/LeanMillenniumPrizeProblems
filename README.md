@@ -120,8 +120,7 @@ targets. A regression witness is expected to stop compiling when the statement i
 
 ## History of statement fixes
 
-- 2026-10: Yang–Mills replaced by the proposed specification, ported to Lean
-  4.31.0; all Lean sources live in `Problems/YangMills`, with `Millennium.lean` as the entry point.
+- 2026-10: Yang–Mills replaced by the proposed specification; all Lean sources live in `Problems/YangMills`, with `Millennium.lean` as the entry point.
 
 - 2026-04: Navier–Stokes vacuous-domain loophole closed after issue #4.
 - 2026-06: Navier–Stokes aggregate disjunction removed after issue #5 (it was reintroduced in

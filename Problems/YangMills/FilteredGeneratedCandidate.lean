@@ -2,7 +2,6 @@ import Problems.YangMills.FilteredQuantumRG
 import Problems.YangMills.Statement
 import Problems.YangMills.WightmanVacuumKernels
 
--- Compatibility settings for the Lean 4.31 port of the reviewed source.
 set_option backward.isDefEq.respectTransparency false
 set_option warningAsError true
 
@@ -53,8 +52,8 @@ structure FilteredGeneratedCandidate (G : CompactSimpleGaugeGroup) where
   sector : FilteredRG.GeneratedSector wardFamily basis generated normalization
     kernels coefficients physicalCoefficients stress curvatureSquare
 
-/-- Compatibility name for the same all-group assembly. The primary target is the separately named YangMillsExistenceAndMassGap
-constant, with the reviewed source interpretation and universe contract. -/
+/-- The all-group assembly. The primary target is `YangMillsExistenceAndMassGap`,
+with the same universe parameter. -/
 def ProposedFilteredGeneratedSpecification : Prop :=
   ∀ G : CompactSimpleGaugeGroup.{u}, Nonempty (FilteredGeneratedCandidate G)
 

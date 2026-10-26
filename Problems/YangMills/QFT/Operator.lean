@@ -2,7 +2,6 @@ import Mathlib.Analysis.InnerProductSpace.LinearMap
 import Mathlib.Analysis.Calculus.Deriv.Basic
 import Problems.YangMills.Spectrum
 
--- Compatibility settings for the Lean 4.31 port of the reviewed source.
 set_option backward.isDefEq.respectTransparency false
 set_option warningAsError true
 

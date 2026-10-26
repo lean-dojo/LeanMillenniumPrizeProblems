@@ -2,7 +2,6 @@ import Problems.YangMills.FilteredTaylorJets
 import Problems.YangMills.FlowScaleConstancy
 import Problems.YangMills.FlowNormalizationDilation
 
--- Compatibility settings for the Lean 4.31 port of the reviewed source.
 set_option backward.isDefEq.respectTransparency false
 set_option warningAsError true
 

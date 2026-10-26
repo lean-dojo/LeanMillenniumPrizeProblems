@@ -2,7 +2,6 @@ import Problems.YangMills.LocalWardOPEStressBinding
 import Problems.YangMills.GeneratedScaleNormalization
 import Problems.YangMills.GeneratedVacuumWordMatching
 
--- Compatibility settings for the Lean 4.31 port of the reviewed source.
 set_option backward.isDefEq.respectTransparency false
 set_option warningAsError true
 

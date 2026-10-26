@@ -3,7 +3,6 @@ import Problems.YangMills.QuantumOutputRecovery
 import Problems.YangMills.ContactAnomalyTransport
 import Problems.YangMills.PartialDiagonalContact
 
--- Compatibility settings for the Lean 4.31 port of the reviewed source.
 set_option backward.isDefEq.respectTransparency false
 set_option warningAsError true
 

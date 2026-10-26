@@ -5,7 +5,6 @@ import Problems.YangMills.ProbeCalculus
 import Problems.YangMills.CubicProbeValues
 import Problems.YangMills.QuarticProbeValues
 
--- Compatibility settings for the Lean 4.31 port of the reviewed source.
 set_option backward.isDefEq.respectTransparency false
 set_option warningAsError true
 set_option synthInstance.maxHeartbeats 200000

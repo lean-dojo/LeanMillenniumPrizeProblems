@@ -1,7 +1,6 @@
 import Mathlib.Geometry.Manifold.GroupLieAlgebra
 import Mathlib.Algebra.Lie.Semisimple.Defs
 
--- Compatibility settings for the Lean 4.31 port of the reviewed source.
 set_option backward.isDefEq.respectTransparency false
 set_option warningAsError true
 

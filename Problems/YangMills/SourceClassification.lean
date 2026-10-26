@@ -12,7 +12,6 @@ import Problems.YangMills.InvariantJetPolynomials
 import Problems.YangMills.Ultraviolet
 import Problems.YangMills.YangMillsSpecification
 
--- Compatibility settings for the Lean 4.31 port of the reviewed source.
 set_option backward.isDefEq.respectTransparency false
 set_option warningAsError true
 
@@ -147,8 +146,7 @@ def interpretiveScope : List String :=
     "stress-energy tensor and prescribed OPE singularities",
     "formal adequacy of chosen axioms against the cited standards" ]
 
-/-- Compatibility registry name retained for compatibility; it denotes interpretive
-provenance, NOT unresolved readiness findings. See interpretiveScope. -/
+/-- Interpretive provenance, not unresolved readiness findings. See `interpretiveScope`. -/
 abbrev interpretationStillNeeded : List String := interpretiveScope
 
 /-- Verify existence of tagged declarations, not the physical fidelity of

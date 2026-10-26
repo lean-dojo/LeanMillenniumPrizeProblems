@@ -4,7 +4,6 @@ import Mathlib.RingTheory.TensorProduct.Basic
 import Mathlib.Algebra.MvPolynomial.PDeriv
 import Mathlib.Algebra.BigOperators.Finprod
 
--- Compatibility settings for the Lean 4.31 port of the reviewed source.
 set_option backward.isDefEq.respectTransparency false
 set_option warningAsError true
 
