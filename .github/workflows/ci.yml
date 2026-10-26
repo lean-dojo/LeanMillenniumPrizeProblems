@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, ym]
   pull_request:
 
 jobs:
@@ -19,3 +19,29 @@ jobs:
 
       - name: Verify the local copies of the Clay PDFs
         run: python3 scripts/clay_refs.py verify
+
+  yang-mills-verification:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check the imported source snapshot
+        run: python3 scripts/yang_mills.py integrity
+      - name: Test the integration runner
+        run: python3 -m unittest discover -s scripts -p test_yang_mills.py
+      - name: Build the pinned Yang–Mills project
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: verification/yang-mills
+          use-mathlib-cache: true
+      - name: Run proof-admission regressions and specification verification
+        run: python3 scripts/yang_mills.py check --report verification-report.json
+      - name: Upload the specification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yang-mills-verification
+          path: verification-report.json
+          if-no-files-found: warn

@@ -20,6 +20,8 @@ tmp/
 
 # Cache files
 .cache/
+__pycache__/
+verification-report.json
 
 # Reference PDFs are stored under `Problems/**/references/`.
 *.pdf.sha256

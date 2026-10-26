@@ -19,6 +19,18 @@ python3 scripts/clay_refs.py verify
 The second command checks the Lean development. The third verifies the local copies of the official
 Clay PDFs. The same three steps run in CI on every push and pull request.
 
+The `ym` branch also includes the full proposed Yang–Mills specification and proof-admission
+checks imported from `alxwest/ym-lean`. It uses a separate pinned Lean 4.25 project:
+
+```bash
+(cd verification/yang-mills && lake exe cache get)
+python3 scripts/yang_mills.py check --report verification-report.json
+```
+
+See the [integration guide](verification/README.md) for the imported revision, verification scope
+and future proof-submission commands. A dedicated CI job runs these checks. This does not promote
+the older `Problems/YangMills` sketch to a valid target or provide an existence proof.
+
 ## The seven problems
 
 | Problem | Lean file | Propositions that count as a solution | Status |
@@ -116,6 +128,8 @@ targets. A regression witness is expected to stop compiling when the statement i
 | `Tests/` | Compiled sanity checks and regression witnesses |
 | `scripts/clay_refs.py` | Downloads or verifies the Clay PDFs |
 | `.github/workflows/ci.yml` | Continuous integration: build and PDF verification |
+| `verification/yang-mills/` | Pinned proposed Yang–Mills specification, supporting proofs and upstream verifier |
+| `scripts/yang_mills.py` | Root-level entry point for imported-source integrity and Yang–Mills verification |
 
 ## History of statement fixes
 
