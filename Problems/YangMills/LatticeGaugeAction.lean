@@ -15,6 +15,10 @@ weight are mathematically defined and gauge invariant.
 This layer deliberately does not choose a preferred representation/character,
 define a Yang--Mills continuum limit or claim the resulting lattice measure
 equals a quantum field theory. Those are essential missing proof obligations.
+
+These definitions may be replaced by the official Physlib lattice-QFT APIs
+when its roadmap implements gauge-invariant lattice actions and measures.
+A replacement must preserve the class-function generality used here.
 -/
 
 noncomputable section

@@ -37,6 +37,22 @@ namespace Tests.YangMills
 #guard_msgs (whitespace := lax) in
 #print axioms YangMills.hasPositiveFiniteMass_iff
 
+/-- info: 'YangMills.DenselyDefinedOperator.inResolvent_iff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms YangMills.DenselyDefinedOperator.inResolvent_iff
+
+/-- info: 'YangMills.DenselyDefinedOperator.isSelfAdjoint_iff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms YangMills.DenselyDefinedOperator.isSelfAdjoint_iff
+
+/-- info: 'YangMills.DenselyDefinedOperator.eigenvalue_mem_spectrum' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms YangMills.DenselyDefinedOperator.eigenvalue_mem_spectrum
+
+/-- info: 'YangMills.DenselyDefinedOperator.spectrum_real' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms YangMills.DenselyDefinedOperator.spectrum_real
+
 /-! ## The entry point preserves the specification and its universe parameter -/
 
 example : ClayYangMills.{u} = YangMillsExistenceAndMassGap.{u} := rfl
@@ -69,5 +85,29 @@ example (σ : Set ℝ) (h : HasPositiveFiniteMass σ) : ∃ E ∈ σ, 0 < E :=
 
 example (σ : Set ℝ) (h : HasPositiveFiniteMass σ) : 0 < mass σ :=
   mass_pos σ h
+
+/-! ## The Physlib operator adapter preserves the spectrum and excludes nonreal energies -/
+
+example {H : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+    (A : DenselyDefinedOperator H) : A.spectrum = A.toLinearPMap.spectrum := rfl
+
+example {H : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+    (A : DenselyDefinedOperator H) (h : A.IsSelfAdjoint) {z : ℂ}
+    (hz : z ∈ A.spectrum) : z.im = 0 := by
+  obtain ⟨r, rfl⟩ := A.spectrum_real h hz
+  rfl
+
+/-! A zero Hamiltonian on the whole space still has every nonzero real energy
+in its resolvent, so the change of library cannot create a positive finite mass. -/
+
+example {H : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+    (A : DenselyDefinedOperator H) (hdom : ∀ v : H, v ∈ A.domain)
+    (hzero : ∀ v : A.domain, A.toLinearMap v = 0) :
+    ¬ HasPositiveFiniteMass A.realSpectrum := by
+  apply no_finite_mass_without_positive_energy
+  intro E hE
+  by_contra h
+  have hEpos : 0 < E := lt_of_not_ge h
+  exact hE (A.zero_inResolvent hdom hzero E (by exact_mod_cast ne_of_gt hEpos))
 
 end Tests.YangMills

@@ -23,6 +23,14 @@ The proposed Yang–Mills specification uses Lean 4.31.0 and Mathlib v4.31.0. It
 with `Millennium.lean` as the entry point. Independent source review remains
 pending; no existence proof is included.
 
+The operator resolvent and spectrum use the official Physlib library, pinned to
+`v4.31.0`. Adapter theorems relate them to the local bounded-inverse and
+adjoint-graph conditions. Other local foundations may be replaced by official
+Physlib APIs as its [roadmap](https://github.com/leanprover-community/physlib/blob/master/Physlib/LatticeQFT/API-map.md)
+and related development supply the required results. Each replacement must
+preserve the existing definitions' mathematical meaning; roadmap completion
+does not automatically establish that equivalence.
+
 ## The seven problems
 
 | Problem | Lean file | Propositions that count as a solution | Status |

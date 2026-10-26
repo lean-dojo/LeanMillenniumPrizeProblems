@@ -9,6 +9,9 @@ set_option warningAsError true
 
 The norm used for Schwartz functions is the ordinary finite-dimensional norm.
 Causality uses the Minkowski form (+---), not that norm.
+
+The spacetime and Lorentz foundations may be replaced by the official Physlib
+APIs after coordinate, future-cone and topology equivalences are established.
 -/
 
 noncomputable section

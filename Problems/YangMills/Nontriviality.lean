@@ -46,6 +46,7 @@ theorem zero_inResolvent (A : DenselyDefinedOperator H)
     (hdom : ∀ v : H, v ∈ A.domain)
     (hzero : ∀ v : A.domain, A.toLinearMap v = 0)
     (z : ℂ) (hz : z ≠ 0) : A.InResolvent z := by
+  rw [inResolvent_iff]
   refine ⟨(-z⁻¹) • ContinuousLinearMap.id ℂ H, fun v => hdom _, ?_, ?_⟩
   · intro v
     simp [hzero, smul_smul, hz]

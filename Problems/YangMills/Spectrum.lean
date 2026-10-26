@@ -11,6 +11,10 @@ Here `σ` is intended to be the **full real spectrum** of the self-adjoint
 Hamiltonian, including continuous spectrum, not just its eigenvalues.
 `QFT/Operator.lean` defines this set from the resolvent of an actual operator;
 `QFT/Wightman.lean` ties that operator to time translations.
+
+The positive finite mass condition remains local. It may be replaced by an
+official Physlib mass-gap API when the relevant roadmap work is implemented
+and the exclusion of vacuum-only spectra is proved equivalent.
 -/
 
 namespace YangMills

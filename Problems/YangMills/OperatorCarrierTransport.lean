@@ -71,6 +71,7 @@ theorem operator_selfAdjoint (e : K ≃ₗᵢ[ℂ] H) (A : DenselyDefinedOperato
 /-- Both bounded inverse laws and the range-in-domain condition transport. -/
 theorem operator_resolvent (e : K ≃ₗᵢ[ℂ] H) (A : DenselyDefinedOperator H) (z : ℂ)
     (h : A.InResolvent z) : (operator e A).InResolvent z := by
+  rw [DenselyDefinedOperator.inResolvent_iff] at h ⊢
   obtain ⟨R,hR,hr,hl⟩ := h
   let R' := e.symm.toContinuousLinearEquiv.toContinuousLinearMap.comp
     (R.comp e.toContinuousLinearEquiv.toContinuousLinearMap)
@@ -94,7 +95,8 @@ theorem operator_resolvent (e : K ≃ₗᵢ[ℂ] H) (A : DenselyDefinedOperator 
 theorem operator_resolvent_iff (e : K ≃ₗᵢ[ℂ] H) (A : DenselyDefinedOperator H) (z : ℂ) :
     (operator e A).InResolvent z ↔ A.InResolvent z := by
   constructor
-  · rintro ⟨R,hR,hr,hl⟩
+  · rw [DenselyDefinedOperator.inResolvent_iff, DenselyDefinedOperator.inResolvent_iff]
+    rintro ⟨R,hR,hr,hl⟩
     let R' := e.toContinuousLinearEquiv.toContinuousLinearMap.comp
       (R.comp e.symm.toContinuousLinearEquiv.toContinuousLinearMap)
     have hR' (x : H) : R' x ∈ A.domain := hR (e.symm x)

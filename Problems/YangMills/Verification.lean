@@ -314,6 +314,9 @@ to the QFT target. No existence proof is asserted here.
 #audit_axioms YangMills.PoincareTransform.act_identity
 #audit_axioms YangMills.PoincareTransform.act_compose
 #audit_axioms YangMills.PoincareTransform.inverseAct_act
+#audit_axioms YangMills.DenselyDefinedOperator.inResolvent_iff
+#audit_axioms YangMills.DenselyDefinedOperator.isSelfAdjoint_iff
+#audit_axioms YangMills.DenselyDefinedOperator.spectrum_real
 #audit_axioms YangMills.DenselyDefinedOperator.eigenvalue_mem_spectrum
 #audit_axioms YangMills.WightmanAxioms.vacuum_mem_spectrum
 #audit_axioms YangMills.mass_pos

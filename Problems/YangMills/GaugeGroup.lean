@@ -11,6 +11,9 @@ The group has an actual finite-dimensional real smooth manifold structure.
 Simplicity means simplicity of its tangent Lie algebra, not simplicity as
 an abstract group. Finite central subgroups are therefore allowed.
 We use the connected compact Lie group convention.
+
+This gauge-group interface may be replaced by an official Physlib interface
+when one covers all compact connected simple Lie groups with the same hypotheses.
 -/
 
 noncomputable section

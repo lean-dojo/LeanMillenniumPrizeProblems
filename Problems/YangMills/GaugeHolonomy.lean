@@ -18,6 +18,10 @@ observables or prove the mass gap. The invariants are non-local lattice
 observables, whereas the Jaffe–Witten statement also demands renormalized
 local curvature observables. These definitions provide a canonical
 group-specific algebraic testbed, not a Clay certification shortcut.
+
+These definitions may be replaced by the official Physlib lattice-QFT APIs
+when its roadmap implements link variables, holonomy and Wilson loops, after
+checking that the gauge action and generality agree.
 -/
 
 noncomputable section

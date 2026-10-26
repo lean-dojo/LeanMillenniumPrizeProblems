@@ -18,6 +18,10 @@ The spectral condition is expressed distributionally for translations, with
 Fourier kernel exp(-i p·a) and convention U(a) = exp(i P·a).
 
 This is a QFT specification, not yet the Yang–Mills identification of §4.
+
+These local QFT obligations may be replaced by official Physlib APIs if its
+development supplies equivalent Wightman and spectral conditions. Completion
+of related roadmap items alone is not a proof of equivalence.
 -/
 
 noncomputable section
