@@ -19,17 +19,9 @@ python3 scripts/clay_refs.py verify
 The second command checks the Lean development. The third verifies the local copies of the official
 Clay PDFs. The same three steps run in CI on every push and pull request.
 
-The `ym` branch also includes the full proposed Yang–Mills specification and proof-admission
-checks imported from `alxwest/ym-lean`. It uses a separate pinned Lean 4.25 project:
-
-```bash
-(cd verification/yang-mills && lake exe cache get)
-python3 scripts/yang_mills.py check --report verification-report.json
-```
-
-See the [integration guide](verification/README.md) for the imported revision, verification scope
-and future proof-submission commands. A dedicated CI job runs these checks. This does not promote
-the older `Problems/YangMills` sketch to a valid target or provide an existence proof.
+The proposed Yang–Mills specification uses Lean 4.31.0 and Mathlib v4.31.0. Its Lean sources live in `Problems/YangMills/`,
+with `Millennium.lean` as the entry point. Independent source review remains
+pending; no existence proof is included.
 
 ## The seven problems
 
@@ -41,7 +33,7 @@ the older `Problems/YangMills` sketch to a valid target or provide an existence 
 | Birch and Swinnerton-Dyer | `Problems/BirchSwinnertonDyer/Millennium.lean` | `MillenniumBirchSwinnertonDyer.ClayBirchSwinnertonDyer` | Open |
 | Poincaré Conjecture | `Problems/Poincare/Millennium.lean` | `MillenniumPoincare.ClayPoincareConjecture` | Solved by Perelman; Lean proof not included |
 | Hodge Conjecture | `Problems/Hodge/Millennium.lean` | none | Statement incomplete, not a valid target (see below) |
-| Yang–Mills existence and mass gap | `Problems/YangMills/Millennium.lean` | none | Statement incomplete, not a valid target (see below) |
+| Yang–Mills existence and mass gap | `Problems/YangMills/Millennium.lean` | Proposed: `MillenniumYangMills.ClayYangMills.{u}` | Proposed specification; independent review pending |
 
 `Problems/Registry.lean` records the same information as checked Lean metadata, including the
 status of each statement.
@@ -60,15 +52,18 @@ standard axioms (`propext`, `Classical.choice`, `Quot.sound`; check with `#print
   case analysis. Both facts are compiled in `Tests/AggregateTargets.lean`, and the Navier–Stokes
   disjunction is proved outright in `Tests/NavierStokes/AggregateIsTrivial.lean` (zero force plus
   the scaling symmetry of the equations, no fluid dynamics).
-- **Hodge and Yang–Mills.** Not valid targets until the statements are rewritten; see the next
-  section.
+- **Hodge.** Not a valid target until the statement is rewritten; see below.
+- **Yang–Mills.** Prove the universe-polymorphic proposition
+  `YangMills.YangMillsExistenceAndMassGap.{u}`.
+  `MillenniumYangMills.ClayYangMills.{u}` is a definitional alias. A proof establishes
+  the proposed statement; source fidelity remains a separate review question.
 
 ## Known incomplete statements
 
 A review in September 2026 (with an independent contribution by Kevin Buzzard, PR #9) found that
 two of the formal statements are interface sketches whose data are not pinned down by the stated
-properties. Both files carry a warning at the top, both are marked `statement_incomplete` in the
-registry, and their former `sorry` placeholders have been removed.
+properties. Their former `sorry` placeholders were removed. Hodge remains
+`statement_incomplete`; Yang–Mills now uses a replacement with `proposed_statement` status.
 
 - **Hodge.** Every `SmoothProjectiveVariety ℂ` in the repository has no complex points, because
   `points` must be in bijection with the plain `Scheme` hom-set `Spec ℂ ⟶ X` and also inject into
@@ -78,16 +73,8 @@ registry, and their former `sorry` placeholders have been removed.
   false as soon as the first defect were repaired (`Tests/Hodge/CycleClassUnconstrained.lean`).
   A faithful statement needs the analytic topology on `X(ℂ)`, a defined Hodge decomposition and
   cycle-class map, and the rational–complex comparison isomorphism, none of which exist in Mathlib.
-- **Yang–Mills.** The quantum-field-theory data are not tied to Yang–Mills theory or to
-  relativity: the gauge field stores connection and curvature independently, the Lie algebra has
-  no bracket, the Poincaré group is an arbitrary group unrelated to the Hamiltonian, and the
-  "unbounded" physical Hamiltonian is tied to the spectrum of a bounded operator. The existence
-  statement can therefore be satisfied by a two-dimensional toy model. (Until September 2026 the
-  vacuum-uniqueness axiom was also contradictory, which made the theory structure uninhabited;
-  that slip is fixed.)
 
-Contributions that replace these sketches with faithful statements are very welcome; they are
-substantial projects, not patches.
+Contributions that repair incomplete statements or review proposed formalizations are welcome.
 
 ## Formalization scope
 
@@ -105,7 +92,9 @@ interfaces for mathematics that is not yet available directly in Mathlib:
   rank.
 - Riemann is equivalent to Mathlib's `RiemannHypothesis`; Poincaré is equivalent to the shape of
   Mathlib's `proof_wanted` statement.
-- Hodge and Yang–Mills are axiomatic sketches, see above.
+- Hodge remains an axiomatic sketch. Yang–Mills now binds the QFT, observables,
+  perturbative matching, stress tensor and mass gap through `FilteredGeneratedCandidate`;
+  its source fidelity has not been independently validated.
 
 The detailed choices and related declarations are listed in `Problems/Registry.lean` and documented
 inside the corresponding Lean files.
@@ -128,10 +117,11 @@ targets. A regression witness is expected to stop compiling when the statement i
 | `Tests/` | Compiled sanity checks and regression witnesses |
 | `scripts/clay_refs.py` | Downloads or verifies the Clay PDFs |
 | `.github/workflows/ci.yml` | Continuous integration: build and PDF verification |
-| `verification/yang-mills/` | Pinned proposed Yang–Mills specification, supporting proofs and upstream verifier |
-| `scripts/yang_mills.py` | Root-level entry point for imported-source integrity and Yang–Mills verification |
 
 ## History of statement fixes
+
+- 2026-10: Yang–Mills replaced by the proposed specification, ported to Lean
+  4.31.0; all Lean sources live in `Problems/YangMills`, with `Millennium.lean` as the entry point.
 
 - 2026-04: Navier–Stokes vacuous-domain loophole closed after issue #4.
 - 2026-06: Navier–Stokes aggregate disjunction removed after issue #5 (it was reintroduced in

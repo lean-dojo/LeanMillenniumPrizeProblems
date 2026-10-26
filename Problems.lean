@@ -8,10 +8,7 @@ import Problems.Hodge.Millennium
 import Problems.Poincare.Millennium
 import Problems.BirchSwinnertonDyer.RankSupport
 import Problems.BirchSwinnertonDyer.Millennium
-import Problems.YangMills.Quantum
 import Problems.YangMills.Millennium
-import Problems.YangMills.HamiltonianSpectrum
-import Problems.YangMills.LorentzCovariance
 import Problems.Registry
 
 /-!

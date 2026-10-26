@@ -1,0 +1,704 @@
+import Problems.YangMills.CanonicalHighJetAdequacy
+import Problems.YangMills.CanonicalOversubtractionUniqueness
+import Problems.YangMills.ConservingFlowRestriction
+import Problems.YangMills.ConservingJetTransport
+import Problems.YangMills.ConservingNormalizationFlow
+import Problems.YangMills.ConservingNormalizationRegularity
+import Problems.YangMills.InsertionExtractionCongruence
+import Problems.YangMills.InsertionScalarConvolution
+import Problems.YangMills.IntegratedPointwiseComparison
+import Problems.YangMills.IntegratedPointwiseMuJets
+import Problems.YangMills.IntegratedSourceNormalization
+import Problems.YangMills.LocalVertexExternalCovariance
+import Problems.YangMills.MomentumConservationProjection
+import Problems.YangMills.PointwiseNormalizationFlow
+import Problems.YangMills.PointwiseNormalizationJetComparison
+import Problems.YangMills.PointwiseNormalizationRegularity
+import Problems.YangMills.PointwiseNormalizationUVJets
+import Problems.YangMills.SourceCovarianceOrder
+import Problems.YangMills.YangMillsSpecification
+import Problems.YangMills.AnchoredCoordinateDeterminacy
+import Problems.YangMills.CanonicalCornerApplication
+import Problems.YangMills.CanonicalLinearInsertionUniqueness
+import Problems.YangMills.CanonicalProjectorDeterminacy
+import Problems.YangMills.FilteredTaylorJets
+import Problems.YangMills.FlatMomentumCoordinates
+import Problems.YangMills.FourierTaylorActualAssignment
+import Problems.YangMills.FourierTaylorIndexCast
+import Problems.YangMills.FourierTaylorUniformEnumeration
+import Problems.YangMills.FourierTaylorUniformSource
+import Problems.YangMills.GeneratedStressFieldTransport
+import Problems.YangMills.IntegratedTaylorJetRecovery
+import Problems.YangMills.LocalVertexAmplitudePolarization
+import Problems.YangMills.MomentumJetIdeal
+import Problems.YangMills.MultiindexMomentumDirections
+import Problems.YangMills.CanonicalCornerCombinatorics
+import Problems.YangMills.CanonicalJetExtraction
+import Problems.YangMills.CanonicalProjectorCovariance
+import Problems.YangMills.CanonicalProjectorDirections
+import Problems.YangMills.CanonicalProjectorEvaluation
+import Problems.YangMills.CanonicalProjectorSlots
+import Problems.YangMills.CenteredTraceAnomaly
+import Problems.YangMills.CoincidentOddJet
+import Problems.YangMills.FourierTaylorAssignedPhase
+import Problems.YangMills.FourierTaylorBuckets
+import Problems.YangMills.FourierTaylorCoordinates
+import Problems.YangMills.FourierTaylorEnumeration
+import Problems.YangMills.FourierTaylorFieldSum
+import Problems.YangMills.FourierTaylorPermutationBlock
+import Problems.YangMills.FourierTaylorRadial
+import Problems.YangMills.FourierTaylorReducedCoordinates
+import Problems.YangMills.FourierTaylorSigns
+import Problems.YangMills.IntegratedVacuumSubtraction
+import Problems.YangMills.JetListPermutation
+import Problems.YangMills.LocalVertexPermutation
+import Problems.YangMills.LocalVertexPolarization
+import Problems.YangMills.LowProjectorAdequacy
+import Problems.YangMills.MomentumCoordinateRelabel
+import Problems.YangMills.MomentumJetTransport
+import Problems.YangMills.MonomialProjectorCoordinates
+import Problems.YangMills.OddTranspositionSign
+import Problems.YangMills.OperatorCarrierTransport
+import Problems.YangMills.OriginAlternatingJet
+import Problems.YangMills.RepeatedOddProjector
+import Problems.YangMills.SmallHilbertCarrier
+import Problems.YangMills.SmallWightmanPresentation
+import Problems.YangMills.SpectralMatrixSupport
+import Problems.YangMills.StressChargeProfileNormalization
+import Problems.YangMills.StressChargeProfileTransport
+import Problems.YangMills.WightmanAxiomCarrierTransport
+import Problems.YangMills.WightmanCarrierTransport
+import Problems.YangMills.CoordinateJetDeterminacy
+import Problems.YangMills.FixedFlowCanonicalDilation
+import Problems.YangMills.FullBVActualDifferentialComplex
+import Problems.YangMills.FullBVActualGaugeAntifieldNilpotency
+import Problems.YangMills.FullBVActualGhostAntifieldNilpotency
+import Problems.YangMills.FullBVActualNilpotency
+import Problems.YangMills.FullBVActualNoetherIdentity
+import Problems.YangMills.FullBVColorEvolution
+import Problems.YangMills.FullBVCovariantColorDerivative
+import Problems.YangMills.FullBVCovariantEvolution
+import Problems.YangMills.FullBVCurvatureEulerChannels
+import Problems.YangMills.FullBVCurvatureEulerEquation
+import Problems.YangMills.FullBVCurvatureGaugePartials
+import Problems.YangMills.FullBVOddCovariantEvolution
+import Problems.YangMills.FullBVTwoGhostPolynomialJacobi
+import Problems.YangMills.IntegratedMarginalUniqueness
+import Problems.YangMills.IntegratedNormalizationProjectors
+import Problems.YangMills.IntegratedPointwiseNormalization
+import Problems.YangMills.IntegratedWardFlow
+import Problems.YangMills.LinearInsertionTriangularity
+import Problems.YangMills.LinearInsertionUniqueness
+import Problems.YangMills.MomentumJetSymmetry
+import Problems.YangMills.ReducedLinearInsertionUniqueness
+import Problems.YangMills.ReducedTaylorDensity
+import Problems.YangMills.RegulatedOPEDilation
+import Problems.YangMills.UltravioletOPEDilation
+import Problems.YangMills.FiniteJetDeterminacy
+import Problems.YangMills.FixedFlowUniqueness
+import Problems.YangMills.FixedSystemDilation
+import Problems.YangMills.FlowBoundaryUniqueness
+import Problems.YangMills.FlowNormalizationDilation
+import Problems.YangMills.FlowScaleConstancy
+import Problems.YangMills.FlowTriangularity
+import Problems.YangMills.FullBVCompactGaugeAntifield
+import Problems.YangMills.FullBVCompactGhostAntifield
+import Problems.YangMills.FullBVCompactShiftedAntifield
+import Problems.YangMills.GraphRescaling
+import Problems.YangMills.GraphRescalingDifferential
+import Problems.YangMills.GraphRescalingZero
+import Problems.YangMills.InsertionBoundaryDilation
+import Problems.YangMills.InsertionContractionDilation
+import Problems.YangMills.InsertionEquationDilation
+import Problems.YangMills.InsertionFlowDilation
+import Problems.YangMills.InsertionProjectorWeights
+import Problems.YangMills.InsertionSourceDilation
+import Problems.YangMills.IntegratedMarginalFlow
+import Problems.YangMills.OversubtractionBoundaryDilation
+import Problems.YangMills.ReducedMomentumDeterminacy
+import Problems.YangMills.CanonicalEulerExact
+import Problems.YangMills.CanonicalJetEuler
+import Problems.YangMills.EssentialCouplingClass
+import Problems.YangMills.EssentialCouplingHomogeneity
+import Problems.YangMills.FilteredGeneratedCandidate
+import Problems.YangMills.FilteredQuantumRG
+import Problems.YangMills.FilteredQuantumRGReduction
+import Problems.YangMills.FiniteFlowDilation
+import Problems.YangMills.FullBVActualClassicalMasterEquation
+import Problems.YangMills.FullBVActualCurvatureCovariance
+import Problems.YangMills.FullBVActualMasterClassReduction
+import Problems.YangMills.FullBVActualMasterEulerConsequences
+import Problems.YangMills.FullBVActualQuarticColor
+import Problems.YangMills.FullBVBasicFieldSum
+import Problems.YangMills.FullBVBracketDescent
+import Problems.YangMills.FullBVClassicalSTParity
+import Problems.YangMills.FullBVColorPolynomialBracket
+import Problems.YangMills.FullBVCurvatureActionInvariance
+import Problems.YangMills.FullBVCurvatureJacobi
+import Problems.YangMills.FullBVCurvatureVariation
+import Problems.YangMills.FullBVEulerDivergence
+import Problems.YangMills.FullBVEulerParity
+import Problems.YangMills.FullBVGaugeFermion
+import Problems.YangMills.FullBVGaugeFermionNilpotency
+import Problems.YangMills.FullBVGaugeFixedAction
+import Problems.YangMills.FullBVGluonKineticDecomposition
+import Problems.YangMills.FullBVGradedDerivation
+import Problems.YangMills.FullBVHomogeneousCommutation
+import Problems.YangMills.FullBVIntegratedHamiltonian
+import Problems.YangMills.FullBVNilpotencyPromotion
+import Problems.YangMills.FullBVPartialTotalDerivative
+import Problems.YangMills.FullBVPhysicalActionInvariance
+import Problems.YangMills.FullBVPhysicalCurvatureSquared
+import Problems.YangMills.FullBVPhysicalGhostDecomposition
+import Problems.YangMills.FullBVPhysicalGluonExpansion
+import Problems.YangMills.FullBVSelfBracketSplit
+import Problems.YangMills.FullBVSourceCharacteristicIdentity
+import Problems.YangMills.FullBVSourceCharacteristicVariation
+import Problems.YangMills.QuantumSchemeObstruction
+import Problems.YangMills.VacuumCenteredTrace
+import Problems.YangMills.VacuumCenteredTraceMeaning
+import Problems.YangMills.IntrinsicFiltration
+import Problems.YangMills.GeneratedMixingFiltration
+import Problems.YangMills.FullBVPolynomialInduction
+import Problems.YangMills.FullBVTotalDerivativeAlgebra
+import Problems.YangMills.FullBVMultiDerivativeAlgebra
+import Problems.YangMills.FullBVTotalDerivativeParity
+import Problems.YangMills.FullBVEvolutionaryDerivation
+import Problems.YangMills.FullBVLocalIntegration
+import Problems.YangMills.FullBVBosonicEulerFormula
+import Problems.YangMills.FullBVActionParity
+import Problems.YangMills.FullBVPartialParity
+import Problems.YangMills.LegendreBackgroundBridge
+import Problems.YangMills.LegendreSplitTransport
+import Problems.YangMills.LegendreQuadraticGraded
+import Problems.YangMills.LegendreFlowAdapters
+import Problems.YangMills.ClassicalHomogeneousProjection
+import Problems.YangMills.ClassicalRecenter
+import Problems.YangMills.ClassicalHomogeneousDescent
+import Problems.YangMills.ClassicalFiniteSlices
+import Problems.YangMills.ClassicalGradedQuotient
+import Problems.YangMills.ClassicalFilteredBasis
+import Problems.YangMills.FullBVJetProducts
+import Problems.YangMills.FullBVGaugeLinearCancellation
+import Problems.YangMills.FullBVMixedJacobiContraction
+import Problems.YangMills.FullBVGaugeSquareExpansion
+import Problems.YangMills.FullBVActualGaugeNilpotency
+import Problems.YangMills.FullBVOrdinaryJetDerivation
+import Problems.YangMills.FullBVActualAuxiliaryNilpotency
+import Problems.YangMills.FullBVAntighostAntifield
+import Problems.YangMills.FullBVGhostAntifield
+import Problems.YangMills.LegendreSignFactorization
+import Problems.YangMills.LegendreSelectedTransport
+import Problems.YangMills.LegendreCompositionGraded
+import Problems.YangMills.QuantumLabelCohomology
+import Problems.YangMills.ClassicalDilation
+import Problems.YangMills.GeneratedGammaCohomology
+import Problems.YangMills.FullBVShiftedNilpotency
+import Problems.YangMills.FullBVPointProduct
+import Problems.YangMills.FullBVInteractingNilpotency
+import Problems.YangMills.FullBVColorJacobiContraction
+import Problems.YangMills.FullBVActualGhostNilpotency
+import Problems.YangMills.LegendreGradedness
+import Problems.YangMills.LegendreKoszul
+import Problems.YangMills.LegendreBlockTransport
+import Problems.YangMills.LegendreOddSign
+import Problems.YangMills.WightmanNPointContinuity
+import Problems.YangMills.WightmanVacuumKernels
+import Problems.YangMills.WightmanVacuumPositivity
+import Problems.YangMills.FilteredQuantumCohomology
+import Problems.YangMills.FullBVInteractingCoordinates
+import Problems.YangMills.LegendreIdentityCoefficients
+import Problems.YangMills.LegendreIdentityNormalization
+import Problems.YangMills.FullBVMasterQuadratic
+import Problems.YangMills.FullBVFreeCoordinates
+import Problems.YangMills.FullBVMasterEquations
+import Problems.YangMills.LegendreInsertionBridge
+import Problems.YangMills.LegendreInsertionPair
+import Problems.YangMills.QuantumMixingCoordinates
+import Problems.YangMills.GeneratedMixingMeaning
+import Problems.YangMills.SpectralKernelSchwartz
+import Problems.YangMills.GeneratedCandidate
+import Problems.YangMills.FiniteWardRestoration
+import Problems.YangMills.AmputatedLegendre
+import Problems.YangMills.CACSchemeTransport
+import Problems.YangMills.CohomologicalScaleInsertion
+import Problems.YangMills.InvariantBasisCoordinates
+import Problems.YangMills.GeneratedScaleNormalization
+import Problems.YangMills.VacuumWordContinuation
+import Problems.YangMills.GeneratedVacuumWordMatching
+import Problems.YangMills.GeneratedRenormalizedSector
+import Problems.YangMills.ConnectedInsertionFlow
+import Problems.YangMills.ConnectedWardContinuum
+import Problems.YangMills.MultiWardRestoration
+import Problems.YangMills.DistributionalCumulants
+import Problems.YangMills.PartialDiagonalSupport
+import Problems.YangMills.SeparatedWardIdentity
+import Problems.YangMills.GeneratedStressNormalization
+import Problems.YangMills.StressRenormalizationGroup
+import Problems.YangMills.CompositeRenormalizationExtraction
+import Problems.YangMills.PartitionContact
+import Problems.YangMills.LocalContactRenormalization
+import Problems.YangMills.JointCollisionScaling
+import Problems.YangMills.LocalWardFlowFamily
+import Problems.YangMills.LocalWardOPEStressBinding
+import Problems.YangMills.FieldParameterTransport
+import Problems.YangMills.InvariantPhysicalWords
+import Problems.YangMills.FullBV
+import Problems.YangMills.FullBVBridge
+import Problems.YangMills.FullBVLocalST
+import Problems.YangMills.RegulatedBVFlow
+import Problems.YangMills.RegulatedWardInsertion
+import Problems.YangMills.ClassicalPointContact
+import Problems.YangMills.CollisionScaling
+import Problems.YangMills.WardContinuum
+import Problems.YangMills.InsertionWardTransport
+import Problems.YangMills.QuantumObservableLift
+import Problems.YangMills.QuantumOutputRecovery
+import Problems.YangMills.LiftedCompositeExtraction
+import Problems.YangMills.ContactTaylorProjection
+import Problems.YangMills.ContactAnomalyTransport
+import Problems.YangMills.GeneratedEuclideanCoefficients
+import Problems.YangMills.GeneratedMultiMatching
+import Problems.YangMills.PartialDiagonalContact
+import Problems.YangMills.ActionProbeSupport
+import Problems.YangMills.KineticProbeValues
+import Problems.YangMills.ActionGhostAmplitude
+import Problems.YangMills.ProbeCalculus
+import Problems.YangMills.CubicProbeValues
+import Problems.YangMills.QuarticProbeValues
+import Problems.YangMills.ActionProbeNorms
+import Problems.YangMills.WardRenormalizationBinding
+import Problems.YangMills.WardActionCoordinates
+import Problems.YangMills.StressSymbols
+import Problems.YangMills.FormalRenormalization
+import Problems.YangMills.MultiOperatorProductExpansion
+import Problems.YangMills.MultiContact
+import Problems.YangMills.MultiWickRotation
+import Problems.YangMills.MultiRenormalizationGroup
+import Problems.YangMills.GradedAmplitude
+import Problems.YangMills.PerturbativeFlow
+import Problems.YangMills.CompositeExtraction
+import Problems.YangMills.OversubtractedFlow
+import Problems.YangMills.FreeWardExtraction
+import Problems.YangMills.BRST
+import Problems.YangMills.PerturbativeCoefficientLimits
+import Problems.YangMills.PhysicalOutputRecovery
+import Problems.YangMills.Renormalization
+import Problems.YangMills.RenormalizationGroup
+import Problems.YangMills.Classical
+import Problems.YangMills.SourceClassification
+import Problems.YangMills.Audit
+import Problems.YangMills.LocalObservables
+import Problems.YangMills.QuantumCorrelations
+import Problems.YangMills.GroupwiseNecessary
+import Problems.YangMills.PeriodicLattice4
+import Problems.YangMills.Nontriviality
+import Problems.YangMills.InvariantJetPolynomials
+import Problems.YangMills.Ultraviolet
+
+-- Compatibility settings for the Lean 4.31 port of the reviewed source.
+set_option backward.isDefEq.respectTransparency false
+set_option warningAsError true
+
+/-!
+# Dependency audit of the specification and its supporting lemmas
+
+This module is part of the default build. Auditing the target traverses its
+definitions, including the QFT obligations and operator spectrum. The classical
+and gauge definitions are audited separately because they are not yet connected
+to the QFT target. No existence proof is asserted here.
+-/
+
+#audit_axioms YangMills.CompactSimpleGaugeGroup
+#audit_axioms YangMills.Connection.euclideanAction
+#audit_axioms YangMills.QFTExistenceAndMassGap
+#audit_axioms YangMills.PoincareTransform.act_identity
+#audit_axioms YangMills.PoincareTransform.act_compose
+#audit_axioms YangMills.PoincareTransform.inverseAct_act
+#audit_axioms YangMills.DenselyDefinedOperator.eigenvalue_mem_spectrum
+#audit_axioms YangMills.WightmanAxioms.vacuum_mem_spectrum
+#audit_axioms YangMills.mass_pos
+#audit_axioms YangMills.isMassGap_iff
+#audit_axioms YangMills.gaps_bounded_of_positive_spectral_value
+#audit_axioms YangMills.no_finite_mass_without_positive_energy
+#audit_axioms YangMills.vacuum_only_has_no_finite_mass
+#audit_axioms YangMills.WightmanData.HasNonVacuumState
+#audit_axioms YangMills.WightmanData.HasFieldExcitation
+#audit_axioms YangMills.DenselyDefinedOperator.zero_inResolvent
+#audit_axioms YangMills.WightmanAxioms.hasFieldExcitation_iff
+#audit_axioms YangMills.WightmanAxioms.no_positive_spectrum_of_no_nonVacuumState
+#audit_axioms YangMills.GappedWightmanTheory.hasNonVacuumState
+#audit_axioms YangMills.GappedWightmanTheory.hasFieldExcitation
+
+-- Report the missing Clay-level obligations on every default build.
+-- All the `#audit_axioms` declarations above are definitions or local lemmas;
+-- none is a proof of a complete Yang--Mills existence theorem.
+#clay_certification_status
+
+-- Audited concrete fragments of the paper's source-level verification target.
+-- These are *definitions* of necessary structures, not Yang--Mills existence.
+#audit_axioms YangMills.CurvatureJet.evaluate
+#audit_axioms YangMills.CurvatureScalarPolynomial.evaluate
+#audit_axioms YangMills.CurvatureScalarPolynomial.add_in_filtration
+#audit_axioms YangMills.CurvatureScalarPolynomial.mul_in_filtration
+#audit_axioms YangMills.WightmanData.vacuumNPoint
+#audit_axioms YangMills.qft_exists_implies_groupwise_qft
+
+#audit_axioms YangMills.actionDensity_eq_curvaturePairs
+#audit_axioms YangMills.WightmanData.vacuumNPoint_nil_eq_one
+
+-- Genuine G-dependent lattice objects and negative controls for false identification.
+#audit_axioms YangMills.gaugeTransform_comp
+#audit_axioms YangMills.gaugeHolonomy_transform
+#audit_axioms YangMills.wilsonConjugacyClass_gauge_invariant
+#audit_axioms YangMills.squareGaugeLoop_holonomy
+#audit_axioms YangMills.finiteCentralPlaquetteAction_gauge_invariant
+#audit_axioms YangMills.finiteCentralBoltzmannWeight_gauge_invariant
+#audit_axioms YangMills.periodicShift_comm
+#audit_axioms YangMills.periodicFourClassAction_gauge_invariant
+#audit_axioms YangMills.periodicFourClassBoltzmann_gauge_invariant
+#audit_axioms YangMills.qft_exists_implies_unlinked_group_checks
+
+-- PDF clause provenance: declarations exist, but physical fidelity is reviewed separately.
+#audit_pdf_origins
+
+-- Direct Section 4 mathematical fragments are kernel-audited separately.
+#audit_axioms YangMills.PDFLiteral.FourDimensionalSpace
+#audit_axioms YangMills.PDFLiteral.HamiltonianKillsVacuum
+#audit_axioms YangMills.PDFLiteral.hamiltonianKillsVacuum_of_wightman
+#audit_axioms YangMills.PDFLiteral.HamiltonianSpectralFacts
+#audit_axioms YangMills.PDFLiteral.PositiveGap
+#audit_axioms YangMills.PDFLiteral.PositiveFiniteMass
+#audit_axioms YangMills.PDFLiteral.positiveGap_iff
+#audit_axioms YangMills.PDFLiteral.positiveFiniteMass_iff
+#audit_axioms YangMills.PDFLiteral.ForEveryCompactSimpleGroup
+#audit_axioms YangMills.PDFLiteral.forEveryCompactSimpleGroup_iff
+#audit_axioms YangMills.PDFLiteral.DirectSpectralClauses
+
+-- Supporting equivalence/domain work and central observable/UV fragments.
+#audit_axioms YangMills.hasPositiveFiniteMass_iff
+#audit_axioms YangMills.mass_le_positive_spectral_value
+#audit_axioms YangMills.mass_isMassGap
+#audit_axioms YangMills.WightmanAxioms.field_graph_limit_zero
+#audit_axioms YangMills.WightmanAxioms.hamiltonian_domain_unique
+#audit_axioms YangMills.WightmanAxioms.hamiltonian_action_unique
+#audit_axioms YangMills.CompactSimpleGaugeGroup.adjoint
+#audit_axioms YangMills.CurvatureJetPolynomial.invariantAlgebra
+#audit_axioms YangMills.CurvatureJetPolynomial.dimension_add
+#audit_axioms YangMills.CurvatureJetPolynomial.dimension_mul
+#audit_axioms YangMills.CurvatureJetPolynomial.onConnection_eq_of_covariant_jets
+#audit_axioms YangMills.dilateTest
+#audit_axioms YangMills.dilateTest_apply
+#audit_axioms YangMills.WightmanData.scaledVacuumNPoint
+#audit_axioms YangMills.WightmanData.TestwiseExpansion
+#audit_axioms YangMills.WightmanData.selfSelectedExpansion
+
+#audit_axioms YangMills.CompactSimpleGaugeGroup.adjoint_one
+#audit_axioms YangMills.CompactSimpleGaugeGroup.adjoint_mul
+#audit_axioms YangMills.CurvatureJetPolynomial.ConnectionObservable
+
+#audit_axioms YangMills.CurvatureJetPolynomial.transform_one
+#audit_axioms YangMills.CurvatureJetPolynomial.transform_mul
+#audit_axioms YangMills.CurvatureJetPolynomial.ConnectionObservable.evaluate
+#audit_axioms YangMills.CurvatureJetPolynomial.ConnectionObservable.HasDimensionAtMost
+#audit_axioms YangMills.CurvatureJetPolynomial.ConnectionObservable.finite_dimension
+#audit_axioms YangMills.CurvatureJetPolynomial.ConnectionObservable.monotone
+#audit_axioms YangMills.WightmanData.scaledVacuumNPoint_one
+
+-- Central renormalized correspondence, fixed perturbative anchor, and same-field OPE/RG.
+#audit_axioms YangMills.RenormalizedCompositeMap
+#audit_axioms YangMills.RenormalizedCompositeMap.Compatible
+#audit_axioms YangMills.RenormalizedCompositeMap.FiniteMixing
+#audit_axioms YangMills.intrinsicEngineeringDimension_le_iff
+#audit_axioms YangMills.Connection.poincarePullback
+#audit_axioms YangMills.classicalPoincareTransform_unique
+#audit_axioms YangMills.StressTensorData.Compatible
+#audit_axioms YangMills.StressTensorData.HasTraceAnomaly
+#audit_axioms YangMills.StressTensorData.not_zero_tensor_of_massGap
+#audit_axioms YangMills.Perturbative.density_expansion
+#audit_axioms YangMills.Perturbative.sourceDensity_eq_canonical
+#audit_axioms YangMills.Perturbative.canonicalDensity_eq_half_oldDensity
+#audit_axioms YangMills.Perturbative.bracket_coordinates
+#audit_axioms YangMills.Perturbative.betaTwoLoop
+#audit_axioms YangMills.Perturbative.bareCoefficient
+#audit_axioms YangMills.Perturbative.bare_normalization_identity
+#audit_axioms YangMills.Perturbative.bareNormalizedCoefficient_vacuum
+#audit_axioms YangMills.Perturbative.classicalInsertionPolynomial
+#audit_axioms YangMills.Perturbative.bareCompositeCoefficient
+#audit_axioms YangMills.Perturbative.LocalCounterterm.distribution
+#audit_axioms YangMills.OPE.PairKernels
+#audit_axioms YangMills.OPE.FilteredBasis
+#audit_axioms YangMills.OPE.WeakBasisExpansion
+#audit_axioms YangMills.RG.Frame
+#audit_axioms YangMills.RG.AllOrderMatch
+#audit_axioms YangMills.RG.ExhaustiveMatching
+#audit_axioms YangMills.RG.CoupledSectorConditions
+#audit_axioms YangMills.Wick.AnalyticContinuation
+#audit_axioms YangMills.Wick.LabelRotation
+
+-- Fixed graded flow/extraction and all-arity relations remain partial until Ward/cohomology completion.
+#audit_axioms YangMills.PerturbativeFlow.CoefficientFlowConditions
+#audit_axioms YangMills.PerturbativeFlow.CoupledInsertionFlowConditions
+#audit_axioms YangMills.PerturbativeFlow.regulatedPolynomialOPECoefficient
+#audit_axioms YangMills.PerturbativeFlow.mem_monomialsBelow_iff
+#audit_axioms YangMills.PerturbativeFlow.freeWardAmplitude
+#audit_axioms YangMills.PerturbativeFlow.PhysicalCohomologicalRecovery
+#audit_axioms YangMills.PerturbativeFlow.FixedFlowSystem.IsCoefficientLimit
+#audit_axioms YangMills.Perturbative.BRST.classicalBRST
+#audit_axioms YangMills.Perturbative.canonicalStressPolynomial
+#audit_axioms YangMills.Perturbative.evaluatePotential_stress
+#audit_axioms YangMills.FormalRG.unitSqrt_square
+#audit_axioms YangMills.FormalRG.IsBetaLimit
+#audit_axioms YangMills.FormalRG.IsGammaLimit
+#audit_axioms YangMills.OPE.WeakMultiExpansion
+#audit_axioms YangMills.OPE.ClusterCounterterm.matrixElement
+#audit_axioms YangMills.Wick.MultiAnalyticContinuation
+#audit_axioms YangMills.RG.CoupledMultiSectorConditions
+
+#audit_axioms YangMills.WardAction.normalizationSeries
+#audit_axioms YangMills.WardAction.PhysicalActionDecomposition
+
+-- Concrete BV, generated quantum dictionary, contact transport and same-field matching.
+#audit_axioms YangMills.FullBV.masterActionDensity
+#audit_axioms YangMills.FullBV.classicalLocalSTDensity
+#audit_axioms YangMills.FullBV.densityAmplitude_vertices
+#audit_axioms YangMills.FullBV.localST_monomial_positional
+#audit_axioms YangMills.PerturbativeFlow.bareActionWardDefect
+#audit_axioms YangMills.PerturbativeFlow.bareInsertionWardDefect
+#audit_axioms YangMills.PerturbativeFlow.classicalPointContact
+#audit_axioms YangMills.PerturbativeFlow.firstPairContactTest
+#audit_axioms YangMills.PerturbativeFlow.CoupledContactAnomalyTransportConditions
+#audit_axioms YangMills.PerturbativeFlow.QuantumObservableLift.Compatible
+#audit_axioms YangMills.PerturbativeFlow.QuantumPhysicalOutputRecovery
+#audit_axioms YangMills.PerturbativeFlow.GeneratedEuclideanData.Compatible
+#audit_axioms YangMills.PerturbativeFlow.GeneratedEuclideanData.Compatible.excluded_loop
+#audit_axioms YangMills.PerturbativeFlow.GeneratedMultiSectorConditions
+#audit_axioms YangMills.OPE.PartialScalingBounds
+#audit_axioms YangMills.WardAction.fixed_probeNondegenerate
+#audit_axioms YangMills.WardAction.PhysicalActionDecomposition.coordinates_fixed
+
+#audit_axioms YangMills.PerturbativeFlow.InvariantPhysicalNullIdentity
+
+-- Full contact, same-field scale family and generated stress/RG definitions.
+#audit_axioms YangMills.PerturbativeFlow.QuantumObservableLift.Compatible
+#audit_axioms YangMills.PerturbativeFlow.FullContactAnomalyFlowConditions
+#audit_axioms YangMills.PerturbativeFlow.ConnectedInsertionFlowConditions
+#audit_axioms YangMills.PerturbativeFlow.FullMultiWardRestoration
+#audit_axioms YangMills.PerturbativeFlow.DistributionalCumulantCompatibility
+#audit_axioms YangMills.PerturbativeFlow.firstPairContactTest_eq_zero
+#audit_axioms YangMills.PerturbativeFlow.FullMultiWardRestoration.separated_empty_external
+#audit_axioms YangMills.PerturbativeFlow.GeneratedStressNormalization
+#audit_axioms YangMills.PerturbativeFlow.StressSourceDictionary.SameStressRG
+#audit_axioms YangMills.CompositeRG.SameTheoryCompositeNormalization
+#audit_axioms YangMills.CompositeRG.IsFullBareGammaLimit
+#audit_axioms YangMills.PerturbativeFlow.partitionJointEmbedding_norm
+#audit_axioms YangMills.PerturbativeFlow.LocalContactExtensionCompatible
+#audit_axioms YangMills.PerturbativeFlow.JointPartialScalingBounds
+#audit_axioms YangMills.PerturbativeFlow.LocalWardFlowFamily
+#audit_axioms YangMills.PerturbativeFlow.LocalWardOPEStressConditions
+#audit_axioms YangMills.PerturbativeFlow.localWardOPEStress_implies_generatedMulti
+#audit_axioms YangMills.FieldParameter.pulledMasterAmplitude_eq
+
+-- Computed CS normalization and same-field short-distance words.
+#audit_axioms YangMills.FiniteWard.RestorationTower.diagonal_eq
+#audit_axioms YangMills.FiniteWard.bareActionWardDefect_add
+#audit_axioms YangMills.FiniteWard.FilteredCoefficientFlowConditions
+#audit_axioms YangMills.Legendre.actualGamma
+#audit_axioms YangMills.Legendre.AmputatedLegendreEquations
+#audit_axioms YangMills.Legendre.CACSchemeTransportConditions
+#audit_axioms YangMills.ScaleInsertion.ActionCSConditions
+#audit_axioms YangMills.ScaleInsertion.CompositeCSConditions
+#audit_axioms YangMills.OPE.FilteredBasis.classicalCoordinates_meaning
+#audit_axioms YangMills.PerturbativeFlow.GeneratedScaleNormalization
+#audit_axioms YangMills.PerturbativeFlow.GeneratedScaleNormalization.gamma_excluded_loop
+#audit_axioms YangMills.PhysicalWords.vacuumWordDistribution_tensor_word
+#audit_axioms YangMills.PhysicalWords.GeneratedVacuumWordBridge
+#audit_axioms YangMills.PerturbativeFlow.GeneratedRenormalizedSector
+#audit_axioms YangMills.PerturbativeFlow.GeneratedRenormalizedSector.localWardOPEStress
+
+#audit_axioms YangMills.ProposedGeneratedSpecification
+#audit_axioms YangMills.GeneratedCandidate.stress_nonzero
+
+-- Same-action identities and the actual quantum meaning of mixing.
+#audit_axioms YangMills.FullBV.freeActionDensity_eq_quadratic
+#audit_axioms YangMills.FullBV.rightEuler_freeActionDensity
+#audit_axioms YangMills.FullBV.freeLocalST_square_jet
+#audit_axioms YangMills.LegendreInsertionBridge.insertion_inverse_unique
+#audit_axioms YangMills.LegendreInsertionBridge.insertion_inverse_of_free_identity
+#audit_axioms YangMills.LegendreInsertionBridge.insertion_inverse_leading_pair
+#audit_axioms YangMills.PerturbativeFlow.QuantumObservableLift.Compatible.reconstructedLabel_class
+#audit_axioms YangMills.PerturbativeFlow.QuantumObservableLift.Compatible.reconstructedLabel_coefficient
+#audit_axioms YangMills.PerturbativeFlow.GeneratedScaleNormalization.gammaLoop_coordinates
+#audit_axioms YangMills.PerturbativeFlow.GeneratedScaleNormalization.mixingLabel_quantum_class
+#audit_axioms YangMills.RenormalizedCompositeMap.Compatible.coordinates_field
+#audit_axioms YangMills.spectralKernel_eq_fourier
+#audit_axioms YangMills.spectralKernel_decay
+#audit_axioms YangMills.spectral_integrable_of_strongly_continuous
+
+#audit_axioms YangMills.LegendreInsertionBridge.meanFieldCompose_identity_of_graded
+#audit_axioms YangMills.LegendreInsertionBridge.insertion_inverse_of_graded
+#audit_axioms YangMills.LegendreInsertionBridge.insertion_inverse_unique_of_graded
+
+#audit_axioms YangMills.FullBV.master_basic_characteristic
+#audit_axioms YangMills.FullBV.master_characteristic_auxiliary
+
+-- Actual interacting BV, graded inversion and quantum/physical kernels.
+#audit_axioms YangMills.FullBV.classicalLocalST_square_antighost
+#audit_axioms YangMills.FullBV.localST_mul_jet
+#audit_axioms YangMills.FullBV.classicalLocalST_square_ghost
+#audit_axioms YangMills.FullBV.master_characteristic_antiauxiliary
+#audit_axioms YangMills.LegendreInsertionBridge.flowJet_graded
+#audit_axioms YangMills.LegendreInsertionBridge.meanFieldRoot_graded
+#audit_axioms YangMills.LegendreInsertionBridge.permutationSign_adjacent
+#audit_axioms YangMills.LegendreInsertionBridge.blockIndexPermutation_spec
+#audit_axioms YangMills.LegendreInsertionBridge.permutationSign_eq_oddSign
+#audit_axioms YangMills.WightmanData.vacuumMultilinear_separately_continuous
+#audit_axioms YangMills.WightmanVacuumKernels.kernel_unique
+#audit_axioms YangMills.WightmanVacuumKernels.actual_word_on_list
+#audit_axioms YangMills.WightmanData.vacuumNPoint_borchers_positive
+#audit_axioms YangMills.PerturbativeFlow.FilteredQuantum.differential_comp_zero
+#audit_axioms YangMills.PerturbativeFlow.FilteredQuantum.range_le_ker
+#audit_axioms YangMills.PerturbativeFlow.FilteredQuantum.H0
+#audit_axioms YangMills.PerturbativeFlow.FilteredQuantum.boundaryCocycle_class_zero
+#audit_axioms YangMills.PerturbativeFlow.FilteredQuantum.liftVector_closed
+#audit_axioms YangMills.PerturbativeFlow.FilteredQuantum.liftClass
+
+-- Actual all-order source inversion and same-action, same-Q bridges.
+#audit_axioms YangMills.FullBV.classicalLocalST_square_gauge
+#audit_axioms YangMills.FullBV.classicalLocalST_square_auxiliary
+#audit_axioms YangMills.FullBV.classicalLocalST_square_basic
+#audit_axioms YangMills.FullBV.classicalLocalST_square_antiantighost
+#audit_axioms YangMills.FullBV.classicalLocalST_square_antiauxiliary
+#audit_axioms YangMills.FullBV.master_characteristic_antighostSource
+#audit_axioms YangMills.LegendreInsertionBridge.partition_sign_factorization
+#audit_axioms YangMills.LegendreInsertionBridge.actual_partition_sign_factorization
+#audit_axioms YangMills.LegendreInsertionBridge.meanFieldCompose_graded
+#audit_axioms YangMills.LegendreInsertionBridge.insertion_inverse_from_source
+#audit_axioms YangMills.LegendreInsertionBridge.directionalLegendreCompatible_from_source
+#audit_axioms YangMills.PerturbativeFlow.FilteredQuantum.liftClass_eq_of_sameOnConnections
+#audit_axioms YangMills.PerturbativeFlow.FilteredQuantum.liftClass_coordinates
+#audit_axioms YangMills.PerturbativeFlow.GeneratedScaleNormalization.gammaColumn_class
+#audit_axioms YangMills.CurvatureJet.evaluate_dilate
+#audit_axioms YangMills.CurvatureJetPolynomial.EngineeringHomogeneous.onConnection_dilate
+
+-- Actual classical basis, local BV descent and same-S Legendre bridges.
+#audit_axioms YangMills.PerturbativeFlow.GeneratedScaleNormalization.mixingLabel_dimension
+#audit_axioms YangMills.PerturbativeFlow.GeneratedScaleNormalization.gammaLoop_filtered
+#audit_axioms YangMills.PerturbativeFlow.GeneratedScaleNormalization.gammaSeries_above_dimension
+#audit_axioms YangMills.FullBV.polynomial_induction
+#audit_axioms YangMills.FullBV.totalDerivative_mul
+#audit_axioms YangMills.FullBV.totalDerivative_comm
+#audit_axioms YangMills.FullBV.totalDerivatives_localST
+#audit_axioms YangMills.FullBV.localSTFunctional
+#audit_axioms YangMills.FullBV.localClass_integrateByParts_multi
+#audit_axioms YangMills.FullBV.master_characteristic_antigauge_finite
+#audit_axioms YangMills.FullBV.parity_masterActionDensity
+#audit_axioms YangMills.FullBV.leftPartialJet_parity
+#audit_axioms YangMills.LegendreInsertionBridge.gammaCoeff_inverse_from_source
+#audit_axioms YangMills.LegendreInsertionBridge.amputatedLegendreEquations_from_source
+#audit_axioms YangMills.LegendreInsertionBridge.fixedFlow_lift_directional
+#audit_axioms YangMills.LegendreInsertionBridge.fixedFlow_exact_directional
+#audit_axioms YangMills.CurvatureJetPolynomial.engineeringPart_respects
+#audit_axioms YangMills.CurvatureJetPolynomial.classicalGrades_internal
+#audit_axioms YangMills.CurvatureJetPolynomial.availableFilteredBasis
+#audit_axioms YangMills.CurvatureJetPolynomial.homogeneousBasisLabel_homogeneous
+
+-- Same-group full classical master equation and filtered quantum assembly.
+#audit_axioms YangMills.FullBV.localClass_prolongation_euler
+#audit_axioms YangMills.FullBV.localClass_localST_eq_densityBracket
+#audit_axioms YangMills.FullBV.localST_mul_even
+#audit_axioms YangMills.FullBV.freeLocalST_square
+#audit_axioms YangMills.FullBV.classicalLocalST_square_basic_jet
+#audit_axioms YangMills.FullBV.leftEuler_totalDerivative
+#audit_axioms YangMills.FullBV.rightEuler_totalDerivative
+#audit_axioms YangMills.FullBV.functionalBracket
+#audit_axioms YangMills.FullBV.bracketGraph_exists_unique
+#audit_axioms YangMills.FullBV.masterAction_classicalMasterEquation
+#audit_axioms YangMills.FullBV.masterAction_functionalMasterEquation
+#audit_axioms YangMills.FullBV.masterAction_localST_self
+#audit_axioms YangMills.FullBV.masterAction_selfBracket_localST
+#audit_axioms YangMills.FullBV.classicalLocalST_curvature_covariant
+#audit_axioms YangMills.FullBV.classicalLocalST_curvatureDensity
+#audit_axioms YangMills.FullBV.essentialCoupling_class_relation
+#audit_axioms YangMills.FullBV.jetEuler_exact
+#audit_axioms YangMills.PerturbativeFlow.rescaleFlow_preserves_flow_equation
+#audit_axioms YangMills.PerturbativeFlow.CoefficientFlowConditions.rescaled_flow
+#audit_axioms YangMills.FilteredRG.Frame.ofHomogeneous
+#audit_axioms YangMills.FilteredRG.strippedMultiPairing_ofHomogeneous
+#audit_axioms YangMills.FilteredRG.strippedVacuumWord_ofHomogeneous
+#audit_axioms YangMills.vacuumCenteredField_identity_shift
+#audit_axioms YangMills.StressTensorData.hasVacuumCenteredTraceAnomaly_of_mod_identity
+#audit_axioms YangMills.ProposedFilteredGeneratedSpecification
+#audit_axioms YangMills.FilteredGeneratedCandidate.qft_exists
+#audit_axioms YangMills.FilteredGeneratedCandidate.stress_nonzero
+
+-- Actual fixed-flow uniqueness, dimensional covariance and integrated normalization.
+#audit_axioms YangMills.PerturbativeFlow.finiteJet_determinacy
+#audit_axioms YangMills.PerturbativeFlow.reducedJet_determinacy
+#audit_axioms YangMills.PerturbativeFlow.flowDifference_scaleConstant_all
+#audit_axioms YangMills.PerturbativeFlow.backgroundFlowRHS_congr_lower
+#audit_axioms YangMills.PerturbativeFlow.flowDifference_eq_zero_of_constant
+#audit_axioms YangMills.PerturbativeFlow.CoefficientFlowConditions.unique
+#audit_axioms YangMills.PerturbativeFlow.CoefficientFlowConditions.dimensional_covariance
+#audit_axioms YangMills.PerturbativeFlow.CoefficientFlowConditions.rescale
+#audit_axioms YangMills.PerturbativeFlow.InsertionFlowConditions.rescale
+#audit_axioms YangMills.PerturbativeFlow.FixedFlowSystem.dilate
+#audit_axioms YangMills.IntegratedNormalization.LeadingIntegratedShift.relevant_ir
+#audit_axioms YangMills.IntegratedNormalization.LeadingIntegratedShift.marginal
+#audit_axioms YangMills.IntegratedNormalization.LeadingIntegratedShift.bare_defect
+#audit_axioms YangMills.IntegratedNormalization.LeadingIntegratedShift.raw_boundary_iff
+#audit_axioms YangMills.FullBV.classicalLocalST_shiftedGaugeAntifield
+#audit_axioms YangMills.FullBV.graphRescale_masterLocalST_all
+#audit_axioms YangMills.FullBV.graphPrimitive_integrated_exact_all
+
+-- Actual interacting differential, integrated responses and OPE/UV transport.
+#audit_axioms YangMills.FullBV.rightEuler_curvature_gauge
+#audit_axioms YangMills.FullBV.classicalLocalST_square_coordinate
+#audit_axioms YangMills.FullBV.classicalLocalST_square_jet
+#audit_axioms YangMills.FullBV.classicalLocalST_square
+#audit_axioms YangMills.FullBV.classicalLocalSTFunctional_square
+#audit_axioms YangMills.FullBV.classicalLocalSTLinear_comp_self
+#audit_axioms YangMills.FullBV.classicalLocalSTFunctional_range_le_ker
+#audit_axioms YangMills.PerturbativeFlow.CoefficientFlowConditions.canonical_dilation_derivative
+#audit_axioms YangMills.PerturbativeFlow.coordinateJet_determinacy
+#audit_axioms YangMills.PerturbativeFlow.insertionHomogeneousRHS_congr_lower
+#audit_axioms YangMills.PerturbativeFlow.LinearInsertionRegularity.unique_of_coordinate_jets
+#audit_axioms YangMills.PerturbativeFlow.ReducedLinearInsertionRegularity.unique_of_reduced_jets
+#audit_axioms YangMills.IntegratedNormalization.IntegratedMarginalConditions.unique
+#audit_axioms YangMills.IntegratedNormalization.integratedWardSeed_eq
+#audit_axioms YangMills.IntegratedNormalization.normalizationMatrixValue_eq
+#audit_axioms YangMills.IntegratedNormalization.pointwiseNormalizationResponse_normalized
+#audit_axioms YangMills.PerturbativeFlow.regulatedOPECoefficient_rescale
+#audit_axioms YangMills.PerturbativeFlow.IsUltravioletOPECoefficient.rescale
+#audit_axioms YangMills.PerturbativeFlow.momentumJet_perm
+
+-- Actual canonical projectors, same-Q carrier and centered trace.
+#audit_axioms YangMills.PerturbativeFlow.canonicalJetExtraction_zero_iff
+#audit_axioms YangMills.PerturbativeFlow.lowProjectorAdequacy
+#audit_axioms YangMills.WightmanAxioms.spectral_operator_of_matrix
+#audit_axioms YangMills.CarrierTransport.SmallWightmanPresentation.gapped
+#audit_axioms YangMills.StressTensorData.Compatible.withZeroMassProfile
+#audit_axioms YangMills.StressTensorData.Compatible.constant_identity_shift_charge_limit
+#audit_axioms YangMills.centered_equation_iff_computed_scalar
+#audit_axioms YangMills.StressTensorData.hasCenteredTraceAnomaly_iff_mod_identity
+#audit_axioms YangMills.FilteredGeneratedCandidate.trace_anomaly_computed_scalar
+
+-- Smooth canonical boundary determinacy and actual insertion/stress transport.
+#audit_axioms YangMills.CanonicalUV.anchored_coordinate_determinacy
+#audit_axioms YangMills.PerturbativeFlow.canonicalProjectorDeterminacy
+#audit_axioms YangMills.PerturbativeFlow.LinearInsertionRegularity.unique_of_canonical_projectors
+#audit_axioms YangMills.PerturbativeFlow.InsertionFlowConditions.single_unique
+#audit_axioms YangMills.FilteredRG.GeneratedStressFamily.field_transport
+#audit_axioms YangMills.FilteredRG.GeneratedStressFamily.SameStressRG.field_derived
+
+-- Closed same-action normalization/OPE bridges and fixed all-group target.
+#audit_axioms YangMills.PerturbativeFlow.canonicalHighProjectorAdequacy
+#audit_axioms YangMills.PerturbativeFlow.InsertionFlowConditions.oversubtraction_unique_between
+#audit_axioms YangMills.PerturbativeFlow.InsertionFlowConditions.regulatedOPECoefficient_unique
+#audit_axioms YangMills.PerturbativeFlow.InsertionFlowConditions.ultravioletOPECoefficient_unique
+#audit_axioms YangMills.FullBV.printedGaussianContraction_eq
+#audit_axioms YangMills.FullBV.printedGaussianFlowContraction_eq
+#audit_axioms YangMills.IntegratedNormalization.integrated_eq_computed_pointwise_normalization
+#audit_axioms YangMills.IntegratedNormalization.fixedFlow_integratedMarginal_normalization
+#audit_axioms YangMills.IntegratedNormalization.fixedFlow_integratedWard_normalization
+#audit_axioms YangMills.YangMillsExistenceAndMassGap

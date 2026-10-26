@@ -5,7 +5,6 @@ import Problems.NavierStokes.Millennium
 import Problems.Hodge.Millennium
 import Problems.BirchSwinnertonDyer.Millennium
 import Problems.YangMills.Millennium
-import Problems.YangMills.HamiltonianSpectrum
 import Problems.Poincare.Millennium
 
 /-!
@@ -29,8 +28,10 @@ Design points:
 * `prize_theorem_declaration` names the `sorry` placeholder a proof should replace, for the
   problems that have one (Riemann, Birch and Swinnerton-Dyer, Poincaré).
 * `status = statement_incomplete` marks statements that are known to be interface sketches rather
-  than faithful formalizations (Hodge, Yang–Mills).  They are not valid targets and have no
+  than faithful formalizations (Hodge).  They are not valid targets and have no
   placeholder.
+* `status = proposed_statement` marks a proposed formalization awaiting independent source
+  review (Yang–Mills). It is not a solution or a certified Clay target.
 * `resolution_shape` says what a future solution would have to do; `formalization_note` records
   modeling choices without changing the proposition.
 -/
@@ -151,19 +152,19 @@ def birch_swinnerton_dyer : ClayProblem where
 def yang_mills : ClayProblem where
   short_name := "Yang-Mills"
   title := "Yang-Mills existence and mass gap"
-  statement := MillenniumYangMills.ClayYangMills
+  statement := MillenniumYangMills.ClayYangMills.{0}
   statement_declaration := "MillenniumYangMills.ClayYangMills"
   prize_theorem_declaration := none
-  status := ProblemStatus.statement_incomplete
+  status := ProblemStatus.proposed_statement
   resolution_shape := ResolutionShape.construct_object
   resolution_note :=
-    "Not a valid target. The quantum-field-theory data are an axiomatic sketch that is not tied to Yang-Mills theory or to relativity, so the existence statement can be satisfied by a two-dimensional toy model."
+    "Construct a FilteredGeneratedCandidate for every compact connected simple Lie gauge group. No existence proof is supplied. The full statement is the universe-polymorphic YangMills.YangMillsExistenceAndMassGap target; this registry records its universe-zero instance."
   formalization_note :=
-    "The gauge field stores connection and curvature independently, the Lie algebra has no bracket, the Poincare group is an arbitrary group unrelated to the Hamiltonian, and the unbounded physical Hamiltonian is tied to a bounded operator's spectrum. The vacuum-uniqueness axiom was contradictory before September 2026."
+    "Proposed specification binding the physical QFT, generated observables, Ward/CS and UV/OPE matching, stress tensor and positive finite Hamiltonian mass gap to the same theory. Independent source-fidelity validation remains pending."
   related_declarations := [
-    "MillenniumYangMills.ClayYangMills.Formulations.FixedGroup",
-    "MillenniumYangMills.ClayYangMills.Formulations.PhysicalHamiltonian.Statement",
-    "MillenniumYangMills.ClayYangMills.Formulations.LorentzCovariant.Statement"
+    "YangMills.YangMillsExistenceAndMassGap",
+    "YangMills.FilteredGeneratedCandidate",
+    "MillenniumYangMills.clayYangMills_iff_specification"
   ]
 
 /-- Registry entry for the Poincare Conjecture. -/
@@ -204,6 +205,10 @@ def solved_problems : List ClayProblem :=
 def incomplete_problems : List ClayProblem :=
   all_problems.filter ClayProblem.is_incomplete
 
+/-- The registry entries awaiting independent review of a proposed statement. -/
+def proposed_problems : List ClayProblem :=
+  all_problems.filter ClayProblem.is_proposed
+
 /-- Count of Clay Millennium problem entries in this registry. -/
 theorem all_problems.length_eq : all_problems.length = 7 := by
   decide
@@ -217,7 +222,11 @@ theorem solved_problems.length_eq : solved_problems.length = 1 := by
   decide
 
 /-- Count of entries whose statement is incomplete. -/
-theorem incomplete_problems.length_eq : incomplete_problems.length = 2 := by
+theorem incomplete_problems.length_eq : incomplete_problems.length = 1 := by
+  decide
+
+/-- Count of proposed replacement statements. -/
+theorem proposed_problems.length_eq : proposed_problems.length = 1 := by
   decide
 
 end MillenniumProblems
